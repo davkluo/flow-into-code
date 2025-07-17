@@ -25,6 +25,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { ModeSelect } from "./ModeSelect";
 
 interface SubMenuItem {
   label: string;
@@ -141,7 +142,8 @@ const Navbar = () => {
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              <ModeSelect />
               <Button asChild variant="outline" size="sm">
                 <a href="#">Login</a>
               </Button>
