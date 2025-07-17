@@ -95,11 +95,18 @@ const Navbar = () => {
                 </span>
               </Link>
               <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon">
-                    <Menu className="size-4" />
-                  </Button>
-                </SheetTrigger>
+                <div className="flex items-center gap-2">
+                  <ModeSelect />
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="aspect-square"
+                    >
+                      <Menu className="size-4" />
+                    </Button>
+                  </SheetTrigger>
+                </div>
                 <SheetContent className="overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle>Flow Into Code</SheetTitle>
