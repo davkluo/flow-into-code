@@ -8,7 +8,11 @@ import {
 export default function PracticePage() {
   return (
     <div className="px-12 py-8">
-      <Accordion type="multiple" className="w-full">
+      <Accordion
+        type="multiple"
+        className="w-full"
+        defaultValue={["accordion-item-problem-selection"]}
+      >
         <AccordionItem value="accordion-item-problem-selection">
           <AccordionTrigger>1. Select Problem</AccordionTrigger>
           <AccordionContent className="flex flex-col gap-4 text-balance">
