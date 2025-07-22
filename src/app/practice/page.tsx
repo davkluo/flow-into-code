@@ -38,9 +38,7 @@ export default async function PracticePage() {
       >
         <AccordionItem value="accordion-item-problem-selection">
           <AccordionTrigger>1. Select Problem</AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4 text-balance">
-            <ProblemSelectSection problems={problems} />
-          </AccordionContent>
+          <ProblemSelectSection problems={problems} />
         </AccordionItem>
         <AccordionItem value="accordion-item-clarification">
           <AccordionTrigger>2. Ask Clarifying Questions</AccordionTrigger>
