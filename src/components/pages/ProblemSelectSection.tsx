@@ -22,6 +22,7 @@ import {
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { Problem } from "@/types/leetcode";
+import { DifficultyBadge } from "../shared/DifficultyBadge";
 import { AccordionContent } from "../ui/accordion";
 import { Textarea } from "../ui/textarea";
 
@@ -75,15 +76,21 @@ export function ProblemSelectSection({ problems }: ProblemSelectSectionProps) {
             <Button
               variant="outline"
               role="combobox"
-              className="col-span-2 justify-between"
+              className="w-[400px] justify-between"
             >
-              <div className="flex w-full items-center justify-between">
+              <div className="flex w-full items-center">
                 <div className="truncate text-center">
                   {selectedProblem
                     ? `${selectedProblem.id}. ${selectedProblem.title}`
                     : "Select a problem"}
                 </div>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                {selectedProblem && (
+                  <DifficultyBadge
+                    difficulty={selectedProblem.difficulty}
+                    className="ml-2"
+                  />
+                )}
+                <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
               </div>
             </Button>
           </PopoverTrigger>
@@ -118,7 +125,12 @@ export function ProblemSelectSection({ problems }: ProblemSelectSectionProps) {
                                 setOpen(false);
                               }}
                             >
-                              {problem.id}. {problem.title}
+                              <div className="truncate text-center">
+                                {problem.id}. {problem.title}
+                              </div>
+                              <DifficultyBadge
+                                difficulty={problem.difficulty}
+                              />
                               <Check
                                 className={cn(
                                   "ml-auto",
