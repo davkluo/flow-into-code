@@ -1,7 +1,7 @@
 "use client";
 
 import _ from "lodash";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, MoveRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { Button } from "@/components/ui/button";
@@ -28,9 +28,13 @@ import { Textarea } from "../ui/textarea";
 
 interface ProblemSelectSectionProps {
   problems: Problem[];
+  onNext: () => void;
 }
 
-export function ProblemSelectSection({ problems }: ProblemSelectSectionProps) {
+export function ProblemSelectSection({
+  problems,
+  onNext,
+}: ProblemSelectSectionProps) {
   const [source, setSource] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
@@ -159,6 +163,22 @@ export function ProblemSelectSection({ problems }: ProblemSelectSectionProps) {
           onChange={(e) => setCustomProblem(e.target.value)}
           className="col-span-full h-40"
         />
+      )}
+
+      {((source === "leetcode" && selectedProblem) ||
+        (source === "custom" && customProblem)) && (
+        <div className="col-span-full flex items-center justify-start gap-0.5">
+          <Button
+            variant="default"
+            onClick={() => {
+              onNext();
+              setOpen(false);
+            }}
+          >
+            Next
+            <MoveRight className="h-4 w-4 pt-0.5" />
+          </Button>
+        </div>
       )}
     </AccordionContent>
   );
