@@ -16,6 +16,6 @@ export function filterAndSortProblems(
       const fullProblemTitle = `${problem.id}. ${problem.title.toLowerCase()} ${problem.difficulty.toLowerCase()}`;
       const tags = problem.topicTags.map((tag) => tag.name.toLowerCase()).join(" ");
       const fullText = `${fullProblemTitle} ${tags}`.toLowerCase();
-      return fullText.includes(lowercaseQuery);
+      return !problem.isPaidOnly && fullText.includes(lowercaseQuery);
     });
 }
