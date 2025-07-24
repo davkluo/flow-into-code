@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
-import { Problem } from "@/types/leetcode";
+import { Problem, ProblemDetails } from "@/types/leetcode";
 import { DifficultyBadge } from "../shared/DifficultyBadge";
 import { AccordionContent } from "../ui/accordion";
 import { Textarea } from "../ui/textarea";
@@ -41,6 +41,26 @@ export function ProblemSelectSection({
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [customProblem, setCustomProblem] = useState("");
+  const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
+    null,
+  );
+
+  const fetchProblemDetails = async (
+    titleSlug: string,
+  ): Promise<ProblemDetails> => {
+    const res = await fetch("/api/lc-problem-details", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ titleSlug }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to load question");
+    }
+
+    const { data } = await res.json();
+    return data.question;
+  };
 
   const debouncedSetSearch = useMemo(
     () => _.debounce((value: string) => setDebouncedSearch(value), 200),
@@ -50,6 +70,14 @@ export function ProblemSelectSection({
   const handleSearchChange = (value: string) => {
     setSearch(value);
     debouncedSetSearch(value);
+  };
+
+  const handleProblemSelect = async (problem: Problem) => {
+    setSelectedProblem(problem);
+    setOpen(false);
+
+    const details = await fetchProblemDetails(problem.titleSlug);
+    setProblemDetails(details);
   };
 
   useEffect(() => {
@@ -125,8 +153,7 @@ export function ProblemSelectSection({
                           <div style={style} key={problem.id}>
                             <CommandItem
                               onSelect={() => {
-                                setSelectedProblem(problem);
-                                setOpen(false);
+                                handleProblemSelect(problem);
                               }}
                             >
                               <div className="truncate text-center">
@@ -163,6 +190,22 @@ export function ProblemSelectSection({
           onChange={(e) => setCustomProblem(e.target.value)}
           className="col-span-full h-40"
         />
+      )}
+
+      {source === "leetcode" && selectedProblem && (
+        <div className="col-span-full">
+          <h3 className="mb-2 text-lg font-semibold">
+            {selectedProblem.id}. {selectedProblem.title}
+          </h3>
+          <div className="text-muted-foreground mb-4 text-sm">
+            Difficulty:{" "}
+            <DifficultyBadge difficulty={selectedProblem.difficulty} />
+          </div>
+          <div
+            className="prose prose-sm"
+            dangerouslySetInnerHTML={{ __html: problemDetails?.content || "" }}
+          />
+        </div>
       )}
 
       {((source === "leetcode" && selectedProblem) ||

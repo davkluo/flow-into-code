@@ -10,3 +10,7 @@ export type Problem = {
     slug: string;
   }[];
 };
+
+export type ProblemDetails = {
+  content: string;
+};

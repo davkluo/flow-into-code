@@ -22,3 +22,11 @@ export const lcProblemListQuery = `
     }
   }
 `;
+
+export const lcProblemDetailQuery = `
+  query getQuestionDetail($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      content
+    }
+  }
+`;
