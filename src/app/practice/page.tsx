@@ -26,7 +26,7 @@ export default async function PracticePage() {
   const problems: Problem[] = json.data.problemsetQuestionList.questions;
 
   return (
-    <TimerProvider defaultTime={1800}>
+    <TimerProvider defaultTime={3}>
       <div className="px-12 py-8">
         <h1 className="mb-4 text-2xl font-bold">Practice Problems</h1>
         <div className="grid grid-cols-4 gap-6">

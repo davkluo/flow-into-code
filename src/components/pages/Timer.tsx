@@ -1,7 +1,8 @@
 "use client";
 
 import { Pause, Play, Settings2, TimerReset } from "lucide-react";
-import { useEffect } from "react";
+import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 import { useTimer } from "@/context/TimerContext";
 import { formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -11,11 +12,21 @@ import { Progress } from "../ui/progress";
 
 export function Timer() {
   const { timeLeft, isRunning, start, pause, reset, setpoint } = useTimer();
+  const toastShownRef = useRef(false); // Track whether time's up toast has been shown
 
   const progress =
     timeLeft < 0
       ? Math.min(Math.abs(timeLeft) / setpoint, 1) * 100 // 0 -> 100 overtime
       : (timeLeft / setpoint) * 100; // 100 -> 0
+
+  useEffect(() => {
+    if (timeLeft === 0 && !toastShownRef.current) {
+      console.log("here");
+      toast("Time's up!", { description: "You're now in overtime." });
+      toastShownRef.current = true;
+    }
+    if (timeLeft > 0) toastShownRef.current = false;
+  }, [timeLeft]);
 
   return (
     <Card className="mt-5 flex flex-col gap-3 py-4">

@@ -26,7 +26,6 @@ export const TimerProvider = ({
   const [timeLeft, setTimeLeft] = useState(defaultTime);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const toastShownRef = useRef(false);
 
   const start = (initialTime?: number) => {
     if (initialTime !== undefined) {
@@ -60,16 +59,6 @@ export const TimerProvider = ({
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isRunning]);
-
-  useEffect(() => {
-    if (timeLeft === 0 && !toastShownRef.current) {
-      toastShownRef.current = true;
-      // you'll call toast here from a UI component
-    }
-    if (timeLeft > 0) {
-      toastShownRef.current = false;
-    }
-  }, [timeLeft]);
 
   return (
     <TimerContext.Provider
