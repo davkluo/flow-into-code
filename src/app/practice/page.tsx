@@ -1,4 +1,6 @@
 import { PracticeAccordionSections } from "@/components/pages/PracticeAccordionSections";
+import { Timer } from "@/components/pages/Timer";
+import { TimerProvider } from "@/context/TimerContext";
 import { lcProblemListQuery } from "@/services/leetcode/graphql";
 import { Problem } from "@/types/leetcode";
 
@@ -24,10 +26,20 @@ export default async function PracticePage() {
   const problems: Problem[] = json.data.problemsetQuestionList.questions;
 
   return (
-    <div className="grid grid-cols-5 px-12 py-8">
-      <div className="col-span-3">
-        <PracticeAccordionSections problems={problems} />
+    <TimerProvider defaultTime={1800}>
+      <div className="px-12 py-8">
+        <h1 className="mb-4 text-2xl font-bold">Practice Problems</h1>
+        <div className="grid grid-cols-4 gap-6">
+          <div className="col-span-1 pr-4">
+            <div>
+              <Timer />
+            </div>
+          </div>
+          <div className="col-span-3">
+            <PracticeAccordionSections problems={problems} />
+          </div>
+        </div>
       </div>
-    </div>
+    </TimerProvider>
   );
 }
