@@ -2,21 +2,42 @@
 
 import { Pause, Play, Settings2, TimerReset } from "lucide-react";
 import { toast } from "sonner";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTimer } from "@/context/TimerContext";
 import { formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
+import { Label } from "../ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Progress } from "../ui/progress";
+import { Slider } from "../ui/slider";
 
 export function Timer() {
-  const { timeLeft, isRunning, start, pause, reset, setpoint } = useTimer();
-  const toastShownRef = useRef(false); // Track whether time's up toast has been shown
+  const { timeLeft, isRunning, start, pause, reset, setpoint, setSetpoint } =
+    useTimer();
+  const [sliderMinutes, setSliderMinutes] = useState(Math.round(setpoint / 60));
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const toastShownRef = useRef(false);
 
   const progress =
     timeLeft < 0
       ? Math.min(Math.abs(timeLeft) / setpoint, 1) * 100 // 0 -> 100 overtime
       : (timeLeft / setpoint) * 100; // 100 -> 0
+
+  const handleSettingsSave = () => {
+    const newSetpoint = sliderMinutes * 60;
+    setSetpoint(newSetpoint);
+    reset(newSetpoint);
+    setIsPopoverOpen(false);
+  };
+
+  const handlePopoverChange = (isOpen: boolean) => {
+    if (!isOpen && isPopoverOpen) {
+      // Popover closed by clicking outside
+      setSliderMinutes(Math.round(setpoint / 60));
+    }
+    setIsPopoverOpen(isOpen);
+  };
 
   useEffect(() => {
     if (timeLeft === 0 && !toastShownRef.current) {
@@ -59,17 +80,50 @@ export function Timer() {
               <Play className="!size-5" />
             </Button>
           )}
-          <Button onClick={reset} size="icon" variant="ghost">
+          <Button onClick={() => reset()} size="icon" variant="ghost">
             <TimerReset className="!size-5" />
           </Button>
-          <Button
-            onClick={() => {}}
-            size="icon"
-            variant="ghost"
-            className="flex items-center justify-center"
-          >
-            <Settings2 className="!size-5" />
-          </Button>
+          <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange}>
+            <PopoverTrigger asChild>
+              <Button
+                onClick={() => {}}
+                size="icon"
+                variant="ghost"
+                className="flex items-center justify-center"
+              >
+                <Settings2 className="!size-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72" align="end">
+              <div className="flex flex-col gap-6">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="timer">Timer Duration</Label>
+                  <span className="text-muted-foreground text-sm tabular-nums">
+                    {sliderMinutes} min
+                  </span>
+                </div>
+                <Slider
+                  id="timer"
+                  min={5}
+                  max={120}
+                  step={5}
+                  value={[sliderMinutes]}
+                  onValueChange={([newMinutes]) => setSliderMinutes(newMinutes)}
+                  className="w-full"
+                />
+                <div className="flex justify-center">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    onClick={handleSettingsSave}
+                    className="text-xs"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>

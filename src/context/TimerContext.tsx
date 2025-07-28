@@ -8,7 +8,7 @@ type TimerContextType = {
   isRunning: boolean;
   start: (initialTime?: number) => void;
   pause: () => void;
-  reset: () => void;
+  reset: (overrideTime?: number) => void;
   setTime: (seconds: number) => void;
   setSetpoint: (seconds: number) => void;
 };
@@ -39,9 +39,9 @@ export const TimerProvider = ({
     setIsRunning(false);
   };
 
-  const reset = () => {
+  const reset = (overrideTime?: number) => {
     setIsRunning(false);
-    setTimeLeft(setpoint);
+    setTimeLeft(overrideTime ?? setpoint);
   };
 
   const setTime = (seconds: number) => {
