@@ -27,19 +27,13 @@ export default async function PracticePage() {
 
   return (
     <TimerProvider defaultTime={3}>
-      <div className="px-12 py-8">
+      <div className="px-12 py-8 pb-16">
         <h1 className="mb-4 text-2xl font-bold">Practice Problems</h1>
-        <div className="grid grid-cols-4 gap-6">
-          <div className="col-span-1 pr-4">
-            <div>
-              <Timer />
-            </div>
-          </div>
-          <div className="col-span-3">
-            <PracticeAccordionSections problems={problems} />
-          </div>
+        <div>
+          <PracticeAccordionSections problems={problems} />
         </div>
       </div>
+      <Timer />
     </TimerProvider>
   );
 }
