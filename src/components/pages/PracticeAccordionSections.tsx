@@ -8,11 +8,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Problem } from "@/types/leetcode";
+import { LCProblem } from "@/types/leetcode";
+import { PracticeProblem } from "@/types/practice";
 import { ClarificationSection } from "./ClarificationSection";
 
 interface PracticeAccordionSectionsProps {
-  problems: Problem[];
+  problems: LCProblem[];
 }
 
 const sections = [
@@ -28,6 +29,8 @@ export function PracticeAccordionSections({
   problems,
 }: PracticeAccordionSectionsProps) {
   const [openSections, setOpenSections] = useState<string[]>([sections[0]]);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [problem, setProblem] = useState<PracticeProblem | null>(null);
 
   const openNextSection = (current: string) => {
     const currentIndex = sections.indexOf(current);
@@ -40,6 +43,11 @@ export function PracticeAccordionSections({
     ]);
   };
 
+  const handleProblemStart = (problem: PracticeProblem) => {
+    setProblem(problem);
+    setHasStarted(true);
+  };
+
   return (
     <Accordion
       type="multiple"
@@ -48,36 +56,50 @@ export function PracticeAccordionSections({
       onValueChange={setOpenSections}
     >
       <AccordionItem value="accordion-item-problem-selection">
-        <AccordionTrigger>1. Select Problem</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>1. Select Problem</h2>
+        </AccordionTrigger>
         <ProblemSelectSection
           problems={problems}
           onNext={() => openNextSection("accordion-item-problem-selection")}
+          hasStarted={hasStarted}
+          onProblemStart={handleProblemStart}
         />
       </AccordionItem>
       <AccordionItem value="accordion-item-clarification">
-        <AccordionTrigger>2. Ask Clarifying Questions</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>2. Ask Clarifying Questions</h2>
+        </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
           <ClarificationSection />
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-thought-process">
-        <AccordionTrigger>3. Explain Thought Process</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>3. Explain Thought Process</h2>
+        </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance"></AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-pseudocode">
-        <AccordionTrigger>4. Draft Pseudocode</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>4. Draft Pseudocode</h2>
+        </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
           <p>Placeholder</p>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-implementation">
-        <AccordionTrigger>5. Implement Code</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>5. Implement Code</h2>
+        </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
           <p>Placeholder</p>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-complexity-analysis">
-        <AccordionTrigger>6. Analyze Complexity</AccordionTrigger>
+        <AccordionTrigger>
+          <h2>6. Analyze Complexity</h2>
+        </AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
           <p>Placeholder</p>
         </AccordionContent>

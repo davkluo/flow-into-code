@@ -1,9 +1,9 @@
-import { Problem } from "@/types/leetcode";
+import { LCProblem } from "@/types/leetcode";
 
 export function filterAndSortProblems(
-  problems: Problem[],
+  problems: LCProblem[],
   query: string
-): Problem[] {
+): LCProblem[] {
   const lowercaseQuery = query.toLowerCase().trim();
 
   return problems

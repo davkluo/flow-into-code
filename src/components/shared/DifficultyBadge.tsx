@@ -1,11 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Problem } from "@/types/leetcode";
+import { LCProblem } from "@/types/leetcode";
 
 export function DifficultyBadge({
   difficulty,
   className,
-}: React.ComponentProps<"span"> & Pick<Problem, "difficulty">) {
+}: React.ComponentProps<"span"> & Pick<LCProblem, "difficulty">) {
   return (
     <Badge
       className={cn(

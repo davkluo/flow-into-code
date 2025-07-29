@@ -4,7 +4,20 @@ import _ from "lodash";
 import { Check, ChevronsUpDown, MoveRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList as List } from "react-window";
+import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
+import { TagBadge } from "@/components/shared/TagBadge";
 import { AccordionContent } from "@/components/ui/accordion";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Command, CommandInput, CommandItem } from "@/components/ui/command";
 import {
@@ -21,33 +34,42 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useTimer } from "@/context/TimerContext";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
-import { Problem, ProblemDetails } from "@/types/leetcode";
-import { DifficultyBadge } from "../shared/DifficultyBadge";
+import { LCProblem, LCProblemDetails } from "@/types/leetcode";
+import { PracticeProblem, ProblemSource } from "@/types/practice";
 
 interface ProblemSelectSectionProps {
-  problems: Problem[];
+  problems: LCProblem[];
   onNext: () => void;
+  hasStarted: boolean;
+  onProblemStart: (problem: PracticeProblem) => void;
 }
 
 export function ProblemSelectSection({
   problems,
   onNext,
+  hasStarted,
+  onProblemStart,
 }: ProblemSelectSectionProps) {
   const [source, setSource] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
+    null,
+  );
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [customProblem, setCustomProblem] = useState("");
-  const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
+  const [problemDetails, setProblemDetails] = useState<LCProblemDetails | null>(
     null,
   );
 
+  const { setpoint, start: startTimer } = useTimer();
+
   const fetchProblemDetails = async (
     titleSlug: string,
-  ): Promise<ProblemDetails> => {
+  ): Promise<LCProblemDetails> => {
     const res = await fetch("/api/lc-problem-details", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -72,12 +94,18 @@ export function ProblemSelectSection({
     debouncedSetSearch(value);
   };
 
-  const handleProblemSelect = async (problem: Problem) => {
+  const handleProblemSelect = async (problem: LCProblem) => {
+    if (selectedProblem?.id === problem.id) {
+      setOpen(false);
+      return;
+    }
+
     setSelectedProblem(problem);
     setOpen(false);
 
     const details = await fetchProblemDetails(problem.titleSlug);
     setProblemDetails(details);
+    console.log(details);
   };
 
   useEffect(() => {
@@ -89,26 +117,34 @@ export function ProblemSelectSection({
   }, [problems, debouncedSearch]);
 
   return (
-    <AccordionContent className="grid grid-cols-6 gap-4">
-      <Select value={source ?? ""} onValueChange={setSource}>
+    <AccordionContent className="grid grid-cols-6 gap-4 px-3.5">
+      <p className="text-muted-foreground col-span-full text-xs">
+        Select a problem from LeetCode or enter a custom problem description.
+      </p>
+      <Select
+        value={source ?? ""}
+        onValueChange={setSource}
+        disabled={hasStarted}
+      >
         <SelectTrigger className="col-span-1 w-full">
           <SelectValue placeholder="Select a source" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="leetcode">LeetCode</SelectItem>
-            <SelectItem value="custom">Custom</SelectItem>
+            <SelectItem value={ProblemSource.LeetCode}>LeetCode</SelectItem>
+            <SelectItem value={ProblemSource.Custom}>Custom</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
 
-      {source === "leetcode" && (
+      {source === ProblemSource.LeetCode && (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
               role="combobox"
               className="w-[400px] justify-between"
+              disabled={hasStarted}
             >
               <div className="flex w-full items-center">
                 <div className="truncate text-center">
@@ -183,46 +219,109 @@ export function ProblemSelectSection({
         </Popover>
       )}
 
-      {source === "custom" && (
+      {source === ProblemSource.Custom && (
         <Textarea
           placeholder="Enter your custom problem description."
           value={customProblem}
           onChange={(e) => setCustomProblem(e.target.value)}
           className="col-span-full h-40"
+          disabled={hasStarted}
         />
       )}
 
-      {source === "leetcode" && selectedProblem && (
-        <div className="col-span-full">
+      {source === ProblemSource.LeetCode && selectedProblem && (
+        <div className="col-span-full mt-2">
           <h3 className="mb-2 text-lg font-semibold">
-            {selectedProblem.id}. {selectedProblem.title}
+            {selectedProblem.title}
           </h3>
-          <div className="text-muted-foreground mb-4 text-sm">
-            Difficulty:{" "}
-            <DifficultyBadge difficulty={selectedProblem.difficulty} />
+          <div className="text-muted-foreground mb-4 flex items-center gap-4 text-xs">
+            <div className="flex items-center gap-1">
+              Difficulty:{" "}
+              <DifficultyBadge difficulty={selectedProblem.difficulty} />
+            </div>
+            <div className="flex items-center gap-1">
+              Tags:{" "}
+              <div className="flex flex-wrap gap-1">
+                {selectedProblem.topicTags.map((tag) => (
+                  <TagBadge key={tag.id} tag={tag} />
+                ))}
+              </div>
+            </div>
           </div>
           <div
-            className="prose prose-sm"
+            className="prose prose-sm text-sm [&_img]:h-auto [&_img]:max-w-full [&_img]:scale-75"
             dangerouslySetInnerHTML={{ __html: problemDetails?.content || "" }}
           />
         </div>
       )}
 
-      {((source === "leetcode" && selectedProblem) ||
-        (source === "custom" && customProblem)) && (
-        <div className="col-span-full flex items-center justify-start gap-0.5">
-          <Button
-            variant="default"
-            onClick={() => {
-              onNext();
-              setOpen(false);
-            }}
-          >
-            Next
-            <MoveRight className="h-4 w-4 pt-0.5" />
-          </Button>
-        </div>
-      )}
+      <div className="col-span-full flex items-center justify-start gap-0.5">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="default"
+              disabled={
+                hasStarted ||
+                (source === ProblemSource.LeetCode
+                  ? !selectedProblem || !problemDetails
+                  : !customProblem)
+              }
+            >
+              {hasStarted ? "In Progress" : "Begin Problem"}
+              {!hasStarted && <MoveRight className="h-4 w-4 pt-0.5" />}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have selected{" "}
+                {source === ProblemSource.LeetCode
+                  ? `the LeetCode problem: ${selectedProblem?.title}`
+                  : "a custom problem"}
+                <br />
+                <br />
+                The timer is currently set to {setpoint / 60} minutes. You will
+                receive a notification when the time is up. You can adjust the
+                timer in the settings.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  let problem: PracticeProblem;
+
+                  if (source === ProblemSource.LeetCode) {
+                    if (!problemDetails || !selectedProblem) {
+                      throw new Error("Problem details are required");
+                    }
+
+                    problem = {
+                      source: ProblemSource.LeetCode,
+                      problem: {
+                        ...selectedProblem,
+                        details: problemDetails,
+                      },
+                    };
+                  } else {
+                    problem = {
+                      source: ProblemSource.Custom,
+                      problem: { description: customProblem },
+                    };
+                  }
+                  onProblemStart(problem);
+                  setOpen(false);
+                  startTimer();
+                  onNext();
+                }}
+              >
+                Begin
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AccordionContent>
   );
 }

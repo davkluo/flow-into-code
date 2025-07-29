@@ -2,7 +2,7 @@ import { PracticeAccordionSections } from "@/components/pages/PracticeAccordionS
 import { Timer } from "@/components/pages/Timer";
 import { TimerProvider } from "@/context/TimerContext";
 import { lcProblemListQuery } from "@/services/leetcode/graphql";
-import { Problem } from "@/types/leetcode";
+import { LCProblem } from "@/types/leetcode";
 
 export default async function PracticePage() {
   const res = await fetch("https://leetcode.com/graphql", {
@@ -23,7 +23,7 @@ export default async function PracticePage() {
   });
 
   const json = await res.json();
-  const problems: Problem[] = json.data.problemsetQuestionList.questions;
+  const problems: LCProblem[] = json.data.problemsetQuestionList.questions;
 
   return (
     <TimerProvider defaultTime={1800}>
