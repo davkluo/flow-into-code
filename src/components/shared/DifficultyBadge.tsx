@@ -1,6 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Problem } from "@/types/leetcode";
-import { Badge } from "../ui/badge";
 
 export function DifficultyBadge({
   difficulty,

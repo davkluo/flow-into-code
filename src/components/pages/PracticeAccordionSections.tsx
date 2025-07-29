@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Problem } from "@/types/leetcode";
+import { ClarificationSection } from "./ClarificationSection";
 
 interface PracticeAccordionSectionsProps {
   problems: Problem[];
@@ -56,14 +57,12 @@ export function PracticeAccordionSections({
       <AccordionItem value="accordion-item-clarification">
         <AccordionTrigger>2. Ask Clarifying Questions</AccordionTrigger>
         <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>Display problem here</p>
+          <ClarificationSection />
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-thought-process">
         <AccordionTrigger>3. Explain Thought Process</AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>Placeholder</p>
-        </AccordionContent>
+        <AccordionContent className="flex flex-col gap-4 text-balance"></AccordionContent>
       </AccordionItem>
       <AccordionItem value="accordion-item-pseudocode">
         <AccordionTrigger>4. Draft Pseudocode</AccordionTrigger>

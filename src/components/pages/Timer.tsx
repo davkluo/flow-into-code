@@ -3,14 +3,18 @@
 import { Pause, Play, Settings2, TimerReset } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { useTimer } from "@/context/TimerContext";
 import { formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Progress } from "../ui/progress";
-import { Slider } from "../ui/slider";
 
 export function Timer() {
   const { timeLeft, isRunning, start, pause, reset, setpoint, setSetpoint } =

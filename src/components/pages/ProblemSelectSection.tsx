@@ -4,6 +4,7 @@ import _ from "lodash";
 import { Check, ChevronsUpDown, MoveRight } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList as List } from "react-window";
+import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Command, CommandInput, CommandItem } from "@/components/ui/command";
 import {
@@ -19,12 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { Problem, ProblemDetails } from "@/types/leetcode";
 import { DifficultyBadge } from "../shared/DifficultyBadge";
-import { AccordionContent } from "../ui/accordion";
-import { Textarea } from "../ui/textarea";
 
 interface ProblemSelectSectionProps {
   problems: Problem[];
