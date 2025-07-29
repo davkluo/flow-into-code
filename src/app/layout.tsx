@@ -39,10 +39,6 @@ export default function RootLayout({
           <Navbar />
           <main>{children}</main>
           <Toaster position="top-center" />
-          <footer className="text-center text-sm">
-            <p>© 2025 Flow Into Code</p>
-            <p>Built with Next.js</p>
-          </footer>
         </ThemeProvider>
       </body>
     </html>

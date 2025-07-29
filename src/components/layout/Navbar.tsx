@@ -1,6 +1,8 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
 import Link from "next/link";
 import {
   Accordion,
@@ -42,28 +44,10 @@ interface MenuItem {
 const Navbar = () => {
   // TODO: Insert useAuth hook here for authentication state
 
+  const { theme, resolvedTheme } = useTheme();
+  const currentTheme = resolvedTheme ?? theme;
+
   const publicMenu: MenuItem[] = [
-    {
-      label: "Problems",
-      url: "/problems",
-      items: [
-        {
-          label: "LeetCode",
-          description: "Explore problems from LeetCode",
-          url: "/problems/leetcode",
-        },
-        {
-          label: "HackerRank",
-          description: "Explore problems from HackerRank",
-          url: "/problems/hackerrank",
-        },
-        {
-          label: "Custom",
-          description: "Define and practice your own problems",
-          url: "/problems/custom",
-        },
-      ],
-    },
     {
       label: "Practice",
       url: "/practice",
@@ -88,12 +72,22 @@ const Navbar = () => {
           <div className="absolute inset-y-0 left-0 flex w-full items-center sm:hidden">
             {/* Mobile Menu */}
             <div className="flex w-full items-center justify-between">
-              {/* Logo */}
-              <Link href="/" className="flex items-center gap-2">
-                <span className="text-lg font-semibold tracking-tighter">
-                  LOGO
-                </span>
-              </Link>
+              <Link
+                href="/"
+                className="mt-2.5 flex h-auto w-32 shrink-0 items-center"
+              >
+                <Image
+                  src={
+                    currentTheme === "dark"
+                      ? "/logo-dark.png"
+                      : "/logo-light.png"
+                  }
+                  alt="FlowIntoCode Logo"
+                  width={120}
+                  height={32}
+                  priority
+                />
+              </Link>{" "}
               <Sheet>
                 <div className="flex items-center gap-2">
                   <ModeSelect />
@@ -136,12 +130,23 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <nav className="hidden w-full items-center justify-between sm:flex">
-            <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
               {/* Logo */}
-              <Link href="/" className="flex items-center gap-2">
-                <span className="text-lg font-semibold tracking-tighter">
-                  LOGO
-                </span>
+              <Link
+                href="/"
+                className="mt-2.5 flex h-auto w-32 shrink-0 items-center"
+              >
+                <Image
+                  src={
+                    currentTheme === "dark"
+                      ? "/logo-dark.png"
+                      : "/logo-light.png"
+                  }
+                  alt="FlowIntoCode Logo"
+                  width={120}
+                  height={32}
+                  priority
+                />
               </Link>
               <NavigationMenu viewport={false}>
                 <NavigationMenuList>
