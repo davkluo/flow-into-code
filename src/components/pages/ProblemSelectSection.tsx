@@ -43,14 +43,14 @@ import { PracticeProblem, ProblemSource } from "@/types/practice";
 interface ProblemSelectSectionProps {
   problems: LCProblem[];
   onNext: () => void;
-  hasStarted: boolean;
+  isCurrentStep: boolean;
   onProblemStart: (problem: PracticeProblem) => void;
 }
 
 export function ProblemSelectSection({
   problems,
   onNext,
-  hasStarted,
+  isCurrentStep,
   onProblemStart,
 }: ProblemSelectSectionProps) {
   const [source, setSource] = useState<string | null>(null);
@@ -124,7 +124,7 @@ export function ProblemSelectSection({
       <Select
         value={source ?? ""}
         onValueChange={setSource}
-        disabled={hasStarted}
+        disabled={!isCurrentStep}
       >
         <SelectTrigger className="col-span-1 w-full">
           <SelectValue placeholder="Select a source" />
@@ -144,7 +144,7 @@ export function ProblemSelectSection({
               variant="outline"
               role="combobox"
               className="w-[400px] justify-between"
-              disabled={hasStarted}
+              disabled={!isCurrentStep}
             >
               <div className="flex w-full items-center">
                 <div className="truncate text-center">
@@ -225,7 +225,7 @@ export function ProblemSelectSection({
           value={customProblem}
           onChange={(e) => setCustomProblem(e.target.value)}
           className="col-span-full h-40"
-          disabled={hasStarted}
+          disabled={!isCurrentStep}
         />
       )}
 
@@ -261,14 +261,14 @@ export function ProblemSelectSection({
             <Button
               variant="default"
               disabled={
-                hasStarted ||
+                !isCurrentStep ||
                 (source === ProblemSource.LeetCode
                   ? !selectedProblem || !problemDetails
                   : !customProblem)
               }
             >
-              {hasStarted ? "In Progress" : "Begin Problem"}
-              {!hasStarted && <MoveRight className="h-4 w-4 pt-0.5" />}
+              {isCurrentStep ? "Begin Problem" : "In Progress"}
+              {isCurrentStep && <MoveRight className="h-4 w-4 pt-0.5" />}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>

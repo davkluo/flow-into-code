@@ -11,6 +11,7 @@ import {
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ClarificationSection } from "./ClarificationSection";
+import { ThoughtProcessSection } from "./ThoughtProcessSection";
 
 interface PracticeAccordionSectionsProps {
   problems: LCProblem[];
@@ -25,15 +26,19 @@ const sections = [
   "accordion-item-complexity-analysis",
 ];
 
+const sectionToIndex = (section: string) => {
+  return sections.indexOf(section);
+};
+
 export function PracticeAccordionSections({
   problems,
 }: PracticeAccordionSectionsProps) {
   const [openSections, setOpenSections] = useState<string[]>([sections[0]]);
-  const [hasStarted, setHasStarted] = useState(false);
   const [problem, setProblem] = useState<PracticeProblem | null>(null);
+  const [currentStep, setCurrentStep] = useState(0);
 
   const openNextSection = (current: string) => {
-    const currentIndex = sections.indexOf(current);
+    const currentIndex = sectionToIndex(current);
     if (currentIndex === -1 || currentIndex === sections.length - 1) return;
 
     const next = sections[currentIndex + 1];
@@ -41,11 +46,8 @@ export function PracticeAccordionSections({
       ...prev.filter((section) => section !== current),
       next,
     ]);
-  };
 
-  const handleProblemStart = (problem: PracticeProblem) => {
-    setProblem(problem);
-    setHasStarted(true);
+    setCurrentStep((prevStep) => prevStep + 1);
   };
 
   return (
@@ -62,48 +64,88 @@ export function PracticeAccordionSections({
         <ProblemSelectSection
           problems={problems}
           onNext={() => openNextSection("accordion-item-problem-selection")}
-          hasStarted={hasStarted}
-          onProblemStart={handleProblemStart}
+          isCurrentStep={
+            currentStep === sectionToIndex("accordion-item-problem-selection")
+          }
+          onProblemStart={setProblem}
         />
       </AccordionItem>
-      <AccordionItem value="accordion-item-clarification">
-        <AccordionTrigger>
-          <h2>2. Ask Clarifying Questions</h2>
-        </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <ClarificationSection />
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value="accordion-item-thought-process">
-        <AccordionTrigger>
-          <h2>3. Explain Thought Process</h2>
-        </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance"></AccordionContent>
-      </AccordionItem>
-      <AccordionItem value="accordion-item-pseudocode">
-        <AccordionTrigger>
-          <h2>4. Draft Pseudocode</h2>
-        </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>Placeholder</p>
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value="accordion-item-implementation">
-        <AccordionTrigger>
-          <h2>5. Implement Code</h2>
-        </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>Placeholder</p>
-        </AccordionContent>
-      </AccordionItem>
-      <AccordionItem value="accordion-item-complexity-analysis">
-        <AccordionTrigger>
-          <h2>6. Analyze Complexity</h2>
-        </AccordionTrigger>
-        <AccordionContent className="flex flex-col gap-4 text-balance">
-          <p>Placeholder</p>
-        </AccordionContent>
-      </AccordionItem>
+      {currentStep >= sectionToIndex("accordion-item-clarification") && (
+        <AccordionItem value="accordion-item-clarification">
+          <AccordionTrigger
+            disabled={
+              currentStep < sectionToIndex("accordion-item-clarification")
+            }
+          >
+            <h2>2. Ask Clarifying Questions</h2>
+          </AccordionTrigger>
+          <ClarificationSection
+            problem={problem}
+            onNext={() => openNextSection("accordion-item-clarification")}
+            isCurrentStep={
+              currentStep === sectionToIndex("accordion-item-clarification")
+            }
+          />
+        </AccordionItem>
+      )}
+      {currentStep >= sectionToIndex("accordion-item-thought-process") && (
+        <AccordionItem value="accordion-item-thought-process">
+          <AccordionTrigger
+            disabled={
+              currentStep < sectionToIndex("accordion-item-thought-process")
+            }
+          >
+            <h2>3. Explain Thought Process</h2>
+          </AccordionTrigger>
+          <ThoughtProcessSection
+            problem={problem}
+            onNext={() => openNextSection("accordion-item-thought-process")}
+            isCurrentStep={
+              currentStep === sectionToIndex("accordion-item-thought-process")
+            }
+          />
+        </AccordionItem>
+      )}
+      {currentStep >= sectionToIndex("accordion-item-pseudocode") && (
+        <AccordionItem value="accordion-item-pseudocode">
+          <AccordionTrigger
+            disabled={currentStep < sectionToIndex("accordion-item-pseudocode")}
+          >
+            <h2>4. Draft Pseudocode</h2>
+          </AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-4 text-balance">
+            <p>Placeholder</p>
+          </AccordionContent>
+        </AccordionItem>
+      )}
+      {currentStep >= sectionToIndex("accordion-item-implementation") && (
+        <AccordionItem value="accordion-item-implementation">
+          <AccordionTrigger
+            disabled={
+              currentStep < sectionToIndex("accordion-item-implementation")
+            }
+          >
+            <h2>5. Implement Code</h2>
+          </AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-4 text-balance">
+            <p>Placeholder</p>
+          </AccordionContent>
+        </AccordionItem>
+      )}
+      {currentStep >= sectionToIndex("accordion-item-complexity-analysis") && (
+        <AccordionItem value="accordion-item-complexity-analysis">
+          <AccordionTrigger
+            disabled={
+              currentStep < sectionToIndex("accordion-item-complexity-analysis")
+            }
+          >
+            <h2>6. Analyze Complexity</h2>
+          </AccordionTrigger>
+          <AccordionContent className="flex flex-col gap-4 text-balance">
+            <p>Placeholder</p>
+          </AccordionContent>
+        </AccordionItem>
+      )}
     </Accordion>
   );
 }

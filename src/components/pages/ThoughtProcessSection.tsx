@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 import { PracticeProblem } from "@/types/practice";
 
-interface ClarificationSectionProps {
+interface ThoughtProcessSectionProps {
   problem: PracticeProblem | null;
   onNext: () => void;
   isCurrentStep: boolean;
 }
 
-export function ClarificationSection({
+export function ThoughtProcessSection({
   problem,
   onNext,
   isCurrentStep,
-}: ClarificationSectionProps) {
+}: ThoughtProcessSectionProps) {
   const [messages, setMessages] = useState<Message[]>([]);
 
   // TODO: Implement actual AI response logic
@@ -41,9 +41,10 @@ export function ClarificationSection({
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
       <p className="text-muted-foreground col-span-full text-xs">
-        Ensure that you fully understand the requirements and edge cases of the
-        problem before diving into the solution. It may even help to reiterate
-        the problem in your own words.
+        Share your thought process on how you would approach solving the
+        problem. You may want to outline your strategy, potential edge cases,
+        and any initial ideas you have. You may also ask for minor hints to
+        guide your thinking.
       </p>
       <ChatBox messages={messages} onSend={handleSend} />
 
