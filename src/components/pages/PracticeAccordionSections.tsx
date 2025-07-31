@@ -4,7 +4,6 @@ import { useState } from "react";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import {
   Accordion,
-  AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
@@ -14,6 +13,7 @@ import { ClarificationSection } from "./ClarificationSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
 import { PseudocodeSection } from "./PseudocodeSection";
+import { SectionLabel } from "./SectionLabel";
 import { ThoughtProcessSection } from "./ThoughtProcessSection";
 
 interface PracticeAccordionSectionsProps {
@@ -62,7 +62,12 @@ export function PracticeAccordionSections({
     >
       <AccordionItem value="accordion-item-problem-selection">
         <AccordionTrigger>
-          <h2>1. Select Problem</h2>
+          <SectionLabel
+            label="Select Problem"
+            isCurrentStep={
+              currentStep === sectionToIndex("accordion-item-problem-selection")
+            }
+          />
         </AccordionTrigger>
         <ProblemSelectSection
           problems={problems}
@@ -80,7 +85,12 @@ export function PracticeAccordionSections({
               currentStep < sectionToIndex("accordion-item-clarification")
             }
           >
-            <h2>2. Ask Clarifying Questions</h2>
+            <SectionLabel
+              label="Clarify Problem"
+              isCurrentStep={
+                currentStep === sectionToIndex("accordion-item-clarification")
+              }
+            />
           </AccordionTrigger>
           <ClarificationSection
             problem={problem}
@@ -98,7 +108,12 @@ export function PracticeAccordionSections({
               currentStep < sectionToIndex("accordion-item-thought-process")
             }
           >
-            <h2>3. Explain Thought Process</h2>
+            <SectionLabel
+              label="Explain Thought Process"
+              isCurrentStep={
+                currentStep === sectionToIndex("accordion-item-thought-process")
+              }
+            />
           </AccordionTrigger>
           <ThoughtProcessSection
             problem={problem}
@@ -114,7 +129,12 @@ export function PracticeAccordionSections({
           <AccordionTrigger
             disabled={currentStep < sectionToIndex("accordion-item-pseudocode")}
           >
-            <h2>4. Draft Pseudocode</h2>
+            <SectionLabel
+              label="Develop Pseudocode"
+              isCurrentStep={
+                currentStep === sectionToIndex("accordion-item-pseudocode")
+              }
+            />
           </AccordionTrigger>
           <PseudocodeSection
             problem={problem}
@@ -132,7 +152,12 @@ export function PracticeAccordionSections({
               currentStep < sectionToIndex("accordion-item-implementation")
             }
           >
-            <h2>5. Implement Code</h2>
+            <SectionLabel
+              label="Implement Code"
+              isCurrentStep={
+                currentStep === sectionToIndex("accordion-item-implementation")
+              }
+            />
           </AccordionTrigger>
           <ImplementationSection
             problem={problem}
@@ -150,7 +175,13 @@ export function PracticeAccordionSections({
               currentStep < sectionToIndex("accordion-item-complexity-analysis")
             }
           >
-            <h2>6. Analyze Complexity</h2>
+            <SectionLabel
+              label="Analyze Complexity"
+              isCurrentStep={
+                currentStep ===
+                sectionToIndex("accordion-item-complexity-analysis")
+              }
+            />
           </AccordionTrigger>
           <ComplexityAnalysisSection
             problem={problem}
