@@ -11,6 +11,9 @@ import {
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ClarificationSection } from "./ClarificationSection";
+import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
+import { ImplementationSection } from "./ImplementationSection";
+import { PseudocodeSection } from "./PseudocodeSection";
 import { ThoughtProcessSection } from "./ThoughtProcessSection";
 
 interface PracticeAccordionSectionsProps {
@@ -113,9 +116,13 @@ export function PracticeAccordionSections({
           >
             <h2>4. Draft Pseudocode</h2>
           </AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4 text-balance">
-            <p>Placeholder</p>
-          </AccordionContent>
+          <PseudocodeSection
+            problem={problem}
+            onNext={() => openNextSection("accordion-item-pseudocode")}
+            isCurrentStep={
+              currentStep === sectionToIndex("accordion-item-pseudocode")
+            }
+          />
         </AccordionItem>
       )}
       {currentStep >= sectionToIndex("accordion-item-implementation") && (
@@ -127,9 +134,13 @@ export function PracticeAccordionSections({
           >
             <h2>5. Implement Code</h2>
           </AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4 text-balance">
-            <p>Placeholder</p>
-          </AccordionContent>
+          <ImplementationSection
+            problem={problem}
+            onNext={() => openNextSection("accordion-item-implementation")}
+            isCurrentStep={
+              currentStep === sectionToIndex("accordion-item-implementation")
+            }
+          />
         </AccordionItem>
       )}
       {currentStep >= sectionToIndex("accordion-item-complexity-analysis") && (
@@ -141,9 +152,14 @@ export function PracticeAccordionSections({
           >
             <h2>6. Analyze Complexity</h2>
           </AccordionTrigger>
-          <AccordionContent className="flex flex-col gap-4 text-balance">
-            <p>Placeholder</p>
-          </AccordionContent>
+          <ComplexityAnalysisSection
+            problem={problem}
+            onNext={() => openNextSection("accordion-item-complexity-analysis")}
+            isCurrentStep={
+              currentStep ===
+              sectionToIndex("accordion-item-complexity-analysis")
+            }
+          />
         </AccordionItem>
       )}
     </Accordion>
