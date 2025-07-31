@@ -36,16 +36,20 @@ export function PseudocodeSection({
         Consider edge cases and how you would handle them in your pseudocode.
       </p>
 
-      <ResizablePanelGroup direction="horizontal" className="w-full gap-1">
+      <ResizablePanelGroup direction="horizontal" className="w-full">
         <ResizablePanel defaultSize={50}>
           <div className="flex h-60 items-center justify-center">
-            <PseudocodeEditor value={pseudocode} onChange={setPseudocode} />
+            <div className="bg-background h-full w-full rounded-l-md border border-r-0 p-2 text-sm">
+              <PseudocodeEditor value={pseudocode} onChange={setPseudocode} />
+            </div>
           </div>
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel defaultSize={50}>
           <div className="flex h-full w-full items-center justify-center">
-            <ChatBox messages={messages} onSend={() => {}} />
+            <div className="bg-background h-full w-full rounded-r-md border border-l-0 p-2 text-sm">
+              <ChatBox messages={messages} onSend={() => {}} />
+            </div>
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

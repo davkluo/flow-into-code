@@ -13,17 +13,15 @@ export function PseudocodeEditor({ value, onChange }: PseudocodeEditorProps) {
   const { resolvedTheme } = useTheme();
 
   return (
-    <div className="bg-background h-full w-full rounded-md border p-2 text-sm">
-      <CodeMirror
-        value={value}
-        height="100%"
-        theme={resolvedTheme === "dark" ? "dark" : "light"}
-        basicSetup={{
-          tabSize: 2,
-        }}
-        extensions={[EditorView.lineWrapping]}
-        onChange={onChange}
-      />
-    </div>
+    <CodeMirror
+      value={value}
+      height="100%"
+      theme={resolvedTheme === "dark" ? "dark" : "light"}
+      basicSetup={{
+        tabSize: 2,
+      }}
+      extensions={[EditorView.lineWrapping]}
+      onChange={onChange}
+    />
   );
 }

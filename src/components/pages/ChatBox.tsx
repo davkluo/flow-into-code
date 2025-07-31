@@ -44,7 +44,7 @@ export function ChatBox({
       <ScrollArea>
         <div
           ref={scrollAreaRef}
-          className="flex max-h-60 flex-col gap-2 overflow-y-auto"
+          className="flex max-h-60 min-h-20 flex-col gap-2 overflow-y-auto"
         >
           {messages.map((msg, i) => (
             <div
@@ -62,26 +62,34 @@ export function ChatBox({
         </div>
       </ScrollArea>
 
-      <div className="bg-background py-3">
+      <div className="group focus-within:border-ring border-input relative flex flex-col rounded-md border focus-within:border">
         <Textarea
           ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          rows={2}
           placeholder={placeholder}
-          className=""
+          className="resize-none rounded-b-none border-0 shadow-none focus-within:border-0 focus-visible:ring-0"
         />
-        <div className="mt-3 text-right">
+
+        <div
+          className="dark:bg-input/30 flex h-fit cursor-text items-end justify-between rounded-md rounded-t-none bg-transparent p-2"
+          onClick={() => textareaRef.current?.focus()}
+        >
+          <div className="text-muted-foreground text-xs opacity-70">
+            Description or hint
+          </div>
+
           <Button
             disabled={!input.trim()}
             size="sm"
             onClick={() => {
-              if (input.trim() !== "") {
+              if (input.trim()) {
                 onSend(input.trim());
                 setInput("");
               }
             }}
+            className="cursor-auto justify-self-end"
           >
             Send
             <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
@@ -95,6 +103,40 @@ export function ChatBox({
           </Button>
         </div>
       </div>
+
+      {/* <div className="group flex flex-col">
+        <Textarea
+          ref={textareaRef}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          className="resize-none rounded-b-none border-b-0 focus-visible:border-b-0 focus-visible:ring-0"
+        />
+        <div className="border-input bg-input pointer-events-none right-2 bottom-2 flex items-center rounded-md rounded-t-none border">
+          <Button
+            disabled={!input.trim()}
+            size="sm"
+            onClick={() => {
+              if (input.trim() !== "") {
+                onSend(input.trim());
+                setInput("");
+              }
+            }}
+            className="pointer-events-auto"
+          >
+            Send
+            <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
+              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
+                ⌘
+              </kbd>
+              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
+                ↵
+              </kbd>
+            </span>
+          </Button>
+        </div>
+      </div> */}
     </div>
   );
 }
