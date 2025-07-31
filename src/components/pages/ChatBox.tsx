@@ -40,7 +40,7 @@ export function ChatBox({
   }, [messages]);
 
   return (
-    <div className="flex h-full flex-col rounded-md">
+    <div className="flex h-full w-full flex-col rounded-md">
       <ScrollArea>
         <div
           ref={scrollAreaRef}
