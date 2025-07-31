@@ -1,6 +1,7 @@
 "use client";
 
 import { Menu } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
@@ -44,8 +45,9 @@ interface MenuItem {
 const Navbar = () => {
   // TODO: Insert useAuth hook here for authentication state
 
-  const { theme, resolvedTheme } = useTheme();
-  const currentTheme = resolvedTheme ?? theme;
+  const [mounted, setMounted] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const currentTheme = mounted ? resolvedTheme : "dark";
 
   const publicMenu: MenuItem[] = [
     {
@@ -64,6 +66,11 @@ const Navbar = () => {
     },
   ];
   const navbarMenu = [...publicMenu, ...authenticatedMenu];
+
+  useEffect(() => {
+    // Ensure the theme is mounted before rendering
+    setMounted(true);
+  }, []);
 
   return (
     <nav>
