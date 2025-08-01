@@ -5,16 +5,21 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Message } from "@/types/chat";
+
+interface ChatBoxProps {
+  messages: Message[];
+  onSend: (message: string) => void;
+  layoutMode?: "grow" | "fixed";
+  placeholder?: string;
+}
 
 export function ChatBox({
   messages,
   onSend,
+  layoutMode = "grow",
   placeholder = "Type your message. Press ⌘+Enter to send.",
-}: {
-  messages: { role: "user" | "ai"; content: string }[];
-  onSend: (message: string) => void;
-  placeholder?: string;
-}) {
+}: ChatBoxProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -33,19 +38,28 @@ export function ChatBox({
   );
 
   useEffect(() => {
-    const el = scrollAreaRef.current;
-    if (el) {
-      el.scrollTop = el.scrollHeight;
-    }
+    scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   return (
-    <div className="flex h-full w-full flex-col rounded-md">
-      <ScrollArea>
-        <div
-          ref={scrollAreaRef}
-          className="flex max-h-60 min-h-20 flex-col gap-2 overflow-y-auto"
-        >
+    <div
+      className={cn(
+        "flex w-full flex-col gap-4 rounded-md",
+        layoutMode === "fixed" && "h-full",
+      )}
+    >
+      <ScrollArea
+        className={cn(
+          "min-h-20 overflow-auto",
+          layoutMode === "fixed" ? "flex-grow" : "max-h-[40vh]",
+        )}
+      >
+        <div className="flex flex-col gap-2">
+          {messages.length === 0 && (
+            <div className="text-muted-foreground text-sm italic opacity-70">
+              Start chatting with the assistant...
+            </div>
+          )}
           {messages.map((msg, i) => (
             <div
               key={`${i}-${msg.content.slice(0, 10)}`}
@@ -60,6 +74,8 @@ export function ChatBox({
             </div>
           ))}
         </div>
+
+        <div ref={scrollAreaRef} />
       </ScrollArea>
 
       <div className="group focus-within:border-ring border-input relative flex flex-col rounded-md border focus-within:border">
@@ -103,40 +119,6 @@ export function ChatBox({
           </Button>
         </div>
       </div>
-
-      {/* <div className="group flex flex-col">
-        <Textarea
-          ref={textareaRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          className="resize-none rounded-b-none border-b-0 focus-visible:border-b-0 focus-visible:ring-0"
-        />
-        <div className="border-input bg-input pointer-events-none right-2 bottom-2 flex items-center rounded-md rounded-t-none border">
-          <Button
-            disabled={!input.trim()}
-            size="sm"
-            onClick={() => {
-              if (input.trim() !== "") {
-                onSend(input.trim());
-                setInput("");
-              }
-            }}
-            className="pointer-events-auto"
-          >
-            Send
-            <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
-              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
-                ⌘
-              </kbd>
-              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
-                ↵
-              </kbd>
-            </span>
-          </Button>
-        </div>
-      </div> */}
     </div>
   );
 }

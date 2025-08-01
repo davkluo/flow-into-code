@@ -45,7 +45,7 @@ export function ClarificationSection({
         problem before diving into the solution. It may even help to reiterate
         the problem in your own words.
       </p>
-      <ChatBox messages={messages} onSend={handleSend} />
+      <ChatBox messages={messages} onSend={handleSend} layoutMode="grow" />
 
       <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
         Next
