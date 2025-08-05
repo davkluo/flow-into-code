@@ -12,6 +12,8 @@ interface ChatBoxProps {
   onSend: (message: string) => void;
   layoutMode?: "grow" | "fixed";
   placeholder?: string;
+  inputDescription?: string;
+  emptyStateMessage?: string;
 }
 
 export function ChatBox({
@@ -19,6 +21,8 @@ export function ChatBox({
   onSend,
   layoutMode = "grow",
   placeholder = "Type your message. Press ⌘+Enter to send.",
+  inputDescription = "",
+  emptyStateMessage = "Your conversation with the mock interview assistant will appear here.",
 }: ChatBoxProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -50,29 +54,30 @@ export function ChatBox({
     >
       <ScrollArea
         className={cn(
-          "min-h-20 overflow-auto",
+          "overflow-auto",
           layoutMode === "fixed" ? "flex-grow" : "max-h-[40vh]",
         )}
       >
-        <div className="flex flex-col gap-2">
-          {messages.length === 0 && (
-            <div className="text-muted-foreground text-sm italic opacity-70">
-              Start chatting with the assistant...
+        <div className="mt-4 flex flex-col gap-2">
+          {messages.length === 0 ? (
+            <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
+              {emptyStateMessage}
             </div>
+          ) : (
+            messages.map((msg, i) => (
+              <div
+                key={`${i}-${msg.content.slice(0, 10)}`}
+                className={cn(
+                  "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
+                  msg.role === "user"
+                    ? "bg-primary text-primary-foreground ml-auto"
+                    : "bg-muted-foreground/10 text-muted-foreground mr-auto",
+                )}
+              >
+                {msg.content}
+              </div>
+            ))
           )}
-          {messages.map((msg, i) => (
-            <div
-              key={`${i}-${msg.content.slice(0, 10)}`}
-              className={cn(
-                "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
-                msg.role === "user"
-                  ? "bg-primary text-primary-foreground ml-auto"
-                  : "bg-muted-foreground/10 text-muted-foreground mr-auto",
-              )}
-            >
-              {msg.content}
-            </div>
-          ))}
         </div>
 
         <div ref={scrollAreaRef} />
@@ -93,7 +98,7 @@ export function ChatBox({
           onClick={() => textareaRef.current?.focus()}
         >
           <div className="text-muted-foreground text-xs opacity-70">
-            Description or hint
+            {inputDescription}
           </div>
 
           <Button

@@ -266,6 +266,7 @@ export function ProblemSelectSection({
                   ? !selectedProblem || !problemDetails
                   : !customProblem)
               }
+              className="w-full"
             >
               {isCurrentStep ? "Begin Problem" : "In Progress"}
               {isCurrentStep && <MoveRight className="h-4 w-4 pt-0.5" />}
@@ -315,6 +316,7 @@ export function ProblemSelectSection({
                   startTimer();
                   onNext();
                 }}
+                autoFocus
               >
                 Begin
               </AlertDialogAction>
