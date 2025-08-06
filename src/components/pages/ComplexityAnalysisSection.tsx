@@ -29,7 +29,7 @@ export function ComplexityAnalysisSection({
 
     // Mock AI response
     const aiResponse: Message = {
-      role: "ai",
+      role: "assistant",
       content: `Responding to: ${content}`,
     };
     // Simulate AI response after a short delay
@@ -46,7 +46,12 @@ export function ComplexityAnalysisSection({
         scenarios. You may also want to compare your solution with alternative
         approaches and their complexities.
       </p>
-      <ChatBox messages={messages} onSend={handleSend} layoutMode="grow" />
+      <ChatBox
+        location="complexity_analysis"
+        messages={messages}
+        onSend={handleSend}
+        layoutMode="grow"
+      />
 
       <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
         Next

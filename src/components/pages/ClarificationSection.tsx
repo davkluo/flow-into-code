@@ -4,11 +4,16 @@ import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import {
+  getProblemContext,
+  GLOBAL_PROMPT,
+  SECTION_PROMPTS,
+} from "@/lib/prompts";
 import { Message } from "@/types/chat";
 import { PracticeProblem } from "@/types/practice";
 
 interface ClarificationSectionProps {
-  problem: PracticeProblem | null;
+  problem: PracticeProblem;
   onNext: () => void;
   isCurrentStep: boolean;
 }
@@ -18,24 +23,32 @@ export function ClarificationSection({
   onNext,
   isCurrentStep,
 }: ClarificationSectionProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "system", content: GLOBAL_PROMPT.trim() },
+    { role: "system", content: getProblemContext(problem) },
+    { role: "system", content: SECTION_PROMPTS["clarification"] },
+  ]);
 
-  // TODO: Implement actual AI response logic
-  // Create context to send to AI
-  // Update context with response from AI
-  const handleSend = (content: string) => {
+  const handleSend = async (content: string) => {
     const newMessage: Message = { role: "user", content };
+    console.log(messages);
     setMessages((prev) => [...prev, newMessage]);
 
-    // Mock AI response
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        messages: [...messages, newMessage],
+      }),
+    });
+
+    const data = await res.json();
+
     const aiResponse: Message = {
-      role: "ai",
-      content: `Responding to: ${content}`,
+      role: "assistant",
+      content: data.message,
     };
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
+    setMessages((prev) => [...prev, aiResponse]);
   };
 
   return (
@@ -45,7 +58,12 @@ export function ClarificationSection({
         problem before diving into the solution. It may even help to reiterate
         the problem in your own words.
       </p>
-      <ChatBox messages={messages} onSend={handleSend} layoutMode="grow" />
+      <ChatBox
+        location="clarification"
+        messages={messages}
+        onSend={handleSend}
+        layoutMode="grow"
+      />
 
       <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
         Next

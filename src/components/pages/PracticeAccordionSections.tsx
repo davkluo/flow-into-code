@@ -48,7 +48,7 @@ export function PracticeAccordionSections({
       const newOpenSections = [
         ...prev.filter((section) => section !== current),
       ];
-      if (currentIndex < prev.length - 1) {
+      if (currentIndex < sections.length - 1) {
         const next = sections[currentIndex + 1];
         newOpenSections.push(next);
       }
@@ -84,29 +84,30 @@ export function PracticeAccordionSections({
           onProblemStart={setProblem}
         />
       </AccordionItem>
-      {currentStep >= sectionToIndex("accordion-item-clarification") && (
-        <AccordionItem value="accordion-item-clarification">
-          <AccordionTrigger
-            disabled={
-              currentStep < sectionToIndex("accordion-item-clarification")
-            }
-          >
-            <SectionLabel
-              label="Clarify Problem"
+      {problem &&
+        currentStep >= sectionToIndex("accordion-item-clarification") && (
+          <AccordionItem value="accordion-item-clarification">
+            <AccordionTrigger
+              disabled={
+                currentStep < sectionToIndex("accordion-item-clarification")
+              }
+            >
+              <SectionLabel
+                label="Clarify Problem"
+                isCurrentStep={
+                  currentStep === sectionToIndex("accordion-item-clarification")
+                }
+              />
+            </AccordionTrigger>
+            <ClarificationSection
+              problem={problem}
+              onNext={() => openNextSection("accordion-item-clarification")}
               isCurrentStep={
                 currentStep === sectionToIndex("accordion-item-clarification")
               }
             />
-          </AccordionTrigger>
-          <ClarificationSection
-            problem={problem}
-            onNext={() => openNextSection("accordion-item-clarification")}
-            isCurrentStep={
-              currentStep === sectionToIndex("accordion-item-clarification")
-            }
-          />
-        </AccordionItem>
-      )}
+          </AccordionItem>
+        )}
       {currentStep >= sectionToIndex("accordion-item-thought-process") && (
         <AccordionItem value="accordion-item-thought-process">
           <AccordionTrigger

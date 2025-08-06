@@ -8,6 +8,12 @@ import { cn } from "@/lib/utils";
 import { Message } from "@/types/chat";
 
 interface ChatBoxProps {
+  location:
+    | "clarification"
+    | "thought_process"
+    | "pseudocode"
+    | "implementation"
+    | "complexity_analysis";
   messages: Message[];
   onSend: (message: string) => void;
   layoutMode?: "grow" | "fixed";
@@ -45,6 +51,8 @@ export function ChatBox({
     scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const messagesLength = messages.filter((msg) => msg.role !== "system").length;
+
   return (
     <div
       className={cn(
@@ -59,24 +67,28 @@ export function ChatBox({
         )}
       >
         <div className="mt-4 flex flex-col gap-2">
-          {messages.length === 0 ? (
+          {messagesLength === 0 ? (
             <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
               {emptyStateMessage}
             </div>
           ) : (
-            messages.map((msg, i) => (
-              <div
-                key={`${i}-${msg.content.slice(0, 10)}`}
-                className={cn(
-                  "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground ml-auto"
-                    : "bg-muted-foreground/10 text-muted-foreground mr-auto",
-                )}
-              >
-                {msg.content}
-              </div>
-            ))
+            messages.map(
+              (msg, i) =>
+                msg.role !== "system" && (
+                  <div
+                    key={`${location}-${i}`}
+                    className={cn(
+                      "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
+                      msg.role === "user" &&
+                        "bg-primary text-primary-foreground ml-auto",
+                      msg.role === "assistant" &&
+                        "bg-muted-foreground/10 text-muted-foreground mr-auto",
+                    )}
+                  >
+                    {msg.content}
+                  </div>
+                ),
+            )
           )}
         </div>
 

@@ -36,7 +36,7 @@ export function ImplementationSection({
 
     // Mock AI response
     const aiResponse: Message = {
-      role: "ai",
+      role: "assistant",
       content: `Responding to: ${content}`,
     };
     // Simulate AI response after a short delay
@@ -68,6 +68,7 @@ export function ImplementationSection({
           <div className="flex h-full min-h-0 w-full items-center justify-center">
             <div className="bg-background h-full min-h-0 w-full rounded-r-md border border-l-0 p-2 text-sm">
               <ChatBox
+                location="implementation"
                 messages={messages}
                 onSend={handleSend}
                 layoutMode="fixed"

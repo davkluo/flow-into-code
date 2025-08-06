@@ -29,7 +29,7 @@ export function ThoughtProcessSection({
 
     // Mock AI response
     const aiResponse: Message = {
-      role: "ai",
+      role: "assistant",
       content: `Responding to: ${content}`,
     };
     // Simulate AI response after a short delay
@@ -46,7 +46,11 @@ export function ThoughtProcessSection({
         and any initial ideas you have. You may also ask for minor hints to
         guide your thinking.
       </p>
-      <ChatBox messages={messages} onSend={handleSend} />
+      <ChatBox
+        location="thought_process"
+        messages={messages}
+        onSend={handleSend}
+      />
 
       <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
         Next
