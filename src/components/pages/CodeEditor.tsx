@@ -55,7 +55,7 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
         value={language}
         onValueChange={setLanguage as (value: string) => void}
       >
-        <SelectTrigger className="absolute right-2 bottom-2 z-10 h-fit w-fit text-xs">
+        <SelectTrigger className="absolute right-2 bottom-2 z-10 h-fit w-fit text-xs backdrop-blur-sm">
           <SelectValue placeholder="hello" />
         </SelectTrigger>
         <SelectContent>

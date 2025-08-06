@@ -42,13 +42,19 @@ export function PracticeAccordionSections({
 
   const openNextSection = (current: string) => {
     const currentIndex = sectionToIndex(current);
-    if (currentIndex === -1 || currentIndex === sections.length - 1) return;
+    if (currentIndex === -1) return;
 
-    const next = sections[currentIndex + 1];
-    setOpenSections((prev) => [
-      ...prev.filter((section) => section !== current),
-      next,
-    ]);
+    setOpenSections((prev) => {
+      const newOpenSections = [
+        ...prev.filter((section) => section !== current),
+      ];
+      if (currentIndex < prev.length - 1) {
+        const next = sections[currentIndex + 1];
+        newOpenSections.push(next);
+      }
+
+      return newOpenSections;
+    });
 
     setCurrentStep((prevStep) => prevStep + 1);
   };
