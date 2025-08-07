@@ -1,5 +1,3 @@
-import { PracticeProblem } from "@/types/practice";
-
 export const GLOBAL_PROMPT = `
 You are an interviewer in a simulated coding interview inside the FlowIntoCode app.
 The user is the candidate. Your role is to guide them through the stages of an interview: clarifying the problem, explaining their thought process, writing pseudocode, implementing a solution, and analyzing complexity.
@@ -60,12 +58,4 @@ export const SECTION_PROMPTS = {
   "pseudocode": PSEUDOCODE_PROMPT,
   "implementation": IMPLEMENTATION_PROMPT,
   "complexity_analysis": COMPLEXITY_ANALYSIS_PROMPT,
-};
-
-export const getProblemContext = (problem: PracticeProblem): string => {
-  if ("title" in problem.problem) {
-    return `Problem: ${problem.problem.title} (LeetCode #${problem.problem.id})\n${problem.problem.details.content}`;
-  } else {
-    return `Custom Problem:\n${problem.problem.description}`;
-  }
 };

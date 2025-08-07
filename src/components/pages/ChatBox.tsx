@@ -23,6 +23,7 @@ interface ChatBoxProps {
 }
 
 export function ChatBox({
+  location,
   messages,
   onSend,
   layoutMode = "grow",

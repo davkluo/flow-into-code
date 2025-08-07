@@ -1,56 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import {
-  getProblemContext,
-  GLOBAL_PROMPT,
-  SECTION_PROMPTS,
-} from "@/lib/prompts";
 import { Message } from "@/types/chat";
-import { PracticeProblem } from "@/types/practice";
 
 interface ClarificationSectionProps {
-  problem: PracticeProblem;
+  messages: Message[];
+  onSend: (content: string) => void;
   onNext: () => void;
   isCurrentStep: boolean;
 }
 
 export function ClarificationSection({
-  problem,
+  messages,
+  onSend,
   onNext,
   isCurrentStep,
 }: ClarificationSectionProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { role: "system", content: GLOBAL_PROMPT.trim() },
-    { role: "system", content: getProblemContext(problem) },
-    { role: "system", content: SECTION_PROMPTS["clarification"] },
-  ]);
-
-  const handleSend = async (content: string) => {
-    const newMessage: Message = { role: "user", content };
-    console.log(messages);
-    setMessages((prev) => [...prev, newMessage]);
-
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        messages: [...messages, newMessage],
-      }),
-    });
-
-    const data = await res.json();
-
-    const aiResponse: Message = {
-      role: "assistant",
-      content: data.message,
-    };
-    setMessages((prev) => [...prev, aiResponse]);
-  };
-
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
       <p className="text-muted-foreground col-span-full text-xs">
@@ -61,7 +28,7 @@ export function ClarificationSection({
       <ChatBox
         location="clarification"
         messages={messages}
-        onSend={handleSend}
+        onSend={onSend}
         layoutMode="grow"
       />
 

@@ -7,6 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useLLM } from "@/hooks/useLLM";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ClarificationSection } from "./ClarificationSection";
@@ -39,6 +40,8 @@ export function PracticeAccordionSections({
   const [openSections, setOpenSections] = useState<string[]>([sections[0]]);
   const [problem, setProblem] = useState<PracticeProblem | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+
+  const llm = useLLM(problem);
 
   const openNextSection = (current: string) => {
     const currentIndex = sectionToIndex(current);
@@ -100,7 +103,10 @@ export function PracticeAccordionSections({
               />
             </AccordionTrigger>
             <ClarificationSection
-              problem={problem}
+              messages={llm.getMessages("clarification")}
+              onSend={(content) => {
+                llm.sendMessage("clarification", content);
+              }}
               onNext={() => openNextSection("accordion-item-clarification")}
               isCurrentStep={
                 currentStep === sectionToIndex("accordion-item-clarification")
