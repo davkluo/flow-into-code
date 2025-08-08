@@ -7,7 +7,7 @@ import { Message } from "@/types/chat";
 
 interface ClarificationSectionProps {
   messages: Message[];
-  onSend: (content: string) => void;
+  onSend: (content: string) => Promise<void>;
   onNext: () => void;
   isCurrentStep: boolean;
 }

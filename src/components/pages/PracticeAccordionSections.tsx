@@ -104,9 +104,7 @@ export function PracticeAccordionSections({
             </AccordionTrigger>
             <ClarificationSection
               messages={llm.getMessages("clarification")}
-              onSend={(content) => {
-                llm.sendMessage("clarification", content);
-              }}
+              onSend={(content) => llm.sendMessage("clarification", content)}
               onNext={() => openNextSection("accordion-item-clarification")}
               isCurrentStep={
                 currentStep === sectionToIndex("accordion-item-clarification")

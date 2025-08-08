@@ -15,7 +15,7 @@ interface ChatBoxProps {
     | "implementation"
     | "complexity_analysis";
   messages: Message[];
-  onSend: (message: string) => void;
+  onSend: (message: string) => Promise<void>;
   layoutMode?: "grow" | "fixed";
   placeholder?: string;
   inputDescription?: string;
@@ -48,11 +48,20 @@ export function ChatBox({
     [input, onSend],
   );
 
+  const handleSend = async () => {
+    if (!input.trim()) return;
+    const message = input.trim();
+    setInput("");
+    await onSend(message);
+  };
+
   useEffect(() => {
     scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const messagesLength = messages.filter((msg) => msg.role !== "system").length;
+  const showLoadingBubble =
+    messagesLength > 0 && messages[messagesLength - 1].role === "user";
 
   return (
     <div
@@ -73,23 +82,30 @@ export function ChatBox({
               {emptyStateMessage}
             </div>
           ) : (
-            messages.map(
-              (msg, i) =>
-                msg.role !== "system" && (
-                  <div
-                    key={`${location}-${i}`}
-                    className={cn(
-                      "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
-                      msg.role === "user" &&
-                        "bg-primary text-primary-foreground ml-auto",
-                      msg.role === "assistant" &&
-                        "bg-muted-foreground/10 text-muted-foreground mr-auto",
-                    )}
-                  >
-                    {msg.content}
-                  </div>
-                ),
-            )
+            <>
+              {messages.map(
+                (msg, i) =>
+                  msg.role !== "system" && (
+                    <div
+                      key={`${location}-${i}`}
+                      className={cn(
+                        "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
+                        msg.role === "user" &&
+                          "bg-primary text-primary-foreground ml-auto",
+                        msg.role === "assistant" &&
+                          "bg-muted-foreground/10 text-muted-foreground mr-auto",
+                      )}
+                    >
+                      {msg.content}
+                    </div>
+                  ),
+              )}
+              {showLoadingBubble && (
+                <div className="bg-muted-foreground/10 text-muted-foreground w-fit rounded-xl px-3 py-2 text-sm">
+                  <span className="animate-pulse">...</span>
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -117,12 +133,7 @@ export function ChatBox({
           <Button
             disabled={!input.trim()}
             size="sm"
-            onClick={() => {
-              if (input.trim()) {
-                onSend(input.trim());
-                setInput("");
-              }
-            }}
+            onClick={handleSend}
             className="cursor-auto justify-self-end"
           >
             Send
