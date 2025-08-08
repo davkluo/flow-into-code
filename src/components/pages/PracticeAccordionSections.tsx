@@ -21,6 +21,7 @@ interface PracticeAccordionSectionsProps {
   problems: LCProblem[];
 }
 
+// TODO: Create an enum to consolidate logic for section names
 const sections = [
   "accordion-item-problem-selection",
   "accordion-item-clarification",
@@ -87,122 +88,140 @@ export function PracticeAccordionSections({
           onProblemStart={setProblem}
         />
       </AccordionItem>
-      {problem &&
-        currentStep >= sectionToIndex("accordion-item-clarification") && (
-          <AccordionItem value="accordion-item-clarification">
-            <AccordionTrigger
-              disabled={
-                currentStep < sectionToIndex("accordion-item-clarification")
-              }
-            >
-              <SectionLabel
-                label="Clarify Problem"
+      {problem && (
+        <>
+          {currentStep >= sectionToIndex("accordion-item-clarification") && (
+            <AccordionItem value="accordion-item-clarification">
+              <AccordionTrigger
+                disabled={
+                  currentStep < sectionToIndex("accordion-item-clarification")
+                }
+              >
+                <SectionLabel
+                  label="Clarify Problem"
+                  isCurrentStep={
+                    currentStep ===
+                    sectionToIndex("accordion-item-clarification")
+                  }
+                />
+              </AccordionTrigger>
+              <ClarificationSection
+                messages={llm.getMessages("clarification")}
+                onSend={(content) => llm.sendMessage("clarification", content)}
+                onNext={() => openNextSection("accordion-item-clarification")}
                 isCurrentStep={
                   currentStep === sectionToIndex("accordion-item-clarification")
                 }
               />
-            </AccordionTrigger>
-            <ClarificationSection
-              messages={llm.getMessages("clarification")}
-              onSend={(content) => llm.sendMessage("clarification", content)}
-              onNext={() => openNextSection("accordion-item-clarification")}
-              isCurrentStep={
-                currentStep === sectionToIndex("accordion-item-clarification")
-              }
-            />
-          </AccordionItem>
-        )}
-      {currentStep >= sectionToIndex("accordion-item-thought-process") && (
-        <AccordionItem value="accordion-item-thought-process">
-          <AccordionTrigger
-            disabled={
-              currentStep < sectionToIndex("accordion-item-thought-process")
-            }
-          >
-            <SectionLabel
-              label="Explain Thought Process"
-              isCurrentStep={
-                currentStep === sectionToIndex("accordion-item-thought-process")
-              }
-            />
-          </AccordionTrigger>
-          <ThoughtProcessSection
-            problem={problem}
-            onNext={() => openNextSection("accordion-item-thought-process")}
-            isCurrentStep={
-              currentStep === sectionToIndex("accordion-item-thought-process")
-            }
-          />
-        </AccordionItem>
-      )}
-      {currentStep >= sectionToIndex("accordion-item-pseudocode") && (
-        <AccordionItem value="accordion-item-pseudocode">
-          <AccordionTrigger
-            disabled={currentStep < sectionToIndex("accordion-item-pseudocode")}
-          >
-            <SectionLabel
-              label="Develop Pseudocode"
-              isCurrentStep={
-                currentStep === sectionToIndex("accordion-item-pseudocode")
-              }
-            />
-          </AccordionTrigger>
-          <PseudocodeSection
-            problem={problem}
-            onNext={() => openNextSection("accordion-item-pseudocode")}
-            isCurrentStep={
-              currentStep === sectionToIndex("accordion-item-pseudocode")
-            }
-          />
-        </AccordionItem>
-      )}
-      {currentStep >= sectionToIndex("accordion-item-implementation") && (
-        <AccordionItem value="accordion-item-implementation">
-          <AccordionTrigger
-            disabled={
-              currentStep < sectionToIndex("accordion-item-implementation")
-            }
-          >
-            <SectionLabel
-              label="Implement Code"
-              isCurrentStep={
-                currentStep === sectionToIndex("accordion-item-implementation")
-              }
-            />
-          </AccordionTrigger>
-          <ImplementationSection
-            problem={problem}
-            onNext={() => openNextSection("accordion-item-implementation")}
-            isCurrentStep={
-              currentStep === sectionToIndex("accordion-item-implementation")
-            }
-          />
-        </AccordionItem>
-      )}
-      {currentStep >= sectionToIndex("accordion-item-complexity-analysis") && (
-        <AccordionItem value="accordion-item-complexity-analysis">
-          <AccordionTrigger
-            disabled={
-              currentStep < sectionToIndex("accordion-item-complexity-analysis")
-            }
-          >
-            <SectionLabel
-              label="Analyze Complexity"
-              isCurrentStep={
-                currentStep ===
-                sectionToIndex("accordion-item-complexity-analysis")
-              }
-            />
-          </AccordionTrigger>
-          <ComplexityAnalysisSection
-            problem={problem}
-            onNext={() => openNextSection("accordion-item-complexity-analysis")}
-            isCurrentStep={
-              currentStep ===
-              sectionToIndex("accordion-item-complexity-analysis")
-            }
-          />
-        </AccordionItem>
+            </AccordionItem>
+          )}
+
+          {currentStep >= sectionToIndex("accordion-item-thought-process") && (
+            <AccordionItem value="accordion-item-thought-process">
+              <AccordionTrigger
+                disabled={
+                  currentStep < sectionToIndex("accordion-item-thought-process")
+                }
+              >
+                <SectionLabel
+                  label="Explain Thought Process"
+                  isCurrentStep={
+                    currentStep ===
+                    sectionToIndex("accordion-item-thought-process")
+                  }
+                />
+              </AccordionTrigger>
+              <ThoughtProcessSection
+                problem={problem}
+                onNext={() => openNextSection("accordion-item-thought-process")}
+                isCurrentStep={
+                  currentStep ===
+                  sectionToIndex("accordion-item-thought-process")
+                }
+              />
+            </AccordionItem>
+          )}
+
+          {currentStep >= sectionToIndex("accordion-item-pseudocode") && (
+            <AccordionItem value="accordion-item-pseudocode">
+              <AccordionTrigger
+                disabled={
+                  currentStep < sectionToIndex("accordion-item-pseudocode")
+                }
+              >
+                <SectionLabel
+                  label="Develop Pseudocode"
+                  isCurrentStep={
+                    currentStep === sectionToIndex("accordion-item-pseudocode")
+                  }
+                />
+              </AccordionTrigger>
+              <PseudocodeSection
+                problem={problem}
+                onNext={() => openNextSection("accordion-item-pseudocode")}
+                isCurrentStep={
+                  currentStep === sectionToIndex("accordion-item-pseudocode")
+                }
+              />
+            </AccordionItem>
+          )}
+
+          {currentStep >= sectionToIndex("accordion-item-implementation") && (
+            <AccordionItem value="accordion-item-implementation">
+              <AccordionTrigger
+                disabled={
+                  currentStep < sectionToIndex("accordion-item-implementation")
+                }
+              >
+                <SectionLabel
+                  label="Implement Code"
+                  isCurrentStep={
+                    currentStep ===
+                    sectionToIndex("accordion-item-implementation")
+                  }
+                />
+              </AccordionTrigger>
+              <ImplementationSection
+                problem={problem}
+                onNext={() => openNextSection("accordion-item-implementation")}
+                isCurrentStep={
+                  currentStep ===
+                  sectionToIndex("accordion-item-implementation")
+                }
+              />
+            </AccordionItem>
+          )}
+
+          {currentStep >=
+            sectionToIndex("accordion-item-complexity-analysis") && (
+            <AccordionItem value="accordion-item-complexity-analysis">
+              <AccordionTrigger
+                disabled={
+                  currentStep <
+                  sectionToIndex("accordion-item-complexity-analysis")
+                }
+              >
+                <SectionLabel
+                  label="Analyze Complexity"
+                  isCurrentStep={
+                    currentStep ===
+                    sectionToIndex("accordion-item-complexity-analysis")
+                  }
+                />
+              </AccordionTrigger>
+              <ComplexityAnalysisSection
+                problem={problem}
+                onNext={() =>
+                  openNextSection("accordion-item-complexity-analysis")
+                }
+                isCurrentStep={
+                  currentStep ===
+                  sectionToIndex("accordion-item-complexity-analysis")
+                }
+              />
+            </AccordionItem>
+          )}
+        </>
       )}
     </Accordion>
   );

@@ -1,28 +1,27 @@
 import { useState } from "react";
 import { SECTION_PROMPTS, GLOBAL_PROMPT } from "@/lib/prompts";
-import { getProblemContext } from "@/lib/buildContext";
+import { getArtifactsContext, getDistilledSummariesContext, getProblemContext } from "@/lib/buildContext";
 import { PracticeProblem } from "@/types/practice";
 import { Message } from "@/types/chat";
-import { capitalize } from "@/lib/formatting";
 
 export type SectionKey = keyof typeof SECTION_PROMPTS;
+
+type ArtifactKind = "code" | "pseudocode";
+type SectionArtifact = {
+  kind: ArtifactKind;
+  content: string;
+  language?: string;
+};
 
 type SectionChat = {
   messages: Message[];
   distilledSummary?: string;
+  artifact?: SectionArtifact;
 };
 
-type LLMState = {
+export type LLMState = {
   [section in SectionKey]?: SectionChat;
 };
-
-const SECTION_ORDER: SectionKey[] = [
-  "clarification",
-  "thought_process",
-  "pseudocode",
-  "implementation",
-  "complexity_analysis",
-];
 
 export function useLLM(problem: PracticeProblem | null) {
   const [llmState, setLlmState] = useState<LLMState>({});
@@ -33,7 +32,7 @@ export function useLLM(problem: PracticeProblem | null) {
       getMessages: () => [],
       getDistilledSummary: () => undefined,
       setDistilledSummary: () => { },
-      getAllDistilledSummaries: () => "",
+      setArtifact: () => { },
       llmState
     };
   }
@@ -71,17 +70,15 @@ export function useLLM(problem: PracticeProblem | null) {
     }));
   };
 
-  const getAllDistilledSummaries = (): string => {
-    const summaries = SECTION_ORDER
-      .map((section) => {
-        const summary = llmState[section]?.distilledSummary;
-        return summary ? `• ${capitalize(section)}: ${summary}` : null;
-      })
-      .filter(Boolean);
-
-    return summaries.length > 0
-      ? `Summary of conversations thus far:\n\n${summaries.join("\n\n")}`
-      : "";
+  const setArtifact = (section: SectionKey, artifact: SectionArtifact) => {
+    setLlmState(prev => ({
+      ...prev,
+      [section]: {
+        messages: prev[section]?.messages ?? [],
+        distilledSummary: prev[section]?.distilledSummary,
+        artifact,
+      },
+    }));
   };
 
   const sendMessage = async (
@@ -92,16 +89,19 @@ export function useLLM(problem: PracticeProblem | null) {
     messages.push({ role: "user", content: userMessage });
     updateSection(section, [...messages]);
 
-    const sharedContext = getAllDistilledSummaries();
+    const sharedContext = getDistilledSummariesContext(llmState);
+    const artifactsContext = getArtifactsContext(llmState);
 
     const payload: Message[] = [
       { role: "system", content: GLOBAL_PROMPT.trim() },
       { role: "system", content: getProblemContext(problem) },
       { role: "system", content: SECTION_PROMPTS[section] },
-      { role: "system", content: sharedContext }
     ];
     if (sharedContext) {
       payload.push({ role: "system", content: sharedContext });
+    }
+    if (artifactsContext) {
+      payload.push({ role: "system", content: artifactsContext });
     }
     payload.push(...messages);
 
@@ -126,6 +126,7 @@ export function useLLM(problem: PracticeProblem | null) {
     getMessages,
     getDistilledSummary,
     setDistilledSummary,
+    setArtifact,
     llmState,
   };
 }

@@ -14,7 +14,6 @@ interface ThoughtProcessSectionProps {
 }
 
 export function ThoughtProcessSection({
-  problem,
   onNext,
   isCurrentStep,
 }: ThoughtProcessSectionProps) {
