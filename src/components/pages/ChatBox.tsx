@@ -93,7 +93,7 @@ export function ChatBox({
                         msg.role === "user" &&
                           "bg-primary text-primary-foreground ml-auto",
                         msg.role === "assistant" &&
-                          "bg-muted-foreground/10 text-muted-foreground mr-auto",
+                          "bg-muted-foreground/10 mr-auto",
                       )}
                     >
                       {msg.content}
@@ -101,7 +101,7 @@ export function ChatBox({
                   ),
               )}
               {showLoadingBubble && (
-                <div className="bg-muted-foreground/10 text-muted-foreground w-fit rounded-xl px-3 py-2 text-sm">
+                <div className="bg-muted-foreground/10 w-fit rounded-xl px-3 py-2 text-sm font-bold">
                   <span className="animate-pulse">...</span>
                 </div>
               )}
