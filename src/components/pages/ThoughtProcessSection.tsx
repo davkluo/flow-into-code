@@ -1,42 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
-import { PracticeProblem } from "@/types/practice";
 
 interface ThoughtProcessSectionProps {
-  problem: PracticeProblem | null;
+  messages: Message[];
+  onSend: (content: string) => Promise<void>;
   onNext: () => void;
   isCurrentStep: boolean;
 }
 
 export function ThoughtProcessSection({
+  messages,
+  onSend,
   onNext,
   isCurrentStep,
 }: ThoughtProcessSectionProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  // TODO: Implement actual AI response logic
-  // Create context to send to AI
-  // Update context with response from AI
-  const handleSend = (content: string) => {
-    const newMessage: Message = { role: "user", content };
-    setMessages((prev) => [...prev, newMessage]);
-
-    // Mock AI response
-    const aiResponse: Message = {
-      role: "assistant",
-      content: `Responding to: ${content}`,
-    };
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
-  };
-
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
       <p className="text-muted-foreground col-span-full text-xs">
@@ -48,7 +29,8 @@ export function ThoughtProcessSection({
       <ChatBox
         location="thought_process"
         messages={messages}
-        onSend={handleSend}
+        onSend={onSend}
+        layoutMode="grow"
       />
 
       <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>

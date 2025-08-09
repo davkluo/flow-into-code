@@ -1,13 +1,8 @@
 "use client";
 
 import { autocompletion } from "@codemirror/autocomplete";
-import { cpp } from "@codemirror/lang-cpp";
-import { java } from "@codemirror/lang-java";
-import { javascript } from "@codemirror/lang-javascript";
-import { python } from "@codemirror/lang-python";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { useState } from "react";
 import { useTheme } from "next-themes";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -18,22 +13,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LanguageKey, languageOptions, languages } from "@/lib/codeMirror";
 
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
+  language: LanguageKey;
+  onLanguageChange: (language: LanguageKey) => void;
 }
 
-const languages = {
-  python: python(),
-  javascript: javascript({ typescript: true }),
-  cpp: cpp(),
-  java: java(),
-};
-
-export function CodeEditor({ value, onChange }: CodeEditorProps) {
+export function CodeEditor({
+  value,
+  onChange,
+  language,
+  onLanguageChange,
+}: CodeEditorProps) {
   const { resolvedTheme } = useTheme();
-  const [language, setLanguage] = useState<keyof typeof languages>("python");
 
   return (
     <ScrollArea className="relative h-full w-full">
@@ -51,19 +46,20 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
         ]}
         onChange={onChange}
       />
-      <Select
-        value={language}
-        onValueChange={setLanguage as (value: string) => void}
-      >
+      <Select value={language} onValueChange={onLanguageChange}>
         <SelectTrigger className="absolute right-2 bottom-2 z-10 h-fit w-fit text-xs backdrop-blur-sm">
           <SelectValue placeholder="hello" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value="python">Python</SelectItem>
-            <SelectItem value="javascript">JavaScript</SelectItem>
-            <SelectItem value="cpp">C++</SelectItem>
-            <SelectItem value="java">Java</SelectItem>
+            {Object.keys(languages).map((lang) => (
+              <SelectItem
+                key={`code-language-select-${lang}`}
+                value={lang as LanguageKey}
+              >
+                {languageOptions[lang as LanguageKey]}
+              </SelectItem>
+            ))}
           </SelectGroup>
         </SelectContent>
       </Select>{" "}

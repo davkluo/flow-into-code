@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import _ from "lodash";
+import { useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { LanguageKey } from "@/lib/codeMirror";
 import { Message } from "@/types/chat";
-import { PracticeProblem } from "@/types/practice";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -14,36 +15,38 @@ import { ChatBox } from "./ChatBox";
 import { CodeEditor } from "./CodeEditor";
 
 interface implementationSectionProps {
-  problem: PracticeProblem | null;
+  messages: Message[];
+  onSend: (content: string) => Promise<void>;
+  onCodeArtifactChange: (content: string, language: LanguageKey) => void;
   onNext: () => void;
   isCurrentStep: boolean;
 }
 
 export function ImplementationSection({
-  problem,
+  messages,
+  onSend,
+  onCodeArtifactChange,
   onNext,
   isCurrentStep,
 }: implementationSectionProps) {
   const [implementation, setImplementation] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [language, setLanguage] = useState<LanguageKey>("python");
 
-  // TODO: Implement actual AI response logic
-  // Create context to send to AI
-  // Update context with response from AI
-  const handleSend = (content: string) => {
-    const newMessage: Message = { role: "user", content };
-    setMessages((prev) => [...prev, newMessage]);
+  const debouncedCodeChange = useMemo(
+    () =>
+      _.debounce((content: string, language: LanguageKey) => {
+        onCodeArtifactChange(content, language);
+      }, 300),
+    [onCodeArtifactChange],
+  );
 
-    // Mock AI response
-    const aiResponse: Message = {
-      role: "assistant",
-      content: `Responding to: ${content}`,
-    };
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
-  };
+  useEffect(() => {
+    debouncedCodeChange(implementation, language);
+  }, [implementation, language, debouncedCodeChange]);
+
+  useEffect(() => {
+    return () => debouncedCodeChange.cancel();
+  }, [debouncedCodeChange]);
 
   return (
     <AccordionContent className="flex h-120 flex-col gap-4 px-3.5">
@@ -59,7 +62,12 @@ export function ImplementationSection({
         <ResizablePanel defaultSize={50}>
           <div className="flex h-full w-full items-center justify-center">
             <div className="bg-background h-full w-full rounded-l-md border border-r-0 p-2 text-sm">
-              <CodeEditor value={implementation} onChange={setImplementation} />
+              <CodeEditor
+                value={implementation}
+                onChange={setImplementation}
+                language={language}
+                onLanguageChange={setLanguage}
+              />
             </div>
           </div>
         </ResizablePanel>
@@ -70,7 +78,7 @@ export function ImplementationSection({
               <ChatBox
                 location="implementation"
                 messages={messages}
-                onSend={handleSend}
+                onSend={onSend}
                 layoutMode="fixed"
               />
             </div>

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import _ from "lodash";
+import { useEffect, useMemo, useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
@@ -10,40 +11,40 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Message } from "@/types/chat";
-import { PracticeProblem } from "@/types/practice";
 import { PseudocodeEditor } from "./PseudocodeEditor";
 
 interface PseudocodeSectionProps {
-  problem: PracticeProblem | null;
+  messages: Message[];
+  onSend: (content: string) => Promise<void>;
+  onPseudocodeArtifactChange: (content: string) => void;
   onNext: () => void;
   isCurrentStep: boolean;
 }
 
 export function PseudocodeSection({
-  problem,
+  messages,
+  onSend,
+  onPseudocodeArtifactChange,
   onNext,
   isCurrentStep,
 }: PseudocodeSectionProps) {
   const [pseudocode, setPseudocode] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
 
-  // TODO: Implement actual AI response logic
-  // Create context to send to AI
-  // Update context with response from AI
-  const handleSend = (content: string) => {
-    const newMessage: Message = { role: "user", content };
-    setMessages((prev) => [...prev, newMessage]);
+  const debouncedPseudocodeChange = useMemo(
+    () =>
+      _.debounce((content: string) => {
+        onPseudocodeArtifactChange(content);
+      }, 300),
+    [onPseudocodeArtifactChange],
+  );
 
-    // Mock AI response
-    const aiResponse: Message = {
-      role: "assistant",
-      content: `Responding to: ${content}`,
-    };
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      setMessages((prev) => [...prev, aiResponse]);
-    }, 500);
-  };
+  useEffect(() => {
+    debouncedPseudocodeChange(pseudocode);
+  }, [pseudocode, debouncedPseudocodeChange]);
+
+  useEffect(() => {
+    return () => debouncedPseudocodeChange.cancel();
+  }, [debouncedPseudocodeChange]);
 
   return (
     <AccordionContent className="flex h-120 flex-col gap-4 px-3.5">
@@ -69,7 +70,7 @@ export function PseudocodeSection({
               <ChatBox
                 location="pseudocode"
                 messages={messages}
-                onSend={handleSend}
+                onSend={onSend}
                 layoutMode="fixed"
               />
             </div>

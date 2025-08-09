@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { useLLM } from "@/hooks/useLLM";
+import { LanguageKey } from "@/lib/codeMirror";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ClarificationSection } from "./ClarificationSection";
@@ -132,7 +133,10 @@ export function PracticeAccordionSections({
                 />
               </AccordionTrigger>
               <ThoughtProcessSection
-                problem={problem}
+                messages={llm.getMessages("thought_process")}
+                onSend={(content) =>
+                  llm.sendMessage("thought_process", content)
+                }
                 onNext={() => openNextSection("accordion-item-thought-process")}
                 isCurrentStep={
                   currentStep ===
@@ -157,7 +161,14 @@ export function PracticeAccordionSections({
                 />
               </AccordionTrigger>
               <PseudocodeSection
-                problem={problem}
+                messages={llm.getMessages("pseudocode")}
+                onSend={(content) => llm.sendMessage("pseudocode", content)}
+                onPseudocodeArtifactChange={(content) =>
+                  llm.setArtifact("pseudocode", {
+                    kind: "pseudocode",
+                    content,
+                  })
+                }
                 onNext={() => openNextSection("accordion-item-pseudocode")}
                 isCurrentStep={
                   currentStep === sectionToIndex("accordion-item-pseudocode")
@@ -182,7 +193,15 @@ export function PracticeAccordionSections({
                 />
               </AccordionTrigger>
               <ImplementationSection
-                problem={problem}
+                messages={llm.getMessages("implementation")}
+                onSend={(content) => llm.sendMessage("implementation", content)}
+                onCodeArtifactChange={(content, language: LanguageKey) =>
+                  llm.setArtifact("implementation", {
+                    kind: "code",
+                    content,
+                    language,
+                  })
+                }
                 onNext={() => openNextSection("accordion-item-implementation")}
                 isCurrentStep={
                   currentStep ===
@@ -210,7 +229,10 @@ export function PracticeAccordionSections({
                 />
               </AccordionTrigger>
               <ComplexityAnalysisSection
-                problem={problem}
+                messages={llm.getMessages("complexity_analysis")}
+                onSend={(content) =>
+                  llm.sendMessage("complexity_analysis", content)
+                }
                 onNext={() =>
                   openNextSection("accordion-item-complexity-analysis")
                 }
