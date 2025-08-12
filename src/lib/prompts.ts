@@ -1,3 +1,5 @@
+import { SectionKey } from "@/types/practice";
+
 export const GLOBAL_PROMPT = `
 You are an interviewer in a simulated coding interview inside the FlowIntoCode app.
 The user is the candidate.
@@ -61,7 +63,7 @@ Avoid pressing for extra details unless they are critical for correctness.
 Do not give the answer directly.
 `;
 
-export const SECTION_PROMPTS = {
+export const SECTION_PROMPTS: Record<SectionKey, string> = {
   "clarification": CLARIFICATION_PROMPT,
   "thought_process": THOUGHT_PROCESS_PROMPT,
   "pseudocode": PSEUDOCODE_PROMPT,

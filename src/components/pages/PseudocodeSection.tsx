@@ -4,7 +4,6 @@ import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -17,16 +16,12 @@ interface PseudocodeSectionProps {
   messages: Message[];
   onSend: (content: string) => Promise<void>;
   onPseudocodeArtifactChange: (content: string) => void;
-  onNext: () => void;
-  isCurrentStep: boolean;
 }
 
 export function PseudocodeSection({
   messages,
   onSend,
   onPseudocodeArtifactChange,
-  onNext,
-  isCurrentStep,
 }: PseudocodeSectionProps) {
   const [pseudocode, setPseudocode] = useState("");
 
@@ -77,10 +72,6 @@ export function PseudocodeSection({
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
-        Next
-      </Button>
     </AccordionContent>
   );
 }

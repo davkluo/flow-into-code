@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { SECTION_PROMPTS, GLOBAL_PROMPT } from "@/lib/prompts";
 import { getArtifactsContext, getDistilledSummariesContext, getProblemContext } from "@/lib/buildContext";
-import { PracticeProblem } from "@/types/practice";
+import { PracticeProblem, SectionKey } from "@/types/practice";
 import { Message } from "@/types/chat";
 import { LanguageKey } from "@/lib/codeMirror";
-
-export type SectionKey = keyof typeof SECTION_PROMPTS;
 
 type ArtifactKind = "code" | "pseudocode";
 type SectionArtifact = {

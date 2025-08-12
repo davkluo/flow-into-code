@@ -13,3 +13,5 @@ export type PracticeProblem = {
   source: ProblemSource;
   problem: LCProblemWithDetails | CustomProblem;
 };
+
+export type SectionKey = "selection" | "clarification" | "thought_process" | "pseudocode" | "implementation" | "complexity_analysis";

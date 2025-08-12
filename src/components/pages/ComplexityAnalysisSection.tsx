@@ -1,22 +1,17 @@
 "use client";
 
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 import { ChatBox } from "./ChatBox";
 
 interface complexityAnalysisSectionProps {
   messages: Message[];
   onSend: (content: string) => Promise<void>;
-  onNext: () => void;
-  isCurrentStep: boolean;
 }
 
 export function ComplexityAnalysisSection({
   messages,
   onSend,
-  onNext,
-  isCurrentStep,
 }: complexityAnalysisSectionProps) {
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -32,10 +27,6 @@ export function ComplexityAnalysisSection({
         onSend={onSend}
         layoutMode="grow"
       />
-
-      <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
-        Next
-      </Button>
     </AccordionContent>
   );
 }

@@ -2,21 +2,16 @@
 
 import { ChatBox } from "@/components/pages/ChatBox";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { Message } from "@/types/chat";
 
 interface ThoughtProcessSectionProps {
   messages: Message[];
   onSend: (content: string) => Promise<void>;
-  onNext: () => void;
-  isCurrentStep: boolean;
 }
 
 export function ThoughtProcessSection({
   messages,
   onSend,
-  onNext,
-  isCurrentStep,
 }: ThoughtProcessSectionProps) {
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -32,10 +27,6 @@ export function ThoughtProcessSection({
         onSend={onSend}
         layoutMode="grow"
       />
-
-      <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
-        Next
-      </Button>
     </AccordionContent>
   );
 }

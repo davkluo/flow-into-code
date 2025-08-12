@@ -3,7 +3,6 @@
 import _ from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
 import { LanguageKey } from "@/lib/codeMirror";
 import { Message } from "@/types/chat";
 import {
@@ -18,16 +17,12 @@ interface implementationSectionProps {
   messages: Message[];
   onSend: (content: string) => Promise<void>;
   onCodeArtifactChange: (content: string, language: LanguageKey) => void;
-  onNext: () => void;
-  isCurrentStep: boolean;
 }
 
 export function ImplementationSection({
   messages,
   onSend,
   onCodeArtifactChange,
-  onNext,
-  isCurrentStep,
 }: implementationSectionProps) {
   const [implementation, setImplementation] = useState("");
   const [language, setLanguage] = useState<LanguageKey>("python");
@@ -85,10 +80,6 @@ export function ImplementationSection({
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>
-
-      <Button variant="default" disabled={!isCurrentStep} onClick={onNext}>
-        Next
-      </Button>
     </AccordionContent>
   );
 }

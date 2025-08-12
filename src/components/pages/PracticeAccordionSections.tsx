@@ -1,5 +1,6 @@
 "use client";
 
+import { MoveRight } from "lucide-react";
 import { useState } from "react";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import {
@@ -7,10 +8,28 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { useTimer } from "@/context/TimerContext";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
+import {
+  PRACTICE_SECTIONS,
+  SECTIONS_TO_NAME,
+  sectionToIndex,
+} from "@/lib/practice";
 import { LCProblem } from "@/types/leetcode";
-import { PracticeProblem } from "@/types/practice";
+import { PracticeProblem, SectionKey } from "@/types/practice";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { Button } from "../ui/button";
 import { ClarificationSection } from "./ClarificationSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
@@ -22,229 +41,228 @@ interface PracticeAccordionSectionsProps {
   problems: LCProblem[];
 }
 
-// TODO: Create an enum to consolidate logic for section names
-const sections = [
-  "accordion-item-problem-selection",
-  "accordion-item-clarification",
-  "accordion-item-thought-process",
-  "accordion-item-pseudocode",
-  "accordion-item-implementation",
-  "accordion-item-complexity-analysis",
-];
-
-const sectionToIndex = (section: string) => {
-  return sections.indexOf(section);
-};
-
 export function PracticeAccordionSections({
   problems,
 }: PracticeAccordionSectionsProps) {
-  const [openSections, setOpenSections] = useState<string[]>([sections[0]]);
+  const [openSections, setOpenSections] = useState<SectionKey[]>([
+    PRACTICE_SECTIONS[0],
+  ]);
   const [problem, setProblem] = useState<PracticeProblem | null>(null);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   const llm = useLLM(problem);
+  const { setpoint, start: startTimer } = useTimer();
 
-  const openNextSection = (current: string) => {
-    const currentIndex = sectionToIndex(current);
-    if (currentIndex === -1) return;
+  const proceedNextSection = () => {
+    if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
 
     setOpenSections((prev) => {
       const newOpenSections = [
-        ...prev.filter((section) => section !== current),
+        ...prev.filter(
+          (section) => sectionToIndex(section) !== currentSectionIndex,
+        ),
       ];
-      if (currentIndex < sections.length - 1) {
-        const next = sections[currentIndex + 1];
+
+      if (currentSectionIndex < PRACTICE_SECTIONS.length - 1) {
+        const next = PRACTICE_SECTIONS[currentSectionIndex + 1];
         newOpenSections.push(next);
       }
 
       return newOpenSections;
     });
 
-    setCurrentStep((prevStep) => prevStep + 1);
+    setCurrentSectionIndex((prev) => prev + 1);
   };
 
   return (
-    <Accordion
-      type="multiple"
-      className="w-full"
-      value={openSections}
-      onValueChange={setOpenSections}
-    >
-      <AccordionItem value="accordion-item-problem-selection">
-        <AccordionTrigger>
-          <SectionLabel
-            label="Select Problem"
-            isCurrentStep={
-              currentStep === sectionToIndex("accordion-item-problem-selection")
-            }
+    <div className="relative w-full">
+      <Accordion
+        type="multiple"
+        className="w-full"
+        value={openSections}
+        onValueChange={(value) => setOpenSections(value as SectionKey[])}
+      >
+        <AccordionItem value={PRACTICE_SECTIONS[0]}>
+          <AccordionTrigger>
+            <SectionLabel
+              label="Select Problem"
+              isCurrentStep={currentSectionIndex === 0}
+            />
+          </AccordionTrigger>
+          <ProblemSelectSection
+            problems={problems}
+            onProblemSelect={setProblem}
+            isEditable={currentSectionIndex === 0}
           />
-        </AccordionTrigger>
-        <ProblemSelectSection
-          problems={problems}
-          onNext={() => openNextSection("accordion-item-problem-selection")}
-          isCurrentStep={
-            currentStep === sectionToIndex("accordion-item-problem-selection")
-          }
-          onProblemStart={setProblem}
-        />
-      </AccordionItem>
-      {problem && (
-        <>
-          {currentStep >= sectionToIndex("accordion-item-clarification") && (
-            <AccordionItem value="accordion-item-clarification">
-              <AccordionTrigger
-                disabled={
-                  currentStep < sectionToIndex("accordion-item-clarification")
-                }
-              >
-                <SectionLabel
-                  label="Clarify Problem"
-                  isCurrentStep={
-                    currentStep ===
-                    sectionToIndex("accordion-item-clarification")
+        </AccordionItem>
+        {problem && (
+          <>
+            {currentSectionIndex >= 1 && (
+              <AccordionItem value={PRACTICE_SECTIONS[1]}>
+                <AccordionTrigger disabled={currentSectionIndex < 1}>
+                  <SectionLabel
+                    label="Clarify Problem"
+                    isCurrentStep={currentSectionIndex === 1}
+                  />
+                </AccordionTrigger>
+                <ClarificationSection
+                  messages={llm.getMessages("clarification")}
+                  onSend={(content) =>
+                    llm.sendMessage("clarification", content)
                   }
                 />
-              </AccordionTrigger>
-              <ClarificationSection
-                messages={llm.getMessages("clarification")}
-                onSend={(content) => llm.sendMessage("clarification", content)}
-                onNext={() => openNextSection("accordion-item-clarification")}
-                isCurrentStep={
-                  currentStep === sectionToIndex("accordion-item-clarification")
-                }
-              />
-            </AccordionItem>
-          )}
+              </AccordionItem>
+            )}
+            {currentSectionIndex >= 2 && (
+              <AccordionItem value={PRACTICE_SECTIONS[2]}>
+                <AccordionTrigger disabled={currentSectionIndex < 2}>
+                  <SectionLabel
+                    label="Explain Thought Process"
+                    isCurrentStep={currentSectionIndex === 2}
+                  />
+                </AccordionTrigger>
+                <ThoughtProcessSection
+                  messages={llm.getMessages("thought_process")}
+                  onSend={(content) =>
+                    llm.sendMessage("thought_process", content)
+                  }
+                />
+              </AccordionItem>
+            )}
+            {currentSectionIndex >= 3 && (
+              <AccordionItem value={PRACTICE_SECTIONS[3]}>
+                <AccordionTrigger disabled={currentSectionIndex < 3}>
+                  <SectionLabel
+                    label="Develop Pseudocode"
+                    isCurrentStep={currentSectionIndex === 3}
+                  />
+                </AccordionTrigger>
+                <PseudocodeSection
+                  messages={llm.getMessages("pseudocode")}
+                  onSend={(content) => llm.sendMessage("pseudocode", content)}
+                  onPseudocodeArtifactChange={(content) =>
+                    llm.setArtifact("pseudocode", {
+                      kind: "pseudocode",
+                      content,
+                    })
+                  }
+                />
+              </AccordionItem>
+            )}
+            {currentSectionIndex >= 4 && (
+              <AccordionItem value={PRACTICE_SECTIONS[4]}>
+                <AccordionTrigger disabled={currentSectionIndex < 4}>
+                  <SectionLabel
+                    label="Implement Code"
+                    isCurrentStep={currentSectionIndex === 4}
+                  />
+                </AccordionTrigger>
+                <ImplementationSection
+                  messages={llm.getMessages("implementation")}
+                  onSend={(content) =>
+                    llm.sendMessage("implementation", content)
+                  }
+                  onCodeArtifactChange={(content, language: LanguageKey) =>
+                    llm.setArtifact("implementation", {
+                      kind: "code",
+                      content,
+                      language,
+                    })
+                  }
+                />
+              </AccordionItem>
+            )}
+            {currentSectionIndex >= 5 && (
+              <AccordionItem value={PRACTICE_SECTIONS[5]}>
+                <AccordionTrigger disabled={currentSectionIndex < 5}>
+                  <SectionLabel
+                    label="Analyze Complexity"
+                    isCurrentStep={currentSectionIndex === 5}
+                  />
+                </AccordionTrigger>
+                <ComplexityAnalysisSection
+                  messages={llm.getMessages("complexity_analysis")}
+                  onSend={(content) =>
+                    llm.sendMessage("complexity_analysis", content)
+                  }
+                />
+              </AccordionItem>
+            )}
+          </>
+        )}
+      </Accordion>
 
-          {currentStep >= sectionToIndex("accordion-item-thought-process") && (
-            <AccordionItem value="accordion-item-thought-process">
-              <AccordionTrigger
-                disabled={
-                  currentStep < sectionToIndex("accordion-item-thought-process")
-                }
+      {currentSectionIndex === 0 && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="default"
+              size="lg"
+              disabled={!problem}
+              className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
+            >
+              Begin Problem
+              <MoveRight className="h-4 w-4 pt-0.5" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You have selected{" "}
+                {problem && "title" in problem?.problem
+                  ? `the LeetCode problem: ${problem?.problem.title}`
+                  : "a custom problem"}
+                <br />
+                <br />
+                The timer is currently set to {setpoint / 60} minutes. You will
+                receive a notification when the time is up. You can adjust the
+                timer in the settings.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => {
+                  startTimer();
+                  proceedNextSection();
+                }}
+                autoFocus
               >
-                <SectionLabel
-                  label="Explain Thought Process"
-                  isCurrentStep={
-                    currentStep ===
-                    sectionToIndex("accordion-item-thought-process")
-                  }
-                />
-              </AccordionTrigger>
-              <ThoughtProcessSection
-                messages={llm.getMessages("thought_process")}
-                onSend={(content) =>
-                  llm.sendMessage("thought_process", content)
-                }
-                onNext={() => openNextSection("accordion-item-thought-process")}
-                isCurrentStep={
-                  currentStep ===
-                  sectionToIndex("accordion-item-thought-process")
-                }
-              />
-            </AccordionItem>
-          )}
-
-          {currentStep >= sectionToIndex("accordion-item-pseudocode") && (
-            <AccordionItem value="accordion-item-pseudocode">
-              <AccordionTrigger
-                disabled={
-                  currentStep < sectionToIndex("accordion-item-pseudocode")
-                }
-              >
-                <SectionLabel
-                  label="Develop Pseudocode"
-                  isCurrentStep={
-                    currentStep === sectionToIndex("accordion-item-pseudocode")
-                  }
-                />
-              </AccordionTrigger>
-              <PseudocodeSection
-                messages={llm.getMessages("pseudocode")}
-                onSend={(content) => llm.sendMessage("pseudocode", content)}
-                onPseudocodeArtifactChange={(content) =>
-                  llm.setArtifact("pseudocode", {
-                    kind: "pseudocode",
-                    content,
-                  })
-                }
-                onNext={() => openNextSection("accordion-item-pseudocode")}
-                isCurrentStep={
-                  currentStep === sectionToIndex("accordion-item-pseudocode")
-                }
-              />
-            </AccordionItem>
-          )}
-
-          {currentStep >= sectionToIndex("accordion-item-implementation") && (
-            <AccordionItem value="accordion-item-implementation">
-              <AccordionTrigger
-                disabled={
-                  currentStep < sectionToIndex("accordion-item-implementation")
-                }
-              >
-                <SectionLabel
-                  label="Implement Code"
-                  isCurrentStep={
-                    currentStep ===
-                    sectionToIndex("accordion-item-implementation")
-                  }
-                />
-              </AccordionTrigger>
-              <ImplementationSection
-                messages={llm.getMessages("implementation")}
-                onSend={(content) => llm.sendMessage("implementation", content)}
-                onCodeArtifactChange={(content, language: LanguageKey) =>
-                  llm.setArtifact("implementation", {
-                    kind: "code",
-                    content,
-                    language,
-                  })
-                }
-                onNext={() => openNextSection("accordion-item-implementation")}
-                isCurrentStep={
-                  currentStep ===
-                  sectionToIndex("accordion-item-implementation")
-                }
-              />
-            </AccordionItem>
-          )}
-
-          {currentStep >=
-            sectionToIndex("accordion-item-complexity-analysis") && (
-            <AccordionItem value="accordion-item-complexity-analysis">
-              <AccordionTrigger
-                disabled={
-                  currentStep <
-                  sectionToIndex("accordion-item-complexity-analysis")
-                }
-              >
-                <SectionLabel
-                  label="Analyze Complexity"
-                  isCurrentStep={
-                    currentStep ===
-                    sectionToIndex("accordion-item-complexity-analysis")
-                  }
-                />
-              </AccordionTrigger>
-              <ComplexityAnalysisSection
-                messages={llm.getMessages("complexity_analysis")}
-                onSend={(content) =>
-                  llm.sendMessage("complexity_analysis", content)
-                }
-                onNext={() =>
-                  openNextSection("accordion-item-complexity-analysis")
-                }
-                isCurrentStep={
-                  currentStep ===
-                  sectionToIndex("accordion-item-complexity-analysis")
-                }
-              />
-            </AccordionItem>
-          )}
-        </>
+                Begin
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
-    </Accordion>
+
+      {currentSectionIndex > 0 &&
+        currentSectionIndex < PRACTICE_SECTIONS.length - 1 && (
+          <Button
+            variant="default"
+            size="lg"
+            className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
+            onClick={proceedNextSection}
+          >
+            Next: {SECTIONS_TO_NAME[PRACTICE_SECTIONS[currentSectionIndex + 1]]}
+            <MoveRight className="h-4 w-4 pt-0.5" />
+          </Button>
+        )}
+
+      {currentSectionIndex === PRACTICE_SECTIONS.length - 1 && (
+        <Button
+          variant="default"
+          size="lg"
+          className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
+          onClick={() => {
+            // TODO: Save results to database, generate feedback report, make loading button, pause timer, etc.
+            alert("Practice session completed!");
+          }}
+        >
+          Finish Practice
+          <MoveRight className="h-4 w-4 pt-0.5" />
+        </Button>
+      )}
+    </div>
   );
 }

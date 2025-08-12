@@ -1,6 +1,6 @@
 import { LLMState } from "@/hooks/useLLM";
 import { PracticeProblem } from "@/types/practice";
-import { SECTION_ORDER } from "@/lib/practice";
+import { PRACTICE_SECTIONS } from "@/lib/practice";
 import { capitalize } from "@/lib/formatting";
 
 export const getProblemContext = (problem: PracticeProblem): string => {
@@ -12,7 +12,7 @@ export const getProblemContext = (problem: PracticeProblem): string => {
 };
 
 export const getDistilledSummariesContext = (llmState: LLMState): string => {
-  const summaries = SECTION_ORDER
+  const summaries = PRACTICE_SECTIONS
     .map((section) => {
       const summary = llmState[section]?.distilledSummary;
       return summary ? `• ${capitalize(section)}: ${summary}` : null;

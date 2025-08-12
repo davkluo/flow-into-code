@@ -1,23 +1,12 @@
 "use client";
 
 import _ from "lodash";
-import { Check, ChevronsUpDown, MoveRight } from "lucide-react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { FixedSizeList as List } from "react-window";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { AccordionContent } from "@/components/ui/accordion";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Command, CommandInput, CommandItem } from "@/components/ui/command";
 import {
@@ -34,24 +23,29 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useTimer } from "@/context/TimerContext";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
-import { LCProblem, LCProblemDetails } from "@/types/leetcode";
-import { PracticeProblem, ProblemSource } from "@/types/practice";
+import {
+  LCProblem,
+  LCProblemDetails,
+  LCProblemWithDetails,
+} from "@/types/leetcode";
+import {
+  CustomProblem,
+  PracticeProblem,
+  ProblemSource,
+} from "@/types/practice";
 
 interface ProblemSelectSectionProps {
   problems: LCProblem[];
-  onNext: () => void;
-  isCurrentStep: boolean;
-  onProblemStart: (problem: PracticeProblem) => void;
+  onProblemSelect: (problem: PracticeProblem) => void;
+  isEditable: boolean;
 }
 
 export function ProblemSelectSection({
   problems,
-  onNext,
-  isCurrentStep,
-  onProblemStart,
+  onProblemSelect,
+  isEditable,
 }: ProblemSelectSectionProps) {
   const [source, setSource] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -65,7 +59,32 @@ export function ProblemSelectSection({
     null,
   );
 
-  const { setpoint, start: startTimer } = useTimer();
+  useEffect(() => {
+    if (
+      source === ProblemSource.LeetCode &&
+      selectedProblem &&
+      problemDetails
+    ) {
+      const lcProblemData: LCProblemWithDetails = {
+        ...selectedProblem,
+        details: problemDetails,
+      };
+      const practiceProblem: PracticeProblem = {
+        source: ProblemSource.LeetCode,
+        problem: lcProblemData,
+      };
+      onProblemSelect(practiceProblem);
+    } else if (source === ProblemSource.Custom && customProblem) {
+      const customProblemData: CustomProblem = {
+        description: customProblem,
+      };
+      const practiceProblem: PracticeProblem = {
+        source: ProblemSource.Custom,
+        problem: customProblemData,
+      };
+      onProblemSelect(practiceProblem);
+    }
+  }, [source, selectedProblem, problemDetails, customProblem, onProblemSelect]);
 
   const fetchProblemDetails = async (
     titleSlug: string,
@@ -124,7 +143,7 @@ export function ProblemSelectSection({
       <Select
         value={source ?? ""}
         onValueChange={setSource}
-        disabled={!isCurrentStep}
+        disabled={!isEditable}
       >
         <SelectTrigger className="col-span-1 w-full">
           <SelectValue placeholder="Select a source" />
@@ -144,7 +163,7 @@ export function ProblemSelectSection({
               variant="outline"
               role="combobox"
               className="w-[400px] justify-between"
-              disabled={!isCurrentStep}
+              disabled={!isEditable}
             >
               <div className="flex w-full items-center">
                 <div className="truncate text-center">
@@ -225,7 +244,7 @@ export function ProblemSelectSection({
           value={customProblem}
           onChange={(e) => setCustomProblem(e.target.value)}
           className="col-span-full h-40"
-          disabled={!isCurrentStep}
+          disabled={!isEditable}
         />
       )}
 
@@ -254,76 +273,6 @@ export function ProblemSelectSection({
           />
         </div>
       )}
-
-      <div className="col-span-full flex items-center justify-start gap-0.5">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="default"
-              disabled={
-                !isCurrentStep ||
-                (source === ProblemSource.LeetCode
-                  ? !selectedProblem || !problemDetails
-                  : !customProblem)
-              }
-              className="w-full"
-            >
-              {isCurrentStep ? "Begin Problem" : "In Progress"}
-              {isCurrentStep && <MoveRight className="h-4 w-4 pt-0.5" />}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
-              <AlertDialogDescription>
-                You have selected{" "}
-                {source === ProblemSource.LeetCode
-                  ? `the LeetCode problem: ${selectedProblem?.title}`
-                  : "a custom problem"}
-                <br />
-                <br />
-                The timer is currently set to {setpoint / 60} minutes. You will
-                receive a notification when the time is up. You can adjust the
-                timer in the settings.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={() => {
-                  let problem: PracticeProblem;
-
-                  if (source === ProblemSource.LeetCode) {
-                    if (!problemDetails || !selectedProblem) {
-                      throw new Error("Problem details are required");
-                    }
-
-                    problem = {
-                      source: ProblemSource.LeetCode,
-                      problem: {
-                        ...selectedProblem,
-                        details: problemDetails,
-                      },
-                    };
-                  } else {
-                    problem = {
-                      source: ProblemSource.Custom,
-                      problem: { description: customProblem },
-                    };
-                  }
-                  onProblemStart(problem);
-                  setOpen(false);
-                  startTimer();
-                  onNext();
-                }}
-                autoFocus
-              >
-                Begin
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
     </AccordionContent>
   );
 }
