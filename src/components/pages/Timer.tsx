@@ -45,7 +45,6 @@ export function Timer() {
 
   useEffect(() => {
     if (timeLeft === 0 && !toastShownRef.current) {
-      console.log("here");
       toast("Time's up!", { description: "You're now in overtime." });
       toastShownRef.current = true;
     }

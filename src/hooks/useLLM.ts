@@ -6,7 +6,7 @@ import { Message } from "@/types/chat";
 import { LanguageKey } from "@/lib/codeMirror";
 
 type ArtifactKind = "code" | "pseudocode";
-type SectionArtifact = {
+export type SectionArtifact = {
   kind: ArtifactKind;
   content: string;
   language?: LanguageKey;
@@ -31,6 +31,9 @@ export function useLLM(problem: PracticeProblem | null) {
       getMessages: () => [],
       getDistilledSummary: () => undefined,
       setDistilledSummary: () => { },
+      generateDistilledSummary: async () => undefined,
+      hasDistilledSummaries: () => false,
+      getAllDistilledSummaries: () => ({} as Record<SectionKey, string>),
       setArtifact: () => { },
       llmState
     };
@@ -67,6 +70,47 @@ export function useLLM(problem: PracticeProblem | null) {
         distilledSummary: summary,
       },
     }));
+  };
+
+  const generateDistilledSummary = async (
+    section: SectionKey
+  ): Promise<string | undefined> => {
+    const messages = llmState[section]?.messages ?? [];
+    const artifact = llmState[section]?.artifact;
+    if (!messages.length && section !== "selection") return undefined;
+
+    const res = await fetch("/api/summarize-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ sectionKey: section, messages, problem, artifact }),
+    });
+
+    if (!res.ok) {
+      console.error("Distill failed:", await res.text());
+      return undefined;
+    }
+
+    const data = await res.json();
+    console.log(data);
+    if (data.summary) {
+      setDistilledSummary(section, data.summary);
+      return data.summary;
+    }
+  };
+
+  const hasDistilledSummaries = (): boolean => {
+    return Object.values(llmState).some(
+      (section) => section?.distilledSummary && section.distilledSummary.trim() !== ""
+    );
+  };
+
+  const getAllDistilledSummaries = (): Record<SectionKey, string> => {
+    return Object.entries(llmState).reduce((acc, [sectionKey, section]) => {
+      if (section?.distilledSummary) {
+        acc[sectionKey as SectionKey] = section.distilledSummary;
+      }
+      return acc;
+    }, {} as Record<SectionKey, string>);
   };
 
   const setArtifact = (section: SectionKey, artifact: SectionArtifact) => {
@@ -125,6 +169,9 @@ export function useLLM(problem: PracticeProblem | null) {
     getMessages,
     getDistilledSummary,
     setDistilledSummary,
+    generateDistilledSummary,
+    hasDistilledSummaries,
+    getAllDistilledSummaries,
     setArtifact,
     llmState,
   };

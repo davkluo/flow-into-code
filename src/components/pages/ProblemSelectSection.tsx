@@ -124,7 +124,6 @@ export function ProblemSelectSection({
 
     const details = await fetchProblemDetails(problem.titleSlug);
     setProblemDetails(details);
-    console.log(details);
   };
 
   useEffect(() => {

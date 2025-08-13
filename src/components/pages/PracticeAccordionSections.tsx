@@ -1,6 +1,6 @@
 "use client";
 
-import { MoveRight } from "lucide-react";
+import { Loader2Icon, MoveRight, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import {
@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useTimer } from "@/context/TimerContext";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
@@ -30,6 +31,7 @@ import {
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { AISummaryDialog } from "./AISummaryDialog";
 import { ClarificationSection } from "./ClarificationSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
@@ -55,6 +57,8 @@ export function PracticeAccordionSections({
 
   const proceedNextSection = () => {
     if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
+
+    llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
 
     setOpenSections((prev) => {
       const newOpenSections = [
@@ -107,9 +111,12 @@ export function PracticeAccordionSections({
                 </AccordionTrigger>
                 <ClarificationSection
                   messages={llm.getMessages("clarification")}
-                  onSend={(content) =>
-                    llm.sendMessage("clarification", content)
-                  }
+                  onSend={(content) => {
+                    if (currentSectionIndex > 1) {
+                      llm.generateDistilledSummary("clarification");
+                    }
+                    return llm.sendMessage("clarification", content);
+                  }}
                 />
               </AccordionItem>
             )}
@@ -123,9 +130,12 @@ export function PracticeAccordionSections({
                 </AccordionTrigger>
                 <ThoughtProcessSection
                   messages={llm.getMessages("thought_process")}
-                  onSend={(content) =>
-                    llm.sendMessage("thought_process", content)
-                  }
+                  onSend={(content) => {
+                    if (currentSectionIndex > 2) {
+                      llm.generateDistilledSummary("thought_process");
+                    }
+                    return llm.sendMessage("thought_process", content);
+                  }}
                 />
               </AccordionItem>
             )}
@@ -139,7 +149,12 @@ export function PracticeAccordionSections({
                 </AccordionTrigger>
                 <PseudocodeSection
                   messages={llm.getMessages("pseudocode")}
-                  onSend={(content) => llm.sendMessage("pseudocode", content)}
+                  onSend={(content) => {
+                    if (currentSectionIndex > 3) {
+                      llm.generateDistilledSummary("pseudocode");
+                    }
+                    return llm.sendMessage("pseudocode", content);
+                  }}
                   onPseudocodeArtifactChange={(content) =>
                     llm.setArtifact("pseudocode", {
                       kind: "pseudocode",
@@ -159,9 +174,12 @@ export function PracticeAccordionSections({
                 </AccordionTrigger>
                 <ImplementationSection
                   messages={llm.getMessages("implementation")}
-                  onSend={(content) =>
-                    llm.sendMessage("implementation", content)
-                  }
+                  onSend={(content) => {
+                    if (currentSectionIndex > 4) {
+                      llm.generateDistilledSummary("implementation");
+                    }
+                    return llm.sendMessage("implementation", content);
+                  }}
                   onCodeArtifactChange={(content, language: LanguageKey) =>
                     llm.setArtifact("implementation", {
                       kind: "code",
@@ -256,12 +274,37 @@ export function PracticeAccordionSections({
           className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
           onClick={() => {
             // TODO: Save results to database, generate feedback report, make loading button, pause timer, etc.
+            llm.generateDistilledSummary("complexity_analysis");
             alert("Practice session completed!");
           }}
         >
           Finish Practice
           <MoveRight className="h-4 w-4 pt-0.5" />
         </Button>
+      )}
+
+      {currentSectionIndex > 0 && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button
+              variant="outline"
+              size="icon"
+              className="fixed bottom-20 left-8 rounded-full backdrop-blur-sm"
+              disabled={!llm.hasDistilledSummaries()}
+            >
+              {llm.hasDistilledSummaries() ? (
+                <>
+                  <span className="sr-only">View AI Summary</span>
+                  <Sparkles className="h-4 w-4" />
+                </>
+              ) : (
+                <Loader2Icon className="animate-spin" />
+              )}
+            </Button>
+          </DialogTrigger>
+
+          <AISummaryDialog summaries={llm.getAllDistilledSummaries()} />
+        </Dialog>
       )}
     </div>
   );
