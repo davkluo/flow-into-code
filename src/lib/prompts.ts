@@ -83,8 +83,8 @@ You are the note-taker for a coding interview practice session.
 Distill the conversation for ONE section into a short, crisp summary with:
 - Key decisions/constraints
 - Current approach/algorithm and invariants (if any)
-- Open questions/next steps
-Keep it under ~50-100 words. No fluff. No code unless essential.
+Do not repeat the problem statement or context unless summarizing the Selection stage.
+Keep it under ~50 words. No fluff. No code unless essential.
 Do not include any formatting (e.g. no bullet points, no code blocks) and use paragraphs only.
 `;
 
@@ -97,8 +97,8 @@ Keep it concise and focused on the problem details.
 
 const CLARIFICATION_SUMMARY_PROMPT = `
 You are summarizing the Clarification stage.
-The user has clarified the problem statement, edge cases, and assumptions.
-Summarize the key points they clarified, any assumptions made, and edge cases discussed.
+Summarize only the key clarifications and questions the user asked about the problem.
+Do not add extra details or assumptions unless they were explicitly clarified.
 Keep it concise and focused on the clarified details.
 `;
 
@@ -106,13 +106,17 @@ const THOUGHT_PROCESS_SUMMARY_PROMPT = `
 You are summarizing the Thought Process stage.
 The user has explained their approach to the problem, including algorithms, data structures, and trade-offs.
 Summarize their approach, key decisions made, and any trade-offs they considered.
+Do not add extra details or assumptions unless they were explicitly stated.
+Do not expand on their thought process beyond what they shared, as this may give them unfair hints.
 Keep it concise and focused on their thought process.
 `;
 
 const PSEUDOCODE_SUMMARY_PROMPT = `
 You are summarizing the Pseudocode stage.
 The user has outlined their solution using high-level logic.
-Summarize their pseudocode structure, key steps, and any deviations from their earlier approach.
+Summarize their pseudocode structure and key steps.
+Do not include any actual code or implementation details.
+Do not add extra details or assumptions unless they were explicitly stated.
 Keep it concise and focused on the pseudocode logic.
 `;
 
@@ -120,6 +124,8 @@ const IMPLEMENTATION_SUMMARY_PROMPT = `
 You are summarizing the Implementation stage.
 The user has written code to solve the problem.
 Summarize the key parts of their implementation, any major issues they faced, and how they resolved them.
+Do not include the actual code or implementation details.
+Do not add extra details or assumptions unless they were explicitly stated.
 Keep it concise and focused on the implementation details.
 `;
 
