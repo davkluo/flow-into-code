@@ -28,6 +28,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useAuth } from "@/hooks/useAuth";
+import { Separator } from "../ui/separator";
 import { ModeSelect } from "./ModeSelect";
 
 interface SubMenuItem {
@@ -43,7 +45,7 @@ interface MenuItem {
 }
 
 const Navbar = () => {
-  // TODO: Insert useAuth hook here for authentication state
+  const { status, signOutUser } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -51,8 +53,8 @@ const Navbar = () => {
 
   const publicMenu: MenuItem[] = [
     {
-      label: "Practice",
-      url: "/practice",
+      label: "About",
+      url: "/about",
     },
   ];
   const authenticatedMenu: MenuItem[] = [
@@ -64,8 +66,16 @@ const Navbar = () => {
       label: "History",
       url: "/history",
     },
+    {
+      label: "Practice",
+      url: "/practice",
+    },
   ];
-  const navbarMenu = [...publicMenu, ...authenticatedMenu];
+
+  const navbarMenu =
+    status === "authenticated"
+      ? [...publicMenu, ...authenticatedMenu]
+      : publicMenu;
 
   useEffect(() => {
     // Ensure the theme is mounted before rendering
@@ -121,6 +131,8 @@ const Navbar = () => {
                       {navbarMenu.map((item) => renderMobileMenuItem(item))}
                     </Accordion>
 
+                    <Separator />
+
                     <div className="flex flex-col gap-3">
                       <Button asChild variant="outline">
                         <Link href="/signin">Sign In</Link>
@@ -160,9 +172,20 @@ const Navbar = () => {
             </div>
             <div className="flex items-center gap-2">
               <ModeSelect />
-              <Button asChild variant="outline" size="sm">
-                <Link href="/signin">Sign In</Link>
-              </Button>
+              {status === "authenticated" ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={signOutUser}
+                  className="h-8"
+                >
+                  Sign Out
+                </Button>
+              ) : (
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/signin">Sign In</Link>
+                </Button>
+              )}
             </div>
           </nav>
         </div>
