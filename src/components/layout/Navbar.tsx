@@ -123,10 +123,7 @@ const Navbar = () => {
 
                     <div className="flex flex-col gap-3">
                       <Button asChild variant="outline">
-                        <a href="#">Login</a>
-                      </Button>
-                      <Button asChild>
-                        <a href="#">Sign Up</a>
+                        <Link href="/signin">Sign In</Link>
                       </Button>
                     </div>
                   </div>
@@ -164,10 +161,7 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
               <ModeSelect />
               <Button asChild variant="outline" size="sm">
-                <a href="#">Login</a>
-              </Button>
-              <Button asChild size="sm">
-                <a href="#">Sign Up</a>
+                <Link href="/signin">Sign In</Link>
               </Button>
             </div>
           </nav>
