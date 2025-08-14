@@ -29,6 +29,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { oAuthProviderNames } from "@/lib/auth";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -136,9 +137,60 @@ const Navbar = () => {
                     <Separator />
 
                     <div className="flex flex-col gap-3">
-                      <Button asChild variant="outline">
-                        <Link href="/signin">Sign In</Link>
-                      </Button>
+                      {status === "authenticated" ? (
+                        <div>
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-9 w-9">
+                              <AvatarImage
+                                src={user?.photoURL || ""}
+                                alt="User Avatar"
+                              />
+                              <AvatarFallback>
+                                {user?.displayName
+                                  ?.split(" ")
+                                  .map((name) => name.charAt(0))
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <div className="text-lg font-semibold">
+                                {user?.displayName || "User"}
+                              </div>
+                              <p className="text-muted-foreground text-xs">
+                                {user?.email || "No email available"}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex flex-col">
+                            <Button asChild>
+                              <Link href="#">Settings</Link>
+                            </Button>
+                            <Separator className="my-4" />
+                            <Button
+                              variant="outline"
+                              className="w-full"
+                              onClick={signOutUser}
+                            >
+                              Sign Out
+                            </Button>
+                            <p className="text-muted-foreground mt-1 text-xs">
+                              Signed in via{" "}
+                              <span className="font-medium">
+                                {
+                                  oAuthProviderNames[
+                                    user?.providerData[0]?.providerId ||
+                                      "unknown"
+                                  ]
+                                }
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <Button asChild variant="outline" className="w-full">
+                          <Link href="/signin">Sign In</Link>
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </SheetContent>
@@ -215,22 +267,11 @@ const Navbar = () => {
                       <p className="text-muted-foreground mt-1 text-xs">
                         Signed in via{" "}
                         <span className="font-medium">
-                          {(() => {
-                            const providerId =
-                              user?.providerData[0]?.providerId || "unknown";
-                            switch (providerId) {
-                              case "google.com":
-                                return "Google";
-                              case "facebook.com":
-                                return "Facebook";
-                              case "github.com":
-                                return "GitHub";
-                              case "twitter.com":
-                                return "Twitter";
-                              default:
-                                return "Unknown";
-                            }
-                          })()}
+                          {
+                            oAuthProviderNames[
+                              user?.providerData[0]?.providerId || "unknown"
+                            ]
+                          }
                         </span>
                       </p>
                     </div>
