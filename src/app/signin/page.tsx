@@ -1,6 +1,5 @@
 "use client";
 
-import { signInWithPopup } from "firebase/auth";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -14,16 +13,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { auth, googleProvider } from "@/lib/firebase";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SignInPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { signInWithGoogle } = useAuth();
 
   async function handleGoogleLogin() {
     try {
       setIsLoading(true);
-      await signInWithPopup(auth, googleProvider);
+      await signInWithGoogle();
       router.push("/");
     } catch (error) {
       console.error("Google sign-in error:", error);
