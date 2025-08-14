@@ -6,6 +6,7 @@ import {
   signOut,
   User,
 } from "firebase/auth";
+import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState } from "react";
 import { auth, googleProvider } from "@/lib/firebase";
 
@@ -36,6 +37,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("loading");
     try {
       await signInWithPopup(auth, googleProvider);
+      toast("Signed in successfully", {
+        description: "Welcome back!",
+      });
     } catch (error) {
       console.error("Google sign-in error:", error);
     }
@@ -43,6 +47,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOutUser = async () => {
     await signOut(auth);
+    toast("Signed out successfully", {
+      description: "See you again soon!",
+    });
   };
 
   return (

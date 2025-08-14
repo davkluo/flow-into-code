@@ -29,6 +29,8 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
 import { ModeSelect } from "./ModeSelect";
 
@@ -45,7 +47,7 @@ interface MenuItem {
 }
 
 const Navbar = () => {
-  const { status, signOutUser } = useAuth();
+  const { user, status, signOutUser } = useAuth();
 
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -173,14 +175,67 @@ const Navbar = () => {
             <div className="flex items-center gap-2">
               <ModeSelect />
               {status === "authenticated" ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={signOutUser}
-                  className="h-8"
-                >
-                  Sign Out
-                </Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Avatar>
+                      <AvatarImage
+                        src={user?.photoURL || ""}
+                        alt="User Avatar"
+                      />
+                      <AvatarFallback>
+                        {user?.displayName
+                          ?.split(" ")
+                          .map((name) => name.charAt(0))
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </PopoverTrigger>
+                  <PopoverContent className="mt-2 mr-4 w-80">
+                    <div className="text-lg font-semibold">
+                      {user?.displayName || "User"}
+                    </div>
+
+                    <p className="text-muted-foreground text-xs">
+                      {user?.email || "No email available"}
+                    </p>
+
+                    <div className="mt-4 flex flex-col">
+                      <Button asChild>
+                        <Link href="#">Settings</Link>
+                      </Button>
+                      <Separator className="my-4" />
+
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={signOutUser}
+                      >
+                        Sign Out
+                      </Button>
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        Signed in via{" "}
+                        <span className="font-medium">
+                          {(() => {
+                            const providerId =
+                              user?.providerData[0]?.providerId || "unknown";
+                            switch (providerId) {
+                              case "google.com":
+                                return "Google";
+                              case "facebook.com":
+                                return "Facebook";
+                              case "github.com":
+                                return "GitHub";
+                              case "twitter.com":
+                                return "Twitter";
+                              default:
+                                return "Unknown";
+                            }
+                          })()}
+                        </span>
+                      </p>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               ) : (
                 <Button asChild variant="outline" size="sm">
                   <Link href="/signin">Sign In</Link>
