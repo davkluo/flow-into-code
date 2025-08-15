@@ -1,9 +1,9 @@
 import { PracticeProblemSource, SectionKey } from "@/types/practice";
 
-export enum StoredProblemSource {
-  LeetCode = "leetcode",
-  AiGenerated = "ai_generated",
-}
+export type StoredProblemSource = Exclude<
+  PracticeProblemSource,
+  PracticeProblemSource.Custom
+>;
 
 export interface ProblemMetadata {
   summary?: string;
@@ -11,17 +11,17 @@ export interface ProblemMetadata {
   solutionOutlines?: string[];
 }
 
-export interface ProblemDoc {
+export type ProblemDoc = {
   id: string;
-  source: StoredProblemSource;
   title?: string;
-  titleSlug?: string; // for LeetCode problems
-  leetcodeId?: number;
   difficulty?: "Easy" | "Medium" | "Hard";
   tags: string[];
   metadata?: ProblemMetadata;
   lastFetchedAt?: string;
-}
+} & (
+    { source: PracticeProblemSource.LeetCode; leetcodeId?: number; titleSlug?: string; } |
+    { source: PracticeProblemSource.AiGenerated; }
+  );
 
 export type FeedbackCategory =
   | "understandingAndCommunication"
@@ -47,7 +47,7 @@ export interface SessionDoc {
   userId: string;
   createdAt: string;
   practiceProblemSource: PracticeProblemSource;
-  problemRef?: string; // Public problems
+  problemRefId?: string; // Public problems
   problemInline?: {
     title: string;
     description: string;
@@ -62,8 +62,8 @@ export interface SessionDoc {
 }
 
 export interface TagDoc {
-  id: string;
-  name: string;
+  id: string; // normalized tag name
+  displayName: string;
   commonHints?: string[];
   commonPitfalls?: string[];
   vectorEmbedding?: number[];
@@ -74,6 +74,6 @@ export interface RagMetadata {
   reasoningSummary: string;
   keyTakeaways: string[];
   tags: string[];
-  source: StoredProblemSource;
+  source?: StoredProblemSource;
   problemRefId?: string;
 }
