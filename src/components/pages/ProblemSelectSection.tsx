@@ -33,7 +33,7 @@ import {
 import {
   CustomProblem,
   PracticeProblem,
-  ProblemSource,
+  PracticeProblemSource,
 } from "@/types/practice";
 
 interface ProblemSelectSectionProps {
@@ -61,7 +61,7 @@ export function ProblemSelectSection({
 
   useEffect(() => {
     if (
-      source === ProblemSource.LeetCode &&
+      source === PracticeProblemSource.LeetCode &&
       selectedProblem &&
       problemDetails
     ) {
@@ -70,16 +70,16 @@ export function ProblemSelectSection({
         details: problemDetails,
       };
       const practiceProblem: PracticeProblem = {
-        source: ProblemSource.LeetCode,
+        source: PracticeProblemSource.LeetCode,
         problem: lcProblemData,
       };
       onProblemSelect(practiceProblem);
-    } else if (source === ProblemSource.Custom && customProblem) {
+    } else if (source === PracticeProblemSource.Custom && customProblem) {
       const customProblemData: CustomProblem = {
         description: customProblem,
       };
       const practiceProblem: PracticeProblem = {
-        source: ProblemSource.Custom,
+        source: PracticeProblemSource.Custom,
         problem: customProblemData,
       };
       onProblemSelect(practiceProblem);
@@ -149,13 +149,15 @@ export function ProblemSelectSection({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            <SelectItem value={ProblemSource.LeetCode}>LeetCode</SelectItem>
-            <SelectItem value={ProblemSource.Custom}>Custom</SelectItem>
+            <SelectItem value={PracticeProblemSource.LeetCode}>
+              LeetCode
+            </SelectItem>
+            <SelectItem value={PracticeProblemSource.Custom}>Custom</SelectItem>
           </SelectGroup>
         </SelectContent>
       </Select>
 
-      {source === ProblemSource.LeetCode && (
+      {source === PracticeProblemSource.LeetCode && (
         <div className="flex flex-col gap-4">
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -281,7 +283,7 @@ export function ProblemSelectSection({
         </div>
       )}
 
-      {source === ProblemSource.Custom && (
+      {source === PracticeProblemSource.Custom && (
         <Textarea
           placeholder="Enter your custom problem description."
           value={customProblem}

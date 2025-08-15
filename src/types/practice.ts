@@ -1,6 +1,6 @@
 import { LCProblemWithDetails } from "./leetcode";
 
-export enum ProblemSource {
+export enum PracticeProblemSource {
   LeetCode = "leetcode",
   Custom = "custom",
 }
@@ -10,7 +10,7 @@ export type CustomProblem = {
 };
 
 export type PracticeProblem = {
-  source: ProblemSource;
+  source: PracticeProblemSource;
   problem: LCProblemWithDetails | CustomProblem;
 };
 
