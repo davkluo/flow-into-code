@@ -7,22 +7,9 @@ import {
 } from "@/types/practice";
 import { LCProblemWithDetails } from "@/types/leetcode";
 import { ProblemDoc, ProblemMetadata } from "@/types/firestore";
+import { generateProblemMetadata } from "../llmGeneration";
 
 const PROBLEMS_COLLECTION = "problems";
-
-// Placeholder for future LLM call
-async function generateProblemMetadata(input: {
-  title: string;
-  description: string;
-}): Promise<ProblemMetadata> {
-  // In the real version, call your LLM here with problem details
-  // and generate fields like summary, hints, and solution outlines.
-  return {
-    summary: `Summary for ${input.title}`,
-    hints: [`Consider edge cases for ${input.title}`],
-    solutionOutlines: ["Step 1: Do X", "Step 2: Do Y"]
-  };
-}
 
 export async function upsertProblem(problem: ProblemDoc): Promise<void> {
   const ref = doc(db, PROBLEMS_COLLECTION, problem.id);

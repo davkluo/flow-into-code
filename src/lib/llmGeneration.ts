@@ -1,4 +1,4 @@
-import { RagMetadata, FeedbackData } from "@/types/firestore";
+import { RagMetadata, FeedbackData, ProblemMetadata } from "@/types/firestore";
 import { PracticeProblem, PracticeProblemSource, SectionKey } from "@/types/practice";
 
 // Placeholder for feedback generation
@@ -38,5 +38,17 @@ export async function generateRagMetadata(input: {
       source: practiceProblem.source,
       problemRefId: practiceProblem.problem.id,
     }),
+  };
+}
+
+// Placeholder for future LLM call
+export async function generateProblemMetadata(input: {
+  title: string;
+  description: string;
+}): Promise<ProblemMetadata> {
+  return {
+    summary: `Summary for ${input.title}`,
+    hints: [`Consider edge cases for ${input.title}`],
+    solutionOutlines: ["Step 1: Do X", "Step 2: Do Y"]
   };
 }
