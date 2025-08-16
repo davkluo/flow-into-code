@@ -67,6 +67,7 @@ export function ProblemSelectSection({
     ) {
       const lcProblemData: LCProblemWithDetails = {
         ...selectedProblem,
+        id: "TBD", // Placeholder, will be set in the Firestore upsert
         details: problemDetails,
       };
       const practiceProblem: PracticeProblem = {
@@ -114,7 +115,7 @@ export function ProblemSelectSection({
   };
 
   const handleProblemSelect = async (problem: LCProblem) => {
-    if (selectedProblem?.id === problem.id) {
+    if (selectedProblem?.leetcodeId === problem.leetcodeId) {
       setOpen(false);
       return;
     }
@@ -170,7 +171,7 @@ export function ProblemSelectSection({
                 <div className="flex w-full items-center">
                   <div className="truncate text-center">
                     {selectedProblem
-                      ? `${selectedProblem.id}. ${selectedProblem.title}`
+                      ? `${selectedProblem.leetcodeId}. ${selectedProblem.title}`
                       : "Select a problem"}
                   </div>
                   {selectedProblem && (
@@ -206,14 +207,17 @@ export function ProblemSelectSection({
                         {({ index, style }) => {
                           const problem = filteredAndSortedProblems[index];
                           return (
-                            <div style={style} key={problem.id}>
+                            <div
+                              style={style}
+                              key={`LC-problem-${problem.leetcodeId}`}
+                            >
                               <CommandItem
                                 onSelect={() => {
                                   handleProblemSelect(problem);
                                 }}
                               >
                                 <div className="truncate text-center">
-                                  {problem.id}. {problem.title}
+                                  {problem.leetcodeId}. {problem.title}
                                 </div>
                                 <DifficultyBadge
                                   difficulty={problem.difficulty}

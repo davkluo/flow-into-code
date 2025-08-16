@@ -1,6 +1,6 @@
 export type LCProblem = {
   difficulty: "Easy" | "Medium" | "Hard";
-  id: string;
+  leetcodeId: string;
   isPaidOnly: boolean;
   title: string;
   titleSlug: string;
@@ -12,6 +12,7 @@ export type LCProblemDetails = {
 };
 
 export type LCProblemWithDetails = LCProblem & {
+  id: string; // Firestore ID
   details: LCProblemDetails;
 };
 

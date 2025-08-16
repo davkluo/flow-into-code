@@ -36,7 +36,7 @@ export type FeedbackScores = {
   };
 };
 
-export interface FeedbackDoc {
+export interface FeedbackData {
   scores: FeedbackScores;
   strengths?: string[];
   suggestions?: string[];
@@ -49,7 +49,6 @@ export interface SessionDoc {
   practiceProblemSource: PracticeProblemSource;
   problemRefId?: string; // Public problems
   problemInline?: {
-    title: string;
     description: string;
     tags?: string[];
   }; // Custom problems
@@ -57,7 +56,7 @@ export interface SessionDoc {
   pseudocode?: string;
   implementation?: string;
   totalTimeSec?: number;
-  feedback?: FeedbackDoc;
+  feedback?: FeedbackData;
   ragMetadata?: RagMetadata;
 }
 

@@ -1,4 +1,4 @@
-import { LCProblemWithDetails } from "./leetcode";
+import { LCProblem, LCProblemDetails, LCProblemWithDetails } from "./leetcode";
 
 export enum PracticeProblemSource {
   LeetCode = "leetcode",
@@ -33,3 +33,14 @@ export type PracticeProblem =
   };
 
 export type SectionKey = "selection" | "clarification" | "thought_process" | "pseudocode" | "implementation" | "complexity_analysis";
+
+export type ProblemSelection =
+  | {
+    source: PracticeProblemSource.LeetCode;
+    lcProblem: LCProblem;
+    lcProblemDetails: LCProblemDetails;
+  }
+  | {
+    source: PracticeProblemSource.Custom;
+    customDescription: string;
+  };

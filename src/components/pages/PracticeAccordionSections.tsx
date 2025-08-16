@@ -12,13 +12,18 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useTimer } from "@/context/TimerContext";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
+import { getProblemByLeetCodeId } from "@/lib/firestore/problems";
 import {
   PRACTICE_SECTIONS,
   SECTIONS_TO_NAME,
   sectionToIndex,
 } from "@/lib/practice";
 import { LCProblem } from "@/types/leetcode";
-import { PracticeProblem, SectionKey } from "@/types/practice";
+import {
+  PracticeProblem,
+  PracticeProblemSource,
+  SectionKey,
+} from "@/types/practice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,6 +59,25 @@ export function PracticeAccordionSections({
 
   const llm = useLLM(problem);
   const { setpoint, start: startTimer } = useTimer();
+
+  const handleProblemStart = async () => {
+    if (!problem) return;
+
+    if (problem.source === "leetcode") {
+      const existing = await getProblemByLeetCodeId(problem.problem.leetcodeId);
+      if (existing) {
+        setProblem({
+          source: PracticeProblemSource.LeetCode,
+          problem: {
+            ...problem.problem,
+            id: existing.id,
+          },
+        });
+      }
+    }
+
+    // TODO: Handle custom and AI-generated problems
+  };
 
   const proceedNextSection = () => {
     if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
@@ -241,8 +265,9 @@ export function PracticeAccordionSections({
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
-                onClick={() => {
+                onClick={async () => {
                   startTimer();
+                  await handleProblemStart();
                   proceedNextSection();
                 }}
                 autoFocus
@@ -274,6 +299,7 @@ export function PracticeAccordionSections({
           className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
           onClick={() => {
             // TODO: Save results to database, generate feedback report, make loading button, pause timer, etc.
+            // check that certain sections have been completed e.g. code
             llm.generateDistilledSummary("complexity_analysis");
             alert("Practice session completed!");
           }}
