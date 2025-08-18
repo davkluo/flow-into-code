@@ -1,7 +1,9 @@
 "use client";
 
 import { Loader2Icon, MoveRight, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import {
   Accordion,
@@ -10,9 +12,14 @@ import {
 } from "@/components/ui/accordion";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { useTimer } from "@/context/TimerContext";
+import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
-import { getProblemByLeetCodeId } from "@/lib/firestore/problems";
+import {
+  createProblem,
+  getProblemByLeetCodeId,
+} from "@/lib/firestore/problems";
+import { createSessionDoc } from "@/lib/firestore/session";
 import {
   PRACTICE_SECTIONS,
   SECTIONS_TO_NAME,
@@ -56,9 +63,24 @@ export function PracticeAccordionSections({
   ]);
   const [problem, setProblem] = useState<PracticeProblem | null>(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+
+  const { user, status } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/signin");
+    }
+  }, [router, status]);
 
   const llm = useLLM(problem);
-  const { setpoint, start: startTimer } = useTimer();
+  const {
+    setpoint,
+    timeLeft,
+    start: startTimer,
+    pause: pauseTimer,
+  } = useTimer();
 
   const handleProblemStart = async () => {
     if (!problem) return;
@@ -73,16 +95,68 @@ export function PracticeAccordionSections({
             id: existing.id,
           },
         });
+
+        // TODO: Use existing problem's summary from DB
+      } else {
+        const id = await createProblem({
+          source: PracticeProblemSource.LeetCode,
+          problem: {
+            ...problem.problem,
+            id: problem.problem.leetcodeId.toString(),
+          },
+        });
+        setProblem({
+          source: PracticeProblemSource.LeetCode,
+          problem: {
+            ...problem.problem,
+            id,
+          },
+        });
       }
     }
 
     // TODO: Handle custom and AI-generated problems
   };
 
+  const handleSessionFinish = async () => {
+    if (!problem || !user) return;
+
+    const distilledSummaries = llm.getAllDistilledSummaries();
+    const pseudocode = llm.getArtifact("pseudocode")?.content;
+    const implementationArtifact = llm.getArtifact("implementation");
+
+    if (!implementationArtifact || !implementationArtifact.language) {
+      toast("Implementation not found", {
+        description:
+          "Please complete the implementation section to receive feedback.",
+      });
+      return;
+    }
+
+    setIsGeneratingFeedback(true);
+
+    return;
+
+    const sessionDocId = await createSessionDoc({
+      userId: user.uid,
+      practiceProblem: problem,
+      distilledSummaries,
+      implementation: implementationArtifact.content,
+      implementationLanguage: implementationArtifact.language,
+      totalTimeSec: setpoint - timeLeft,
+      pseudocode,
+    });
+
+    router.push(`/feedback/${sessionDocId}`);
+  };
+
   const proceedNextSection = () => {
     if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
 
-    llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
+    // Handle distilled summaries for problem in handleProblemStart
+    if (currentSectionIndex > 0) {
+      llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
+    }
 
     setOpenSections((prev) => {
       const newOpenSections = [
@@ -293,20 +367,46 @@ export function PracticeAccordionSections({
         )}
 
       {currentSectionIndex === PRACTICE_SECTIONS.length - 1 && (
-        <Button
-          variant="default"
-          size="lg"
-          className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
-          onClick={() => {
-            // TODO: Save results to database, generate feedback report, make loading button, pause timer, etc.
-            // check that certain sections have been completed e.g. code
-            llm.generateDistilledSummary("complexity_analysis");
-            alert("Practice session completed!");
-          }}
-        >
-          Finish Practice
-          <MoveRight className="h-4 w-4 pt-0.5" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="default"
+              size="lg"
+              className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
+              disabled={isGeneratingFeedback}
+            >
+              Finish Practice
+              {isGeneratingFeedback ? (
+                <Loader2Icon className="ml-2 animate-spin" />
+              ) : (
+                <MoveRight className="h-4 w-4 pt-0.5" />
+              )}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>All finished?</AlertDialogTitle>
+              <AlertDialogDescription>
+                You will be redirected to a new page where you will receive
+                personalized feedback based on your practice session. Note that
+                you will no longer be able to edit your session code and chats.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={async () => {
+                  pauseTimer();
+                  await llm.generateDistilledSummary("complexity_analysis");
+                  await handleSessionFinish();
+                }}
+                autoFocus
+              >
+                Get Feedback
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       )}
 
       {currentSectionIndex > 0 && (

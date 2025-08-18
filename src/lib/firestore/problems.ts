@@ -67,6 +67,8 @@ export async function createProblem(
 
   const tagIds = await getOrCreateTags(tags);
 
+  // TODO: Generate distilled summary
+
   // Pre-create a doc ref to get the ID
   const ref = doc(collection(db, PROBLEMS_COLLECTION));
 

@@ -53,8 +53,9 @@ export interface SessionDoc {
     tags?: string[];
   }; // Custom problems
   distilledSummaries: Record<SectionKey, string>;
+  implementation: string;
+  implementationLanguage: string;
   pseudocode?: string;
-  implementation?: string;
   totalTimeSec?: number;
   feedback?: FeedbackData;
   ragMetadata?: RagMetadata;

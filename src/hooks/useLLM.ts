@@ -34,6 +34,7 @@ export function useLLM(problem: PracticeProblem | null) {
       generateDistilledSummary: async () => undefined,
       hasDistilledSummaries: () => false,
       getAllDistilledSummaries: () => ({} as Record<SectionKey, string>),
+      getArtifact: () => undefined,
       setArtifact: () => { },
       llmState
     };
@@ -113,6 +114,10 @@ export function useLLM(problem: PracticeProblem | null) {
     }, {} as Record<SectionKey, string>);
   };
 
+  const getArtifact = (section: SectionKey): SectionArtifact | undefined => {
+    return llmState[section]?.artifact;
+  };
+
   const setArtifact = (section: SectionKey, artifact: SectionArtifact) => {
     setLlmState(prev => ({
       ...prev,
@@ -172,6 +177,7 @@ export function useLLM(problem: PracticeProblem | null) {
     generateDistilledSummary,
     hasDistilledSummaries,
     getAllDistilledSummaries,
+    getArtifact,
     setArtifact,
     llmState,
   };

@@ -3,12 +3,14 @@ import { db } from "@/lib/firebase";
 import { SessionDoc } from "@/types/firestore";
 import { PracticeProblem, PracticeProblemSource, SectionKey } from "@/types/practice";
 import { generateFeedbackData, generateRagMetadata } from "@/lib/llmGeneration";
+import { LanguageKey } from "../codeMirror";
 
 export async function createSessionDoc(params: {
   userId: string;
   practiceProblem: PracticeProblem;
   distilledSummaries: Record<SectionKey, string>;
   implementation: string;
+  implementationLanguage: LanguageKey;
   totalTimeSec: number;
   pseudocode?: string;
 }) {
@@ -21,6 +23,7 @@ export async function createSessionDoc(params: {
     distilledSummaries,
     pseudocode,
     implementation,
+    implementationLanguage,
     totalTimeSec,
   } = params;
 
@@ -51,6 +54,7 @@ export async function createSessionDoc(params: {
     distilledSummaries,
     pseudocode,
     implementation,
+    implementationLanguage,
     totalTimeSec,
     feedback,
     ragMetadata,
@@ -58,5 +62,5 @@ export async function createSessionDoc(params: {
 
   await setDoc(sessionRef, sessionDoc);
 
-  return sessionDoc;
+  return sessionDoc.id;
 }
