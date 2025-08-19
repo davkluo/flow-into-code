@@ -40,7 +40,7 @@ export async function createProblem(
     | { source: PracticeProblemSource.LeetCode; problem: LCProblemWithDetails; }
     | { source: PracticeProblemSource.AiGenerated; problem: AIProblem; }
 ): Promise<string> {
-  let leetcodeId: number | undefined;
+  let leetcodeId: string | undefined;
   let title: string;
   let difficulty: "Easy" | "Medium" | "Hard";
   let tags: string[] = [];
@@ -48,17 +48,17 @@ export async function createProblem(
 
   if (problemParams.source === PracticeProblemSource.LeetCode) {
     const p = problemParams.problem;
-    leetcodeId = Number(p.id);
+    leetcodeId = p.id;
     title = p.title;
     difficulty = p.difficulty;
     tags = p.topicTags.map((t) => t.name);
-    metadata = await generateProblemMetadata({ title, description: p.details.content });
+    metadata = await generateProblemMetadata(title, p.details.content, tags, problemParams.source);
   } else if (problemParams.source === PracticeProblemSource.AiGenerated) {
     const p = problemParams.problem;
     title = p.title;
     difficulty = p.difficulty;
     tags = p.tags;
-    metadata = await generateProblemMetadata({ title, description: p.description });
+    metadata = await generateProblemMetadata(title, p.description, tags, problemParams.source);
   } else {
     throw new Error(
       "Custom problems are stored inline with session docs, not in the problems collection."
@@ -67,9 +67,6 @@ export async function createProblem(
 
   const tagIds = await getOrCreateTags(tags);
 
-  // TODO: Generate distilled summary
-
-  // Pre-create a doc ref to get the ID
   const ref = doc(collection(db, PROBLEMS_COLLECTION));
 
   const newProblem: ProblemDoc =

@@ -17,6 +17,7 @@ import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
 import {
   createProblem,
+  getProblemById,
   getProblemByLeetCodeId,
 } from "@/lib/firestore/problems";
 import { createSessionDoc } from "@/lib/firestore/session";
@@ -63,6 +64,7 @@ export function PracticeAccordionSections({
   ]);
   const [problem, setProblem] = useState<PracticeProblem | null>(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
 
   const { user, status } = useAuth();
@@ -87,6 +89,7 @@ export function PracticeAccordionSections({
 
     if (problem.source === "leetcode") {
       const existing = await getProblemByLeetCodeId(problem.problem.leetcodeId);
+      console.log(typeof problem.problem.leetcodeId);
       if (existing) {
         setProblem({
           source: PracticeProblemSource.LeetCode,
@@ -95,8 +98,7 @@ export function PracticeAccordionSections({
             id: existing.id,
           },
         });
-
-        // TODO: Use existing problem's summary from DB
+        llm.setDistilledSummary("selection", existing.metadata.summary);
       } else {
         const id = await createProblem({
           source: PracticeProblemSource.LeetCode,
@@ -105,6 +107,13 @@ export function PracticeAccordionSections({
             id: problem.problem.leetcodeId.toString(),
           },
         });
+        const newProblem = await getProblemById(id);
+        if (!newProblem) {
+          toast.error(
+            "Failed to create problem. Please refresh the page and try again.",
+          );
+          return;
+        }
         setProblem({
           source: PracticeProblemSource.LeetCode,
           problem: {
@@ -112,6 +121,7 @@ export function PracticeAccordionSections({
             id,
           },
         });
+        llm.setDistilledSummary("selection", newProblem.metadata.summary);
       }
     }
 

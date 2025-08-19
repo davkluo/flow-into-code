@@ -1,4 +1,4 @@
-import { RagMetadata, FeedbackData, ProblemMetadata } from "@/types/firestore";
+import { RagMetadata, FeedbackData, ProblemMetadata, StoredProblemSource } from "@/types/firestore";
 import { PracticeProblem, PracticeProblemSource, SectionKey } from "@/types/practice";
 
 // Placeholder for feedback generation
@@ -42,13 +42,25 @@ export async function generateRagMetadata(input: {
 }
 
 // Placeholder for future LLM call
-export async function generateProblemMetadata(input: {
-  title: string;
-  description: string;
-}): Promise<ProblemMetadata> {
-  return {
-    summary: `Summary for ${input.title}`,
-    hints: [`Consider edge cases for ${input.title}`],
-    solutionOutlines: ["Step 1: Do X", "Step 2: Do Y"]
-  };
+export async function generateProblemMetadata(
+  title: string,
+  description: string,
+  tags: string[],
+  source: StoredProblemSource,
+): Promise<ProblemMetadata> {
+  const res = await fetch("/api/problem-metadata", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title, description, tags, source }),
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `Failed to generate problem metadata: ${res.status} ${res.statusText}`
+    );
+  }
+
+  const problemMetadata: ProblemMetadata = await res.json();
+
+  return problemMetadata;
 }

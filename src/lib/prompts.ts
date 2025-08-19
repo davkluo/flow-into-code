@@ -1,5 +1,7 @@
 import { SectionKey } from "@/types/practice";
 
+/***** CHAT WINDOWS *****/
+
 export const GLOBAL_PROMPT = `
 You are an interviewer in a simulated coding interview inside the FlowIntoCode app.
 The user is the candidate.
@@ -78,6 +80,8 @@ export const SECTION_PROMPTS: Record<SectionKey, string> = {
   "complexity_analysis": COMPLEXITY_ANALYSIS_PROMPT,
 };
 
+/***** SUMMARIZE SECTIONS *****/
+
 export const DISTILLED_SUMMARY_PROMPT = `
 You are the note-taker for a coding interview practice session.
 Distill the conversation for ONE section into a short, crisp summary with:
@@ -144,3 +148,21 @@ export const SECTION_SUMMARY_PROMPTS: Record<SectionKey, string> = {
   "implementation": IMPLEMENTATION_SUMMARY_PROMPT,
   "complexity_analysis": COMPLEXITY_ANALYSIS_SUMMARY_PROMPT,
 };
+
+/***** PROBLEM METADATA *****/
+
+export const PROBLEM_METADATA_PROMPT = `
+You are an assistant that generates helpful metadata for coding interview problems.
+
+Always return valid JSON matching this schema:
+{
+  "summary": string,
+  "hints": string[],
+  "solutionOutlines": string[]
+}
+
+Given a problem title, description, and optional tags:
+- Produce a concise 1-3 sentence summary of the problem description and key constraints.
+- Create 2-3 hints (progressively more revealing).
+- Provide a couple high-level solution outlines (step by step, but not code) illustrating different approaches. Ensure that these approaches are optimal but not overly complex or obscure.
+`;

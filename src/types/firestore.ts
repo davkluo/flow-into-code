@@ -1,25 +1,23 @@
 import { PracticeProblemSource, SectionKey } from "@/types/practice";
+import { ProblemMetadataSchema } from "./problems";
+import z from "zod";
 
 export type StoredProblemSource = Exclude<
   PracticeProblemSource,
   PracticeProblemSource.Custom
 >;
 
-export interface ProblemMetadata {
-  summary?: string;
-  hints?: string[];
-  solutionOutlines?: string[];
-}
+export type ProblemMetadata = z.infer<typeof ProblemMetadataSchema>;
 
 export type ProblemDoc = {
   id: string;
   title?: string;
   difficulty?: "Easy" | "Medium" | "Hard";
   tags: string[];
-  metadata?: ProblemMetadata;
+  metadata: ProblemMetadata;
   lastFetchedAt?: string;
 } & (
-    { source: PracticeProblemSource.LeetCode; leetcodeId?: number; titleSlug?: string; } |
+    { source: PracticeProblemSource.LeetCode; leetcodeId?: string; titleSlug?: string; } |
     { source: PracticeProblemSource.AiGenerated; }
   );
 
