@@ -100,6 +100,10 @@ export function PracticeAccordionSections({
         });
         llm.setDistilledSummary("selection", existing.metadata.summary);
       } else {
+        toast("You are the first to attempt this problem!", {
+          description: "Please be patient while we generate metadata.",
+        });
+        setIsLoadingProblem(true);
         const id = await createProblem({
           source: PracticeProblemSource.LeetCode,
           problem: {
@@ -324,11 +328,20 @@ export function PracticeAccordionSections({
             <Button
               variant="default"
               size="lg"
-              disabled={!problem}
+              disabled={!problem || isLoadingProblem}
               className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
             >
-              Begin Problem
-              <MoveRight className="h-4 w-4 pt-0.5" />
+              {isLoadingProblem ? (
+                <>
+                  Generating Metadata
+                  <Loader2Icon className="animate-spin" />
+                </>
+              ) : (
+                <>
+                  Begin Problem
+                  <MoveRight className="h-4 w-4 pt-0.5" />
+                </>
+              )}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -351,8 +364,8 @@ export function PracticeAccordionSections({
               <AlertDialogAction
                 onClick={async () => {
                   startTimer();
-                  await handleProblemStart();
                   proceedNextSection();
+                  await handleProblemStart();
                 }}
                 autoFocus
               >
@@ -385,11 +398,16 @@ export function PracticeAccordionSections({
               className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
               disabled={isGeneratingFeedback}
             >
-              Finish Practice
               {isGeneratingFeedback ? (
-                <Loader2Icon className="ml-2 animate-spin" />
+                <>
+                  Generating Feedback
+                  <Loader2Icon className="animate-spin" />
+                </>
               ) : (
-                <MoveRight className="h-4 w-4 pt-0.5" />
+                <>
+                  Finish Practice
+                  <MoveRight className="h-4 w-4 pt-0.5" />
+                </>
               )}
             </Button>
           </AlertDialogTrigger>
