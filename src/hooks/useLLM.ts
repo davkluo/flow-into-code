@@ -92,7 +92,6 @@ export function useLLM(problem: PracticeProblem | null) {
     }
 
     const data = await res.json();
-    console.log(data);
     if (data.summary) {
       setDistilledSummary(section, data.summary);
       return data.summary;

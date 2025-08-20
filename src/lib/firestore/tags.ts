@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TagDoc } from "@/types/firestore";
+import { generateTagMetadata } from "../llmGeneration";
 
 export const TAGS_COLLECTION = "tags";
 
@@ -16,6 +17,10 @@ export const TAGS_COLLECTION = "tags";
  */
 export function normalizeTagName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
+export function denormalizeTagName(id: string): string {
+  return id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export async function upsertTag(tag: TagDoc): Promise<void> {
@@ -40,7 +45,8 @@ export async function getOrCreateTag(tagDisplayName: string): Promise<string> {
 
   const existingTag = await getTagById(id);
   if (!existingTag) {
-    await upsertTag({ id, displayName: tagDisplayName });
+    const tagDoc = await generateTagMetadata(id);
+    await upsertTag(tagDoc);
   }
 
   return id;

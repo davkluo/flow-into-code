@@ -166,3 +166,19 @@ Given a problem title, description, and optional tags:
 - Create 2-3 hints (progressively more revealing).
 - Provide a couple high-level solution outlines (step by step, but not code) illustrating different approaches. Ensure that these approaches are optimal but not overly complex or obscure.
 `;
+
+/***** TAG METADATA *****/
+
+export const TAG_METADATA_PROMPT = `
+You are an assistant that generates metadata for coding interview problem tags.
+
+Always return valid JSON matching this schema:
+{
+  "commonHints": string[],
+  "commonPitfalls": string[]
+}
+
+For a given tag (like "binary-search", "dynamic-programming", "graphs"):
+- List 2–3 common hints that are generally useful when solving problems with this tag.
+- List 2–3 common pitfalls learners face.
+`;

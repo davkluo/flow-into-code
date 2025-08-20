@@ -89,7 +89,6 @@ export function PracticeAccordionSections({
 
     if (problem.source === "leetcode") {
       const existing = await getProblemByLeetCodeId(problem.problem.leetcodeId);
-      console.log(typeof problem.problem.leetcodeId);
       if (existing) {
         setProblem({
           source: PracticeProblemSource.LeetCode,
@@ -364,8 +363,8 @@ export function PracticeAccordionSections({
               <AlertDialogAction
                 onClick={async () => {
                   startTimer();
-                  proceedNextSection();
                   await handleProblemStart();
+                  proceedNextSection();
                 }}
                 autoFocus
               >
