@@ -30,14 +30,9 @@ export async function generateRagMetadata(input: {
   // TODO: Implement with LLM call
   const { distilledSummaries, practiceProblem, implementation, pseudocode } = input;
   return {
-    problemSummary: distilledSummaries.selection,
     reasoningSummary: "Placeholder reasoning summary",
     keyTakeaways: ["Placeholder takeaway"],
-    tags: ["placeholder-tag"],
-    ...(practiceProblem.source !== PracticeProblemSource.Custom && {
-      source: practiceProblem.source,
-      problemRefId: practiceProblem.problem.id,
-    }),
+    embedding: [], // Placeholder for vector embedding
   };
 }
 

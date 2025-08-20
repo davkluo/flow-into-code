@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const { tagId } = await req.json();
     const displayName = denormalizeTagName(tagId);
 
-    const completionResponse = await openAIClient.chat.completions.create({
+    const response = await openAIClient.chat.completions.create({
       model: "gpt-4o-mini",
       temperature: 0.7,
       response_format: { type: "json_object" },
@@ -20,26 +20,18 @@ export async function POST(req: Request) {
       ],
     });
 
-    const raw = completionResponse.choices[0].message?.content;
+    const raw = response.choices[0].message?.content;
     if (!raw) {
       return NextResponse.json({ error: "No tag metadata generated" }, { status: 500 });
     }
 
     const llmData = JSON.parse(raw);
 
-    const embeddingResp = await openAIClient.embeddings.create({
-      model: "text-embedding-3-small",
-      input: displayName,
-    });
-
-    const vectorEmbedding = embeddingResp.data[0].embedding;
-
     const tagDoc: TagDoc = TagDocSchema.parse({
       id: tagId,
       displayName,
       commonHints: llmData.commonHints,
       commonPitfalls: llmData.commonPitfalls,
-      vectorEmbedding,
     });
 
     return NextResponse.json(tagDoc);

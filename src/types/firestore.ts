@@ -37,36 +37,36 @@ export type FeedbackScores = {
 
 export interface FeedbackData {
   scores: FeedbackScores;
-  strengths?: string[];
-  suggestions?: string[];
+  strengths: string[];
+  suggestions: string[];
 }
 
-export interface SessionDoc {
+export type SessionDoc = {
   id: string;
   userId: string;
   createdAt: string;
-  practiceProblemSource: PracticeProblemSource;
-  problemRefId?: string; // Public problems
-  problemInline?: {
-    description: string;
-    tags?: string[];
-  }; // Custom problems
   distilledSummaries: Record<SectionKey, string>;
   implementation: string;
   implementationLanguage: string;
+  feedback: FeedbackData;
+  ragMetadata: RagMetadata;
+  totalTimeSec: number;
   pseudocode?: string;
-  totalTimeSec?: number;
-  feedback?: FeedbackData;
-  ragMetadata?: RagMetadata;
-}
+} & (
+    | {
+      practiceProblemSource: PracticeProblemSource.LeetCode | PracticeProblemSource.AiGenerated;
+      problemRefId: string;
+    } // Public problems
+    | {
+      practiceProblemSource: PracticeProblemSource.Custom;
+      problemInline: { description: string; tags: string[]; };
+    } // Custom problems
+  );
 
 export type TagDoc = z.infer<typeof TagDocSchema>;
 
 export interface RagMetadata {
-  problemSummary: string;
   reasoningSummary: string;
   keyTakeaways: string[];
-  tags: string[];
-  source?: StoredProblemSource;
-  problemRefId?: string;
+  embedding: number[];
 }

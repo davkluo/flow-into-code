@@ -42,23 +42,42 @@ export async function createSessionDoc(params: {
     implementation,
   });
 
-  const sessionDoc: SessionDoc = {
-    id: sessionId,
-    userId,
-    createdAt: new Date().toISOString(),
-    practiceProblemSource: practiceProblem.source,
-    problemRefId: !isCustom ? practiceProblem.problem.id : undefined,
-    problemInline: isCustom
-      ? { description: practiceProblem.problem.description, tags: ragMetadata.tags }
-      : undefined,
-    distilledSummaries,
-    pseudocode,
-    implementation,
-    implementationLanguage,
-    totalTimeSec,
-    feedback,
-    ragMetadata,
-  };
+  let sessionDoc: SessionDoc;
+
+  if (isCustom) {
+    sessionDoc = {
+      id: sessionId,
+      userId,
+      createdAt: new Date().toISOString(),
+      practiceProblemSource: practiceProblem.source,
+      problemInline: {
+        description: practiceProblem.problem.description,
+        tags: [], // TODO: Handle tags for custom problems
+      },
+      distilledSummaries,
+      pseudocode,
+      implementation,
+      implementationLanguage,
+      totalTimeSec,
+      feedback,
+      ragMetadata,
+    };
+  } else {
+    sessionDoc = {
+      id: sessionId,
+      userId,
+      createdAt: new Date().toISOString(),
+      practiceProblemSource: practiceProblem.source,
+      problemRefId: practiceProblem.problem.id,
+      distilledSummaries,
+      pseudocode,
+      implementation,
+      implementationLanguage,
+      totalTimeSec,
+      feedback,
+      ragMetadata,
+    };
+  }
 
   await setDoc(sessionRef, sessionDoc);
 

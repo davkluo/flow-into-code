@@ -5,5 +5,4 @@ export const TagDocSchema = z.object({
   displayName: z.string(),
   commonHints: z.array(z.string()).default([]),
   commonPitfalls: z.array(z.string()).default([]),
-  vectorEmbedding: z.array(z.number()).default([]),
 });
