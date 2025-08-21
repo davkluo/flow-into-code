@@ -182,3 +182,34 @@ For a given tag (like "binary-search", "dynamic-programming", "graphs"):
 - List 2–3 common hints that are generally useful when solving problems with this tag.
 - List 2–3 common pitfalls learners face.
 `;
+
+/***** FEEDBACK GENERATION *****/
+
+export const FEEDBACK_GENERATION_PROMPT = `
+You are evaluating a coding interview session. Based on the following summaries, pseudocode, and implementation,
+provide structured feedback in JSON format.
+
+Always return valid JSON matching this schema:
+{
+  "scores": {
+    "understandingAndCommunication": { "score": number, "reason": string },
+    "problemSolvingAndReasoning": { "score": number, "reason": string },
+    "codeImplementation": { "score": number, "reason": string },
+    "complexityAnalysis": { "score": number, "reason": string }
+  },
+  "strengths": string[],
+  "suggestions": string[]
+}
+
+For the scores:
+- Use a scale of 1-5, where 1 is poor and 5 is excellent. You may use half scores (e.g. 7.5).
+- Provide a detailed explanation for each score, explaining the user's performance in that category. Keep the explanations concise -- no more than 5 sentences each.
+- "understandingAndCommunication" evaluates how well the user understood the problem and communicated their thought process. You should also reward the user for asking good questions.
+- "problemSolvingAndReasoning" evaluates the user's approach to solving the problem, including their reasoning and decision-making. You should reward the user for handling edge cases and trade-offs well.
+- "codeImplementation" evaluates the quality of the user's code, including correctness, efficiency, and style. If no pseudocode is provided, you should deduct points. Also grade the user on how well they followed their pseudocode.
+- "complexityAnalysis" evaluates the user's analysis of time and space complexity.
+
+For the strengths and suggestions:
+- Provide 2-3 strengths that highlight what the user did well during the session.
+- Provide 2-3 suggestions for improvement that are actionable and specific. Avoid generic advice like "practice more" or "review algorithms". Focus on areas where the user can improve based on their performance in this session.
+`;

@@ -2,6 +2,7 @@ import { PracticeProblemSource, SectionKey } from "@/types/practice";
 import { ProblemMetadataSchema } from "./problems";
 import z from "zod";
 import { TagDocSchema } from "./tags";
+import { FeedbackSchema } from "./session";
 
 export type StoredProblemSource = Exclude<
   PracticeProblemSource,
@@ -22,24 +23,7 @@ export type ProblemDoc = {
     { source: PracticeProblemSource.AiGenerated; }
   );
 
-export type FeedbackCategory =
-  | "understandingAndCommunication"
-  | "problemSolvingAndReasoning"
-  | "codeImplementation"
-  | "complexityAnalysis";
-
-export type FeedbackScores = {
-  [K in FeedbackCategory]: {
-    score: number;
-    reason: string;
-  };
-};
-
-export interface FeedbackData {
-  scores: FeedbackScores;
-  strengths: string[];
-  suggestions: string[];
-}
+export type FeedbackData = z.infer<typeof FeedbackSchema>;
 
 export type SessionDoc = {
   id: string;
