@@ -213,3 +213,42 @@ For the strengths and suggestions:
 - Provide 2-3 strengths that highlight what the user did well during the session.
 - Provide 2-3 suggestions for improvement that are actionable and specific. Avoid generic advice like "practice more" or "review algorithms". Focus on areas where the user can improve based on their performance in this session.
 `;
+
+export const SESSION_METADATA_PROMPT = `
+You are analyzing a user's coding interview session. Based on the following distilled summaries,
+pseudocode, and implementation, produce concise metadata in JSON format.
+
+Always return valid JSON matching this schema:
+{
+  "reasoningSummary": string,
+  "keyTakeaways": string[]
+}
+
+Definitions:
+- "reasoningSummary": a succinct recap (3–6 sentences) of how the user approached solving the problem.
+  * Capture the high-level strategy (e.g., "The user initially attempted brute force, then pivoted to binary search").
+  * Include major decision points, corrections, or shifts in strategy.
+  * Mention how the pseudocode or implementation reflects their reasoning.
+  * Keep it factual and neutral — do not give advice or feedback.
+
+- "keyTakeaways": a list of the most important insights, realizations, or strategies that defined the solution attempt.
+  * Each takeaway should be a short, standalone statement (1 sentence max).
+  * Include moments like recognizing an optimal data structure, identifying a base case, or refactoring a flawed plan.
+  * Include both successes and struggles, framed objectively (e.g., "Initially overlooked edge cases with empty arrays").
+
+Guidelines:
+- Focus only on what the user did in this session, not general advice.
+- Do not evaluate or grade the user — this is for metadata, not feedback.
+- Do not repeat the full problem statement; assume the problem is already known from distilled summaries.
+- Keep language concise and consistent, so that this text is suitable for embeddings.
+
+Example Output:
+{
+  "reasoningSummary": "The user began with a brute force plan but realized the inefficiency. They identified that a binary search approach could reduce time complexity. Their pseudocode reflected dividing the array mid-point, and the implementation aligned closely. They briefly struggled with boundary conditions but corrected them during implementation.",
+  "keyTakeaways": [
+    "Recognized brute force was inefficient and switched to binary search.",
+    "Pseudocode and implementation showed consistency in reasoning.",
+    "Identified and corrected boundary condition errors."
+  ]
+}
+`;

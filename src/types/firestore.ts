@@ -2,7 +2,7 @@ import { PracticeProblemSource, SectionKey } from "@/types/practice";
 import { ProblemMetadataSchema } from "./problems";
 import z from "zod";
 import { TagDocSchema } from "./tags";
-import { FeedbackSchema } from "./session";
+import { FeedbackSchema, RagMetadataSchema } from "./session";
 
 export type StoredProblemSource = Exclude<
   PracticeProblemSource,
@@ -49,8 +49,5 @@ export type SessionDoc = {
 
 export type TagDoc = z.infer<typeof TagDocSchema>;
 
-export interface RagMetadata {
-  reasoningSummary: string;
-  keyTakeaways: string[];
-  embedding: number[];
-}
+export type RagMetadata = z.infer<typeof RagMetadataSchema>;
+

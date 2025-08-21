@@ -29,18 +29,19 @@ export async function createSessionDoc(params: {
 
   const isCustom = practiceProblem.source === PracticeProblemSource.Custom;
 
-  const ragMetadata = await generateRagMetadata({
+  const ragMetadata = await generateRagMetadata(
     distilledSummaries,
-    pseudocode,
     implementation,
-    practiceProblem,
-  });
+    implementationLanguage,
+    pseudocode
+  );
 
-  const feedback = await generateFeedbackData({
+  const feedback = await generateFeedbackData(
     distilledSummaries,
-    pseudocode,
     implementation,
-  });
+    implementationLanguage,
+    pseudocode
+  );
 
   let sessionDoc: SessionDoc;
 

@@ -22,3 +22,16 @@ export const FeedbackSchema = z.object({
   strengths: z.array(z.string()),
   suggestions: z.array(z.string()),
 });
+
+export const RagMetadataSchema = z.object({
+  reasoningSummary: z.string(),
+  keyTakeaways: z.array(z.string()),
+  embedding: z.array(z.number()),
+});
+
+export const RagMetadataPartialSchema = RagMetadataSchema.pick({
+  reasoningSummary: true,
+  keyTakeaways: true,
+});
+
+export type RagMetadataPartial = z.infer<typeof RagMetadataPartialSchema>;

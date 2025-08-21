@@ -1,10 +1,11 @@
 import { RagMetadata, FeedbackData, ProblemMetadata, StoredProblemSource, TagDoc } from "@/types/firestore";
-import { PracticeProblem, PracticeProblemSource, SectionKey } from "@/types/practice";
+import { SectionKey } from "@/types/practice";
+import { LanguageKey } from "./codeMirror";
 
 export async function generateFeedbackData(
   distilledSummaries: Record<SectionKey, string>,
   implementation: string,
-  implementationLanguage: string,
+  implementationLanguage: LanguageKey,
   pseudocode?: string,
 ): Promise<FeedbackData> {
   const res = await fetch("/api/generate-feedback", {
@@ -26,20 +27,29 @@ export async function generateFeedbackData(
   return feedback;
 }
 
-// Placeholder for metadata generation
-export async function generateRagMetadata(input: {
-  distilledSummaries: Record<SectionKey, string>;
-  practiceProblem: PracticeProblem;
-  implementation: string;
-  pseudocode?: string;
-}): Promise<RagMetadata> {
-  // TODO: Implement with LLM call
-  const { distilledSummaries, practiceProblem, implementation, pseudocode } = input;
-  return {
-    reasoningSummary: "Placeholder reasoning summary",
-    keyTakeaways: ["Placeholder takeaway"],
-    embedding: [], // Placeholder for vector embedding
-  };
+export async function generateRagMetadata(
+  distilledSummaries: Record<SectionKey, string>,
+  implementation: string,
+  implementationLanguage: LanguageKey,
+  pseudocode?: string
+): Promise<RagMetadata> {
+  const res = await fetch("/api/session-metadata", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      distilledSummaries,
+      implementation,
+      implementationLanguage,
+      pseudocode,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to generate session metadata: ${res.status} ${res.statusText}`);
+  }
+
+  const ragMetadata: RagMetadata = await res.json();
+  return ragMetadata;
 }
 
 export async function generateProblemMetadata(
