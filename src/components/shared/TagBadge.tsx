@@ -1,11 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { LCTag } from "@/types/leetcode";
 
 export function TagBadge({
-  tag,
+  tagName,
   className,
-}: React.ComponentProps<"span"> & { tag: LCTag }) {
+}: React.ComponentProps<"span"> & { tagName: string }) {
   return (
     <Badge
       className={cn(
@@ -13,7 +12,7 @@ export function TagBadge({
         className,
       )}
     >
-      {tag.name}
+      {tagName}
     </Badge>
   );
 }

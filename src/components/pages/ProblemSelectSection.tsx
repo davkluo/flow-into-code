@@ -245,9 +245,9 @@ export function ProblemSelectSection({
           {selectedProblem && (
             <div className="mt-2 flex flex-col gap-2 text-xs">
               <div className="text-muted-foreground flex gap-1">
-                Topics:{" "}
+                Tags:{" "}
                 {selectedProblem.topicTags.map((tag) => (
-                  <TagBadge key={tag.id} tag={tag} />
+                  <TagBadge key={tag.id} tagName={tag.name} />
                 ))}
               </div>
 

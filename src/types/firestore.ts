@@ -3,6 +3,7 @@ import { ProblemMetadataSchema } from "./problems";
 import z from "zod";
 import { TagDocSchema } from "./tags";
 import { FeedbackSchema, RagMetadataSchema } from "./session";
+import { LanguageKey } from "@/lib/codeMirror";
 
 export type StoredProblemSource = Exclude<
   PracticeProblemSource,
@@ -13,14 +14,13 @@ export type ProblemMetadata = z.infer<typeof ProblemMetadataSchema>;
 
 export type ProblemDoc = {
   id: string;
-  title?: string;
-  difficulty?: "Easy" | "Medium" | "Hard";
+  title: string;
+  difficulty: "Easy" | "Medium" | "Hard";
   tags: string[];
   metadata: ProblemMetadata;
-  lastFetchedAt?: string;
 } & (
-    { source: PracticeProblemSource.LeetCode; leetcodeId?: string; titleSlug?: string; } |
-    { source: PracticeProblemSource.AiGenerated; }
+    { source: PracticeProblemSource.LeetCode; leetcodeId: string; titleSlug: string; } |
+    { source: PracticeProblemSource.AiGenerated; description: string; }
   );
 
 export type FeedbackData = z.infer<typeof FeedbackSchema>;
@@ -31,7 +31,7 @@ export type SessionDoc = {
   createdAt: string;
   distilledSummaries: Record<SectionKey, string>;
   implementation: string;
-  implementationLanguage: string;
+  implementationLanguage: LanguageKey;
   feedback: FeedbackData;
   ragMetadata: RagMetadata;
   totalTimeSec: number;

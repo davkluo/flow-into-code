@@ -1,4 +1,6 @@
-import { RagMetadata, FeedbackData, ProblemMetadata, StoredProblemSource, TagDoc } from "@/types/firestore";
+import {
+  RagMetadata, FeedbackData, ProblemMetadata, StoredProblemSource, TagDoc
+} from "@/types/firestore";
 import { SectionKey } from "@/types/practice";
 import { LanguageKey } from "./codeMirror";
 

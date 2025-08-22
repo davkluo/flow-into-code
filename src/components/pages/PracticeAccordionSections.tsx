@@ -148,8 +148,6 @@ export function PracticeAccordionSections({
 
     setIsGeneratingFeedback(true);
 
-    return;
-
     const sessionDocId = await createSessionDoc({
       userId: user.uid,
       practiceProblem: problem,
@@ -362,9 +360,9 @@ export function PracticeAccordionSections({
               <AlertDialogCancel>Cancel</AlertDialogCancel>
               <AlertDialogAction
                 onClick={async () => {
-                  startTimer();
                   await handleProblemStart();
                   proceedNextSection();
+                  startTimer();
                 }}
                 autoFocus
               >
