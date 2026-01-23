@@ -1,23 +1,29 @@
-export type LCProblem = {
-  difficulty: "Easy" | "Medium" | "Hard";
-  leetcodeId: string;
+export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
+
+export interface LCProblem {
+  id: string; // LeetCode numbering
+  difficulty: ProblemDifficulty;
   isPaidOnly: boolean;
-  title: string;
-  titleSlug: string;
+  title: string; // for display
+  titleSlug: string; // identifier & url
   topicTags: LCTag[];
-};
+}
 
-export type LCProblemDetails = {
-  content: string;
-};
-
-export type LCProblemWithDetails = LCProblem & {
-  id: string; // Firestore ID
-  details: LCProblemDetails;
-};
-
-export type LCTag = {
+export interface LCTag {
   name: string;
   id: string;
   slug: string;
-};
+}
+
+export interface LCProblemWithDetails extends LCProblem {
+  content: string;
+}
+
+export interface ProcessedProblem extends LCProblemWithDetails {
+  framing: { canonical: string; backend?: string; systems?: string };
+  customHints: string[];
+  commonMistakes: string[];
+  solutionStructure: string;
+  sampleApproach: string;
+  processedAt: Date;
+}

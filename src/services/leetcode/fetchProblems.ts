@@ -20,11 +20,6 @@ export async function fetchLCProblems(): Promise<LCProblem[]> {
   });
 
   const json = await res.json();
-  type FetchedLCProblem = Omit<LCProblem, "leetcodeId"> & { id: string; };
 
-  return json.data.problemsetQuestionList.questions.map((problem: FetchedLCProblem) => ({
-    ...problem,
-    leetcodeId: problem.id, // Change id to leetcodeId
-    id: undefined, // Remove the original id field
-  }));
+  return json.data.problemsetQuestionList.questions;
 }
