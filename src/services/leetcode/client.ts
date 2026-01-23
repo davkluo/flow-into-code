@@ -28,6 +28,14 @@ const PROBLEM_LIST_QUERY = `
   }
 `;
 
+const PROBLEM_DETAIL_QUERY = `
+  query getQuestionDetail($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      content
+    }
+  }
+`;
+
 /**
  * Fetch a single page of LeetCode problems.
  * Returns total count of all problems and the current page of problems.
@@ -89,10 +97,29 @@ export async function fetchLCProblems(): Promise<LCProblem[]> {
   return allProblems;
 }
 
-export const lcProblemDetailQuery = `
-  query getQuestionDetail($titleSlug: String!) {
-    question(titleSlug: $titleSlug) {
-      content
-    }
+/**
+ * Fetch raw LeetCode problem description (HTML/markdown).
+ */
+export async function fetchLCProblemContent(slug: string): Promise<string> {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: PROBLEM_DETAIL_QUERY,
+      variables: { titleSlug: slug },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`LeetCode detail fetch failed: ${res.status}`);
   }
-`;
+
+  const json = await res.json();
+  const content = json?.data?.question?.content;
+
+  if (typeof content !== "string") {
+    throw new Error("LeetCode returned invalid problem content");
+  }
+
+  return content;
+}

@@ -43,24 +43,20 @@ export function ProblemSelectSection({
   const getOrCreateProcessedProblem = async (
     problem: LCProblem,
   ): Promise<PracticeProblem> => {
-    // TODO: Check Firestore first, then generate if needed
-    // For now, create mock processed problem
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ...problem,
-          content: `Mock LeetCode description for ${problem.titleSlug}`,
-          framing: {
-            canonical: `This problem helps you understand how to work with ${problem.topicTags.map((t) => t.name).join(", ")} in real-world scenarios.`,
-          },
-          customHints: [],
-          commonMistakes: [],
-          solutionStructure: "",
-          sampleApproach: "",
-          processedAt: new Date(),
-        });
-      }, 500);
+    const response = await fetch("/api/process-problem", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(problem),
     });
+
+    if (!response.ok) {
+      throw new Error("Failed to process problem");
+    }
+
+    const processedProblem = (await response.json()) as PracticeProblem;
+    return processedProblem;
   };
 
   const debouncedSetSearch = useMemo(
@@ -83,11 +79,16 @@ export function ProblemSelectSection({
     setOpen(false);
     setIsProcessing(true);
 
-    const processed = await getOrCreateProcessedProblem(problem);
-
-    setProcessedProblem(processed);
-    setIsProcessing(false);
-    onProblemSelect(processed);
+    try {
+      const processed = await getOrCreateProcessedProblem(problem);
+      setProcessedProblem(processed);
+      onProblemSelect(processed);
+    } catch (error) {
+      console.error("Failed to process problem:", error);
+      // TODO: Display toast notification for error
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   useEffect(() => {

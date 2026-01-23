@@ -1,0 +1,41 @@
+import { stripHtml } from "@/lib/formatting";
+import { fetchLCProblemContent } from "@/services/leetcode/client";
+import { LCProblem, ProcessedProblem } from "@/types/leetcode";
+
+/**
+ * Process a problem and save to Firestore.
+ * Assumes LCProblem metadata already exists (from selection step).
+ */
+export async function getProcessedProblem(
+  problem: LCProblem,
+): Promise<ProcessedProblem> {
+  // --- Firestore read (disabled for now) ---
+  // const cached = await problemRepo.getBySlug(problem.titleSlug);
+  // if (cached?.processedAt) {
+  //   return cached as ProcessedProblem;
+  // }
+
+  const rawContent = await fetchLCProblemContent(problem.titleSlug);
+  const cleanedContent = stripHtml(rawContent);
+
+  // Replace later with LLM calls
+  const processed: ProcessedProblem = {
+    ...problem,
+    originalContent: cleanedContent,
+    framing: {
+      canonical: `Solve the ${problem.title} problem efficiently.`,
+    },
+    hints: [
+      "Think about the core data structure needed.",
+      "Consider edge cases early.",
+    ],
+    pitfalls: ["Off-by-one errors", "Forgetting to handle empty input"],
+    solutions: ["Brute force approach", "Optimized approach using a hash map"],
+    processedAt: Date.now(),
+  };
+
+  // --- Firestore write (disabled for now) ---
+  // await problemRepo.upsertMany([processed]);
+
+  return processed;
+}

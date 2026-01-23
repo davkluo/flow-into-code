@@ -15,15 +15,15 @@ export interface LCTag {
   slug: string;
 }
 
-export interface LCProblemWithDetails extends LCProblem {
-  content: string;
-}
-
-export interface ProcessedProblem extends LCProblemWithDetails {
-  framing: { canonical: string; backend?: string; systems?: string };
-  customHints: string[];
-  commonMistakes: string[];
-  solutionStructure: string;
-  sampleApproach: string;
-  processedAt: Date;
+export interface ProcessedProblem extends LCProblem {
+  originalContent: string;
+  framing: {
+    canonical: string;
+    backend?: string;
+    systems?: string;
+  };
+  hints: string[];
+  pitfalls: string[];
+  solutions: string[];
+  processedAt: number;
 }
