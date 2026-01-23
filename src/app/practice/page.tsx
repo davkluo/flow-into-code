@@ -1,10 +1,10 @@
 import { PracticeAccordionSections } from "@/components/pages/PracticeAccordionSections";
 import { Timer } from "@/components/pages/Timer";
 import { TimerProvider } from "@/context/TimerContext";
-import { fetchLCProblems } from "@/services/leetcode/fetchProblems";
+import { getLCProblems } from "@/services/getLCProblems";
 
 export default async function PracticePage() {
-  const problems = await fetchLCProblems();
+  const problems = await getLCProblems();
 
   return (
     <TimerProvider defaultTime={1800}>
