@@ -19,7 +19,17 @@ export async function fetchLCProblems(): Promise<LCProblem[]> {
     next: { revalidate: 86400 }, // Revalidate every 24 hours
   });
 
+  if (!res.ok) {
+    throw new Error(`LeetCode GraphQL failed: ${res.status}`);
+  }
+
   const json = await res.json();
 
-  return json.data.problemsetQuestionList.questions;
+  const questions = json?.data?.problemsetQuestionList?.questions;
+
+  if (!Array.isArray(questions)) {
+    throw new Error("Unexpected LeetCode GraphQL response shape");
+  }
+
+  return questions as LCProblem[];
 }
