@@ -1,6 +1,7 @@
+import * as metaRepo from "@/repositories/firestore/problemIndexMetaRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
+import { fetchLCProblems } from "@/services/leetcode/client";
 import { LCProblem } from "@/types/leetcode";
-import { fetchLCProblems } from "./leetcode/fetchProblems";
 
 /**
  * Get LeetCode problems for the app.
@@ -9,14 +10,16 @@ import { fetchLCProblems } from "./leetcode/fetchProblems";
  * - Persist on cache miss by writing to Firestore
  */
 export async function getLCProblems(): Promise<LCProblem[]> {
-  const cachedProblems = await problemRepo.getAll();
+  const meta = await metaRepo.get();
 
-  if (cachedProblems.length > 0) {
+  if (meta?.fullyPopulated) {
+    const cachedProblems = await problemRepo.getAll();
     return cachedProblems;
   }
 
   const freshProblems = await fetchLCProblems();
   await problemRepo.upsertMany(freshProblems);
+  await metaRepo.markFullyPopulated();
 
   return freshProblems;
 }
