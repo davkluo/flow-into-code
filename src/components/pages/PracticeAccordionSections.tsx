@@ -88,7 +88,7 @@ export function PracticeAccordionSections({
     setProblem({
       ...problem,
       content: "",
-      realWorldContext: "",
+      framing: { canonical: "" },
       customHints: [],
       commonMistakes: [],
       solutionStructure: "",

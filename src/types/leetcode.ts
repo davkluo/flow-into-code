@@ -20,7 +20,7 @@ export interface LCProblemWithDetails extends LCProblem {
 }
 
 export interface ProcessedProblem extends LCProblemWithDetails {
-  realWorldContext: string;
+  framing: { canonical: string; backend?: string; systems?: string };
   customHints: string[];
   commonMistakes: string[];
   solutionStructure: string;

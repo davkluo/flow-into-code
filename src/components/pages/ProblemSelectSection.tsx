@@ -50,7 +50,9 @@ export function ProblemSelectSection({
         resolve({
           ...problem,
           content: `Mock LeetCode description for ${problem.titleSlug}`,
-          realWorldContext: `This problem helps you understand how to work with ${problem.topicTags.map((t) => t.name).join(", ")} in real-world scenarios.`,
+          framing: {
+            canonical: `This problem helps you understand how to work with ${problem.topicTags.map((t) => t.name).join(", ")} in real-world scenarios.`,
+          },
           customHints: [],
           commonMistakes: [],
           solutionStructure: "",
@@ -201,7 +203,7 @@ export function ProblemSelectSection({
               <div className="mt-2">
                 <p className="font-semibold">Problem Context:</p>
                 <p className="text-muted-foreground mt-1">
-                  {processedProblem.realWorldContext}
+                  {processedProblem.framing.canonical}
                 </p>
               </div>
             )}
