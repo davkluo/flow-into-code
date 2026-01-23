@@ -1,34 +1,25 @@
-import { ExternalLink } from "lucide-react";
 import Link from "next/link";
-import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
-import { TagBadge } from "@/components/shared/TagBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { languageOptions } from "@/lib/codeMirror";
-import { getProblemByIdAdmin, getSessionDocAdmin } from "@/lib/firestore/admin";
-import { denormalizeTagName } from "@/lib/firestore/tags";
-import { ProblemDoc, SessionDoc } from "@/types/firestore";
-import { PracticeProblemSource } from "@/types/practice";
+import { getSessionDocAdmin } from "@/lib/firestore/admin";
+import { SessionDoc } from "@/types/firestore";
 
 interface FeedbackPageProps {
-  params: {
+  params: Promise<{
     session_id: string;
-  };
+  }>;
 }
 
 export default async function FeedbackPage({ params }: FeedbackPageProps) {
   const { session_id } = await params;
 
   let sessionDoc: SessionDoc | undefined;
-  let refProblem: ProblemDoc | undefined;
 
   try {
     sessionDoc = await getSessionDocAdmin(session_id);
-    if (sessionDoc.practiceProblemSource !== PracticeProblemSource.Custom) {
-      refProblem = await getProblemByIdAdmin(sessionDoc.problemRefId);
-    }
   } catch (error) {
     console.error(`Error fetching session ${session_id}:`, error);
     return (
@@ -52,112 +43,14 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
         {/* PROBLEM CARD */}
         <Card>
           <CardHeader>
-            <CardTitle>
-              Problem:{" "}
-              {(() => {
-                switch (sessionDoc.practiceProblemSource) {
-                  case PracticeProblemSource.Custom:
-                    return "Custom Problem";
-
-                  case PracticeProblemSource.LeetCode:
-                    if (
-                      refProblem &&
-                      refProblem.source === PracticeProblemSource.LeetCode
-                    ) {
-                      return `LeetCode - ${refProblem.leetcodeId}. ${refProblem.title}`;
-                    }
-
-                  case PracticeProblemSource.AiGenerated:
-                    if (
-                      refProblem &&
-                      refProblem.source === PracticeProblemSource.AiGenerated
-                    ) {
-                      return `AI Generated Problem - ${refProblem.title}`;
-                    }
-
-                  default:
-                    return "Unknown Problem Source";
-                }
-              })()}
-            </CardTitle>
+            <CardTitle>Problem: </CardTitle>
             <div className="text-muted-foreground text-xs font-normal italic">
               Session completed on{" "}
               {new Date(sessionDoc.createdAt).toLocaleDateString()}
             </div>
           </CardHeader>
           <CardContent className="-mt-2">
-            <div className="flex flex-col gap-4 text-sm">
-              {(() => {
-                switch (sessionDoc.practiceProblemSource) {
-                  case PracticeProblemSource.Custom:
-                    return <p>{sessionDoc.problemInline.description}</p>;
-
-                  case PracticeProblemSource.LeetCode:
-                    if (
-                      refProblem &&
-                      refProblem.source === PracticeProblemSource.LeetCode
-                    ) {
-                      return (
-                        <div className="flex flex-col gap-2">
-                          <div className="font-semibold">
-                            Description:{" "}
-                            <a
-                              href={`https://leetcode.com/problems/${refProblem.titleSlug}/description/`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <span className="text-muted-foreground flex items-center text-xs font-normal hover:underline">
-                                View problem description on LeetCode
-                                <ExternalLink className="ml-1.5 inline h-4 w-4" />
-                              </span>
-                            </a>
-                          </div>
-                          <div className="font-semibold">
-                            Difficulty:{" "}
-                            <DifficultyBadge
-                              difficulty={refProblem.difficulty}
-                            />
-                          </div>
-                          {refProblem.tags.length > 0 && (
-                            <div className="flex gap-1 font-semibold">
-                              Tags:{" "}
-                              {refProblem.tags.map((tag) => (
-                                <TagBadge
-                                  key={tag}
-                                  tagName={denormalizeTagName(tag)}
-                                />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                  case PracticeProblemSource.AiGenerated:
-                    if (
-                      !refProblem ||
-                      refProblem.source !== PracticeProblemSource.AiGenerated ||
-                      !refProblem.title ||
-                      !refProblem.description
-                    ) {
-                      return (
-                        <div>Error: AI-generated problem data is missing.</div>
-                      );
-                    }
-                    return (
-                      <div>
-                        <div>AI Generated Problem - {refProblem.title}</div>
-                        <p>{refProblem.description}</p>
-                      </div>
-                    );
-
-                  default:
-                    return (
-                      <div>Error occurred while displaying the problem.</div>
-                    );
-                }
-              })()}
-            </div>
+            <div className="flex flex-col gap-4 text-sm">WIP</div>
           </CardContent>
         </Card>
 

@@ -1,8 +1,8 @@
 import { collection, doc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { SessionDoc } from "@/types/firestore";
-import { PracticeProblem, PracticeProblemSource, SectionKey } from "@/types/practice";
 import { generateFeedbackData, generateRagMetadata } from "@/lib/llmGeneration";
+import { SessionDoc } from "@/types/firestore";
+import { PracticeProblem, SectionKey } from "@/types/practice";
 import { LanguageKey } from "../codeMirror";
 
 export async function createSessionDoc(params: {
@@ -27,58 +27,33 @@ export async function createSessionDoc(params: {
     totalTimeSec,
   } = params;
 
-  const isCustom = practiceProblem.source === PracticeProblemSource.Custom;
-
   const ragMetadata = await generateRagMetadata(
     distilledSummaries,
     implementation,
     implementationLanguage,
-    pseudocode
+    pseudocode,
   );
 
   const feedback = await generateFeedbackData(
     distilledSummaries,
     implementation,
     implementationLanguage,
-    pseudocode
+    pseudocode,
   );
 
-  let sessionDoc: SessionDoc;
-
-  if (isCustom) {
-    sessionDoc = {
-      id: sessionId,
-      userId,
-      createdAt: new Date().toISOString(),
-      practiceProblemSource: practiceProblem.source,
-      problemInline: {
-        description: practiceProblem.problem.description,
-        tags: [], // TODO: Handle tags for custom problems
-      },
-      distilledSummaries,
-      pseudocode,
-      implementation,
-      implementationLanguage,
-      totalTimeSec,
-      feedback,
-      ragMetadata,
-    };
-  } else {
-    sessionDoc = {
-      id: sessionId,
-      userId,
-      createdAt: new Date().toISOString(),
-      practiceProblemSource: practiceProblem.source,
-      problemRefId: practiceProblem.problem.id,
-      distilledSummaries,
-      pseudocode,
-      implementation,
-      implementationLanguage,
-      totalTimeSec,
-      feedback,
-      ragMetadata,
-    };
-  }
+  const sessionDoc: SessionDoc = {
+    id: sessionId,
+    userId,
+    createdAt: new Date().toISOString(),
+    problemTitleSlug: practiceProblem.titleSlug,
+    distilledSummaries,
+    pseudocode,
+    implementation,
+    implementationLanguage,
+    totalTimeSec,
+    feedback,
+    ragMetadata,
+  };
 
   await setDoc(sessionRef, sessionDoc);
 

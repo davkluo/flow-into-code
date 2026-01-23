@@ -1,5 +1,5 @@
 import {
-  RagMetadata, FeedbackData, ProblemMetadata, StoredProblemSource, TagDoc
+  RagMetadata, FeedbackData, ProblemMetadata, TagDoc
 } from "@/types/firestore";
 import { SectionKey } from "@/types/practice";
 import { LanguageKey } from "./codeMirror";
@@ -58,12 +58,11 @@ export async function generateProblemMetadata(
   title: string,
   description: string,
   tags: string[],
-  source: StoredProblemSource,
 ): Promise<ProblemMetadata> {
   const res = await fetch("/api/problem-metadata", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title, description, tags, source }),
+    body: JSON.stringify({ title, description, tags }),
   });
 
   if (!res.ok) {

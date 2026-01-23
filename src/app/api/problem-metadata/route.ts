@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { openAIClient } from "@/lib/openai";
 import { PROBLEM_METADATA_PROMPT } from "@/lib/prompts";
-import { PracticeProblemSource } from "@/types/practice";
 import { ProblemMetadata } from "@/types/firestore";
 import { ProblemMetadataSchema } from "@/types/problems";
 
 export async function POST(req: Request) {
   try {
-    const { title, source, description, tags } = await req.json();
+    const { title, description, tags } = await req.json();
 
     const response = await openAIClient.chat.completions.create({
       model: "gpt-4o-mini",
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
           role: "system",
           content: `
           Title: ${title}
-          Source: ${source === PracticeProblemSource.LeetCode ? "LeetCode" : "AI Generated"}
+          Source: "LeetCode"}
           Description: ${description}
           ${tags ? `Tags: ${tags.join(", ")}` : ""}
           `,
@@ -32,7 +31,10 @@ export async function POST(req: Request) {
 
     const raw = response.choices[0].message?.content;
     if (!raw) {
-      return NextResponse.json({ error: "No metadata returned from LLM" }, { status: 500 });
+      return NextResponse.json(
+        { error: "No metadata returned from LLM" },
+        { status: 500 },
+      );
     }
 
     let parsed: ProblemMetadata;
@@ -41,7 +43,10 @@ export async function POST(req: Request) {
     } catch (e) {
       console.error("Failed to parse LLM output as ProblemMetadata:", e);
       console.error("Invalid metadata format:", raw);
-      return NextResponse.json({ error: "Invalid metadata format:", raw }, { status: 500 });
+      return NextResponse.json(
+        { error: "Invalid metadata format:", raw },
+        { status: 500 },
+      );
     }
 
     return NextResponse.json(parsed);
@@ -49,7 +54,7 @@ export async function POST(req: Request) {
     console.error("Error in problem-metadata API route:", err);
     return NextResponse.json(
       { error: "Failed to generate problem metadata" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

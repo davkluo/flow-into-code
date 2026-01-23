@@ -1,23 +1,17 @@
 import { LLMState } from "@/hooks/useLLM";
-import { PracticeProblem } from "@/types/practice";
-import { PRACTICE_SECTIONS } from "@/lib/practice";
 import { capitalize } from "@/lib/formatting";
+import { PRACTICE_SECTIONS } from "@/lib/practice";
+import { PracticeProblem } from "@/types/practice";
 
 export const getProblemContext = (problem: PracticeProblem): string => {
-  if ("title" in problem.problem) {
-    return `Problem: ${problem.problem.title} (LeetCode #${problem.problem.id})\n${problem.problem.details.content}`;
-  } else {
-    return `Custom Problem:\n${problem.problem.description}`;
-  }
+  return `Problem: ${problem.title} (LeetCode #${problem.id})\n${problem.content}`;
 };
 
 export const getDistilledSummariesContext = (llmState: LLMState): string => {
-  const summaries = PRACTICE_SECTIONS
-    .map((section) => {
-      const summary = llmState[section]?.distilledSummary;
-      return summary ? `• ${capitalize(section)}: ${summary}` : null;
-    })
-    .filter(Boolean);
+  const summaries = PRACTICE_SECTIONS.map((section) => {
+    const summary = llmState[section]?.distilledSummary;
+    return summary ? `• ${capitalize(section)}: ${summary}` : null;
+  }).filter(Boolean);
 
   return summaries.length > 0
     ? `Summary of conversations thus far:\n\n${summaries.join("\n\n")}`
@@ -35,7 +29,5 @@ export const getArtifactsContext = (llmState: LLMState): string => {
 
   const artifacts = [pseudocode, code].filter(Boolean);
 
-  return artifacts.length > 0
-    ? `Artifacts:\n\n${artifacts.join("\n\n")}`
-    : "";
+  return artifacts.length > 0 ? `Artifacts:\n\n${artifacts.join("\n\n")}` : "";
 };
