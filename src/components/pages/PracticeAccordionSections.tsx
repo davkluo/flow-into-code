@@ -15,11 +15,11 @@ import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
-import {
-  createProblem,
-  getProblemById,
-  getProblemByLeetCodeId,
-} from "@/lib/firestore/problems";
+// import {
+//   createProblem,
+//   getProblemById,
+//   getProblemByLeetCodeId,
+// } from "@/lib/firestore/problems";
 import { createSessionDoc } from "@/lib/firestore/session";
 import {
   PRACTICE_SECTIONS,
@@ -27,11 +27,7 @@ import {
   sectionToIndex,
 } from "@/lib/practice";
 import { LCProblem } from "@/types/leetcode";
-import {
-  PracticeProblem,
-  PracticeProblemSource,
-  SectionKey,
-} from "@/types/practice";
+import { PracticeProblem, SectionKey } from "@/types/practice";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,48 +83,20 @@ export function PracticeAccordionSections({
   const handleProblemStart = async () => {
     if (!problem) return;
 
-    if (problem.source === "leetcode") {
-      const existing = await getProblemByLeetCodeId(problem.problem.leetcodeId);
-      if (existing) {
-        setProblem({
-          source: PracticeProblemSource.LeetCode,
-          problem: {
-            ...problem.problem,
-            id: existing.id,
-          },
-        });
-        llm.setDistilledSummary("selection", existing.metadata.summary);
-      } else {
-        toast("You are the first to attempt this problem!", {
-          description: "Please be patient while we generate metadata.",
-        });
-        setIsLoadingProblem(true);
-        const id = await createProblem({
-          source: PracticeProblemSource.LeetCode,
-          problem: {
-            ...problem.problem,
-            id: problem.problem.leetcodeId.toString(),
-          },
-        });
-        const newProblem = await getProblemById(id);
-        if (!newProblem) {
-          toast.error(
-            "Failed to create problem. Please refresh the page and try again.",
-          );
-          return;
-        }
-        setProblem({
-          source: PracticeProblemSource.LeetCode,
-          problem: {
-            ...problem.problem,
-            id,
-          },
-        });
-        llm.setDistilledSummary("selection", newProblem.metadata.summary);
-      }
-    }
+    // TODO: Fetch from Firestore or generate ProcessedProblem
+    // For now, populate with dummy data
+    setProblem({
+      ...problem,
+      content: "",
+      realWorldContext: "",
+      customHints: [],
+      commonMistakes: [],
+      solutionStructure: "",
+      sampleApproach: "",
+      processedAt: new Date(),
+    });
 
-    // TODO: Handle custom and AI-generated problems
+    llm.setDistilledSummary("selection", "");
   };
 
   const handleSessionFinish = async () => {
@@ -346,14 +314,14 @@ export function PracticeAccordionSections({
               <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
               <AlertDialogDescription>
                 You have selected{" "}
-                {problem && "title" in problem?.problem
+                {/* {problem && "title" in problem?.problem
                   ? `the LeetCode problem: ${problem?.problem.title}`
                   : "a custom problem"}
                 <br />
                 <br />
                 The timer is currently set to {setpoint / 60} minutes. You will
                 receive a notification when the time is up. You can adjust the
-                timer in the settings.
+                timer in the settings. */}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
