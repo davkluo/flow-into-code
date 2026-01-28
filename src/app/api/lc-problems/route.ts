@@ -7,7 +7,8 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const limit = Number(searchParams.get("limit") ?? 20);
-  const cursor = searchParams.get("cursor") ?? undefined;
+  const cursorParam = searchParams.get("cursor");
+  const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
 
   const page = await getProblemPage({
     pageSize: limit,

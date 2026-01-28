@@ -17,6 +17,7 @@ import {
 import { LC_PROBLEMS_API_PATH } from "@/constants/api";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
+import { ProblemsPage } from "@/repositories/firestore/problemRepo";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ProblemsTable } from "./ProblemsTable";
@@ -34,7 +35,7 @@ export function ProblemSelectSection({
 }: ProblemSelectSectionProps) {
   const [pages, setPages] = useState<Record<number, LCProblem[]>>({});
   const [pageCursors, setPageCursors] = useState<
-    Record<number, string | undefined>
+    Record<number, number | undefined>
   >({});
   const [currentPage, setCurrentPage] = useState(1);
   const [maxDiscoveredPage, setMaxDiscoveredPage] = useState(1);
@@ -62,15 +63,13 @@ export function ProblemSelectSection({
 
       if (!res.ok) throw new Error("Failed to fetch page");
 
-      const data = await res.json();
+      const data: ProblemsPage = await res.json();
 
       // No more data, no extra pages
       if (data.problems.length === 0) {
         setIsEndReached(true);
         return;
       }
-
-      console.log(data.problems);
 
       setPages((prev) => ({ ...prev, [page]: data.problems }));
       setPageCursors((prev) => ({ ...prev, [page]: data.nextCursor }));

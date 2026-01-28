@@ -39,6 +39,12 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
   await batch.commit();
 }
 
+export interface ProblemsPage {
+  problems: LCProblem[];
+  nextCursor?: number;
+  hasMore: boolean;
+}
+
 /**
  * Get a page of LeetCode problems from Firestore.
  */
@@ -47,13 +53,9 @@ export async function getProblemPage({
   cursor,
 }: {
   pageSize: number;
-  cursor?: string;
-}): Promise<{
-  problems: LCProblem[];
-  nextCursor?: string;
-  hasMore: boolean;
-}> {
-  let q = adminDb.collection(COLLECTION).orderBy("id").limit(pageSize);
+  cursor?: number;
+}): Promise<ProblemsPage> {
+  let q = adminDb.collection(COLLECTION).orderBy("idNumber").limit(pageSize);
 
   if (cursor) {
     q = q.startAfter(cursor);
@@ -65,7 +67,7 @@ export async function getProblemPage({
 
   return {
     problems,
-    nextCursor: lastDoc?.get("id"),
+    nextCursor: lastDoc?.get("idNumber"),
     hasMore: snap.docs.length === pageSize,
   };
 }
