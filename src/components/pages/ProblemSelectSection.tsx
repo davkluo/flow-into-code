@@ -33,10 +33,12 @@ export function ProblemSelectSection({
   onProblemSelect,
   isEditable,
 }: ProblemSelectSectionProps) {
+  // Fetched pages are of size PAGE_SIZE
   const [pages, setPages] = useState<Record<number, LCProblem[]>>({});
   const [pageCursors, setPageCursors] = useState<
     Record<number, number | undefined>
   >({});
+
   const [currentPage, setCurrentPage] = useState(1);
   const [maxDiscoveredPage, setMaxDiscoveredPage] = useState(1);
   const [isEndReached, setIsEndReached] = useState(false);
@@ -160,20 +162,24 @@ export function ProblemSelectSection({
         Select a problem from LeetCode to begin your practice session.
       </p>
 
-      <ProblemsTable
-        problems={pages[currentPage] ?? []}
-        currentPage={currentPage}
-        maxPage={maxDiscoveredPage}
-        isEndReached={isEndReached}
-        isLoading={isLoading}
-        onPageChange={(page) => {
-          setCurrentPage(page);
-          loadPage(page);
-        }}
-        onProblemSelect={(problem) => {
-          // handle selection
-        }}
-      />
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        <div className="col-span-1">
+          <ProblemsTable
+            problems={pages[currentPage] ?? []}
+            currentPage={currentPage}
+            maxPage={maxDiscoveredPage}
+            isEndReached={isEndReached}
+            isLoading={isLoading}
+            onPageChange={(page) => {
+              setCurrentPage(page);
+              loadPage(page);
+            }}
+            onProblemSelect={(problem) => {
+              // handle selection
+            }}
+          />
+        </div>
+      </div>
 
       {/* <div className="flex flex-col gap-4">
         <Popover open={open} onOpenChange={setOpen}>
