@@ -1,4 +1,9 @@
-import { Badge } from "@/components/ui/badge";
+import { Flame, Leaf, Zap } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { LCProblem } from "@/types/leetcode";
 
@@ -6,17 +11,25 @@ export function DifficultyBadge({
   difficulty,
   className,
 }: React.ComponentProps<"span"> & Pick<LCProblem, "difficulty">) {
+  const Icon =
+    difficulty === "Easy" ? Leaf : difficulty === "Medium" ? Zap : Flame;
+
   return (
-    <Badge
-      className={cn(
-        "rounded-md px-1 py-0 text-xs",
-        difficulty == "Easy" && "bg-green-300 text-green-800",
-        difficulty == "Medium" && "bg-amber-300 text-amber-800",
-        difficulty == "Hard" && "bg-red-300 text-red-800",
-        className,
-      )}
-    >
-      {difficulty}
-    </Badge>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={cn(
+            "inline-flex items-center cursor-default",
+            difficulty === "Easy" && "text-green-600",
+            difficulty === "Medium" && "text-amber-500",
+            difficulty === "Hard" && "text-red-500",
+            className,
+          )}
+        >
+          <Icon className="h-4 w-4 translate-y-0.5" />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{difficulty}</TooltipContent>
+    </Tooltip>
   );
 }

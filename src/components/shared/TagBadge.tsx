@@ -8,7 +8,7 @@ export function TagBadge({
   return (
     <Badge
       className={cn(
-        "rounded-md bg-gray-200 px-1 py-0 text-xs text-gray-700",
+        "rounded-md bg-gray-300 px-1.5 py-0.5 text-xs text-gray-700 dark:bg-gray-600 dark:text-gray-200",
         className,
       )}
     >

@@ -1,22 +1,16 @@
 "use client";
 
-import _ from "lodash";
-import { Check, ChevronsUpDown, ExternalLink } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { FixedSizeList as List } from "react-window";
-import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
-import { TagBadge } from "@/components/shared/TagBadge";
+import { ExternalLink } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Command, CommandInput, CommandItem } from "@/components/ui/command";
+import { LC_PROBLEMS_API_PATH, PROBLEM_INDEX_META_API_PATH } from "@/constants/api";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { LC_PROBLEMS_API_PATH } from "@/constants/api";
-import { filterAndSortProblems } from "@/lib/search";
-import { cn } from "@/lib/utils";
+  CACHE_PAGE_SIZE,
+  getCachedPagesForUIPage,
+  getProblemsForUIPage,
+  getTotalUIPages,
+  ItemsPerPage,
+} from "@/lib/pagination";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
@@ -27,64 +21,115 @@ interface ProblemSelectSectionProps {
   isEditable: boolean;
 }
 
-const PAGE_SIZE = 20;
-
 export function ProblemSelectSection({
   onProblemSelect,
   isEditable,
 }: ProblemSelectSectionProps) {
-  const [pages, setPages] = useState<Record<number, LCProblem[]>>({});
+  // Cached pages from API (fixed size of CACHE_PAGE_SIZE = 20)
+  const [cachedPages, setCachedPages] = useState<Record<number, LCProblem[]>>(
+    {},
+  );
   const [pageCursors, setPageCursors] = useState<
     Record<number, number | undefined>
   >({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [maxDiscoveredPage, setMaxDiscoveredPage] = useState(1);
-  const [isEndReached, setIsEndReached] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
+  // UI pagination state
+  const [currentUIPage, setCurrentUIPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(5);
+  const [totalProblems, setTotalProblems] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState("");
+
+  // Selected problem for viewing details
+  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(null);
+
+  // Derived values
+  const totalUIPages = useMemo(
+    () => (totalProblems ? getTotalUIPages(totalProblems, itemsPerPage) : null),
+    [totalProblems, itemsPerPage],
+  );
+
+  const displayedProblems = useMemo(
+    () => getProblemsForUIPage(currentUIPage, itemsPerPage, cachedPages),
+    [currentUIPage, itemsPerPage, cachedPages],
+  );
+
+  // Fetch total problems count on mount
   useEffect(() => {
-    // Initial load
-    loadPage(1);
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch(PROBLEM_INDEX_META_API_PATH);
+        if (res.ok) {
+          const data = await res.json();
+          setTotalProblems(data.totalProblems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch problem index meta:", err);
+      }
+    };
+    fetchMeta();
   }, []);
 
-  const loadPage = async (page: number) => {
-    if (isLoading) return;
-    if (pages[page]) return; // already cached
-    if (isEndReached && page > maxDiscoveredPage) return;
+  // Load a cached page from the API
+  const loadCachedPage = useCallback(
+    async (cachePage: number) => {
+      if (cachedPages[cachePage]) return; // already cached
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    try {
-      const cursor = pageCursors[page - 1];
+      try {
+        const cursor = pageCursors[cachePage - 1];
 
-      const res = await fetch(
-        `${LC_PROBLEMS_API_PATH}?limit=${PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
-      );
+        const res = await fetch(
+          `${LC_PROBLEMS_API_PATH}?limit=${CACHE_PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
+        );
 
-      if (!res.ok) throw new Error("Failed to fetch page");
+        if (!res.ok) throw new Error("Failed to fetch page");
 
-      const data: ProblemsPage = await res.json();
+        const data: ProblemsPage = await res.json();
 
-      // No more data, no extra pages
-      if (data.problems.length === 0) {
-        setIsEndReached(true);
-        return;
+        if (data.problems.length > 0) {
+          setCachedPages((prev) => ({ ...prev, [cachePage]: data.problems }));
+          setPageCursors((prev) => ({ ...prev, [cachePage]: data.nextCursor }));
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [cachedPages, pageCursors],
+  );
 
-      setPages((prev) => ({ ...prev, [page]: data.problems }));
-      setPageCursors((prev) => ({ ...prev, [page]: data.nextCursor }));
-      setMaxDiscoveredPage((prev) => Math.max(prev, page));
-
-      // Last page reached
-      if (!data.hasMore) {
-        setIsEndReached(true);
+  // Load required cached pages for a UI page
+  const loadPagesForUIPage = useCallback(
+    async (uiPage: number) => {
+      const requiredCachePages = getCachedPagesForUIPage(uiPage, itemsPerPage);
+      for (const cachePage of requiredCachePages) {
+        await loadCachedPage(cachePage);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [itemsPerPage, loadCachedPage],
+  );
+
+  // Initial load
+  useEffect(() => {
+    loadPagesForUIPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setCurrentUIPage(newPage);
+      loadPagesForUIPage(newPage);
+    },
+    [loadPagesForUIPage],
+  );
+
+  const handleItemsPerPageChange = useCallback((newItemsPerPage: ItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentUIPage(1);
+  }, []);
 
   // const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
   //   null,
@@ -160,20 +205,77 @@ export function ProblemSelectSection({
         Select a problem from LeetCode to begin your practice session.
       </p>
 
-      <ProblemsTable
-        problems={pages[currentPage] ?? []}
-        currentPage={currentPage}
-        maxPage={maxDiscoveredPage}
-        isEndReached={isEndReached}
-        isLoading={isLoading}
-        onPageChange={(page) => {
-          setCurrentPage(page);
-          loadPage(page);
-        }}
-        onProblemSelect={(problem) => {
-          // handle selection
-        }}
-      />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="col-span-1">
+          <ProblemsTable
+            problems={displayedProblems}
+            currentPage={currentUIPage}
+            totalPages={totalUIPages}
+            isLoading={isLoading}
+            itemsPerPage={itemsPerPage}
+            search={search}
+            onSearchChange={setSearch}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            onProblemSelect={setSelectedProblem}
+          />
+        </div>
+
+        <div className="col-span-1">
+          {selectedProblem ? (
+            <div className="flex flex-col gap-4 rounded-lg border p-4">
+              <div>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-semibold">
+                    {selectedProblem.id}. {selectedProblem.title}
+                  </h3>
+                  <a
+                    href={`https://leetcode.com/problems/${selectedProblem.titleSlug}/description/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </div>
+                <div className="text-muted-foreground mt-1 text-sm">
+                  Difficulty: {selectedProblem.difficulty}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Problem Context</h4>
+                <p className="text-muted-foreground text-sm">
+                  This problem involves finding an optimal solution using dynamic
+                  programming techniques. The key insight is recognizing the
+                  overlapping subproblems structure.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Key Concepts</h4>
+                <ul className="text-muted-foreground list-inside list-disc text-sm">
+                  <li>Array manipulation</li>
+                  <li>Two-pointer technique</li>
+                  <li>Time complexity: O(n)</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Hints</h4>
+                <p className="text-muted-foreground text-sm">
+                  Consider how you might solve this if the array was sorted.
+                  What data structure could help track elements you&apos;ve seen?
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-muted-foreground flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center text-sm">
+              Select a problem to view details
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* <div className="flex flex-col gap-4">
         <Popover open={open} onOpenChange={setOpen}>

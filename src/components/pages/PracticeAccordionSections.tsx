@@ -20,7 +20,7 @@ import { LanguageKey } from "@/lib/codeMirror";
 //   getProblemById,
 //   getProblemByLeetCodeId,
 // } from "@/lib/firestore/problems";
-import { createSessionDoc } from "@/lib/firestore/session";
+// import { createSessionDoc } from "@/lib/firestore/session";
 import {
   PRACTICE_SECTIONS,
   SECTIONS_TO_NAME,
@@ -279,7 +279,7 @@ export function PracticeAccordionSections() {
         )}
       </Accordion>
 
-      {currentSectionIndex === 0 && (
+      {/* {currentSectionIndex === 0 && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
@@ -305,8 +305,8 @@ export function PracticeAccordionSections() {
             <AlertDialogHeader>
               <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
               <AlertDialogDescription>
-                You have selected{" "}
-                {/* {problem && "title" in problem?.problem
+                You have selected{" "} */}
+      {/* {problem && "title" in problem?.problem
                   ? `the LeetCode problem: ${problem?.problem.title}`
                   : "a custom problem"}
                 <br />
@@ -314,7 +314,7 @@ export function PracticeAccordionSections() {
                 The timer is currently set to {setpoint / 60} minutes. You will
                 receive a notification when the time is up. You can adjust the
                 timer in the settings. */}
-              </AlertDialogDescription>
+      {/* </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
@@ -416,7 +416,7 @@ export function PracticeAccordionSections() {
 
           <AISummaryDialog summaries={llm.getAllDistilledSummaries()} />
         </Dialog>
-      )}
+      )} */}
     </div>
   );
 }
