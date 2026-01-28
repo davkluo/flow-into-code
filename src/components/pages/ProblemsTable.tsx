@@ -1,36 +1,14 @@
 "use client";
 
-import { Eye, Lock, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, Lock, Search } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
-import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { ITEMS_PER_PAGE_OPTIONS, ItemsPerPage } from "@/lib/pagination";
 import { LCProblem } from "@/types/leetcode";
 
@@ -109,95 +87,114 @@ export function ProblemsTable({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-xs">
-        <div className="relative">
-          <Search className="text-muted-foreground absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2" />
+      <div className="grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-sm">
+        <div className="flex items-center gap-1.5 border-b py-0.5">
+          <Search className="text-muted-foreground h-3.5 w-3.5" />
           <input
             type="text"
             placeholder="Search problems..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="border-input bg-background placeholder:text-muted-foreground h-8 w-full rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+            className="placeholder:text-muted-foreground w-full bg-transparent text-sm focus:outline-none"
           />
         </div>
 
-        <div className="flex items-center justify-end gap-3">
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent className="gap-0.5">
-              <PaginationItem>
-                <PaginationPrevious
-                  onClick={handlePrevious}
-                  className={`h-7 px-2 text-xs ${
-                    !canGoPrevious
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }`}
-                />
-              </PaginationItem>
+        <div className="flex items-center justify-end gap-4">
+          <nav className="flex items-center gap-1">
+            <button
+              onClick={handlePrevious}
+              disabled={!canGoPrevious}
+              className={`flex items-center gap-0.5 px-1 ${
+                canGoPrevious
+                  ? "cursor-pointer hover:underline"
+                  : "text-muted-foreground cursor-default"
+              }`}
+            >
+              <ChevronLeft className="h-3 w-3" />
+              Previous
+            </button>
 
-              {getVisiblePages().map((page, index) =>
-                typeof page === "string" ? (
-                  <PaginationItem key={`${page}-${index}`}>
-                    <PaginationEllipsis className="h-7 w-7" />
-                  </PaginationItem>
-                ) : (
-                  <PaginationItem key={page}>
-                    <PaginationLink
-                      isActive={page === currentPage}
-                      onClick={() => onPageChange(page)}
-                      className="h-7 w-7 cursor-pointer text-xs"
-                    >
-                      {page}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              )}
-
-              <PaginationItem>
-                <PaginationNext
-                  onClick={handleNext}
-                  className={`h-7 px-2 text-xs ${
-                    !canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"
+            {getVisiblePages().map((page, index) =>
+              typeof page === "string" ? (
+                <span
+                  key={`${page}-${index}`}
+                  className="text-muted-foreground px-1"
+                >
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => onPageChange(page)}
+                  className={`px-1 ${
+                    page === currentPage
+                      ? "underline"
+                      : "cursor-pointer hover:underline"
                   }`}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+                >
+                  {page}
+                </button>
+              ),
+            )}
+
+            <button
+              onClick={handleNext}
+              disabled={!canGoNext}
+              className={`flex items-center gap-0.5 px-1 ${
+                canGoNext
+                  ? "cursor-pointer hover:underline"
+                  : "text-muted-foreground cursor-default"
+              }`}
+            >
+              Next
+              <ChevronRight className="h-3 w-3" />
+            </button>
+          </nav>
 
           <div className="flex items-center gap-1.5">
             <span className="text-muted-foreground">Per page:</span>
-            <Select
-              value={String(itemsPerPage)}
-              onValueChange={(value) =>
-                onItemsPerPageChange(Number(value) as ItemsPerPage)
-              }
-            >
-              <SelectTrigger size="sm" className="h-7 w-14 text-xs">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                  <SelectItem key={option} value={String(option)} className="text-xs">
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1">
+              {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => onItemsPerPageChange(option)}
+                  className={`px-1 ${
+                    option === itemsPerPage
+                      ? "underline"
+                      : "cursor-pointer hover:underline"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
-      <Table>
+      <Table className="table-fixed">
+        <colgroup>
+          <col className="w-auto" />
+          <col className="w-10" />
+          <col className="w-60" />
+          <col className="w-12" />
+        </colgroup>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-muted-foreground text-center">
+              <TableCell
+                colSpan={4}
+                className="text-muted-foreground text-center"
+              >
                 Loading...
               </TableCell>
             </TableRow>
           ) : problems.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="text-muted-foreground text-center">
+              <TableCell
+                colSpan={4}
+                className="text-muted-foreground text-center"
+              >
                 No problems found.
               </TableCell>
             </TableRow>
@@ -206,7 +203,7 @@ export function ProblemsTable({
               problem.isPaidOnly ? (
                 <Tooltip key={problem.id}>
                   <TooltipTrigger asChild>
-                    <TableRow className="hover:bg-transparent opacity-50 cursor-default">
+                    <TableRow className="cursor-default opacity-50 hover:bg-transparent">
                       <TableCell className="text-sm">
                         {problem.id}. {problem.title}
                       </TableCell>
@@ -214,7 +211,7 @@ export function ProblemsTable({
                         <DifficultyBadge difficulty={problem.difficulty} />
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           {problem.topicTags.slice(0, 2).map((tag) => (
                             <TagBadge key={tag.id} tagName={tag.name} />
                           ))}
@@ -256,7 +253,7 @@ export function ProblemsTable({
                     <DifficultyBadge difficulty={problem.difficulty} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
                       {problem.topicTags.slice(0, 2).map((tag) => (
                         <TagBadge key={tag.id} tagName={tag.name} />
                       ))}
@@ -279,20 +276,18 @@ export function ProblemsTable({
                     </div>
                   </TableCell>
                   <TableCell className="text-center">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8"
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onProblemSelect?.(problem);
                       }}
+                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center hover:underline"
                     >
                       <Eye className="h-4 w-4" />
-                    </Button>
+                    </button>
                   </TableCell>
                 </TableRow>
-              )
+              ),
             )
           )}
         </TableBody>
