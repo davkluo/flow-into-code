@@ -13,5 +13,5 @@ export async function ensureLCProblemIndex() {
   const problems = await fetchLCProblems();
 
   await problemRepo.upsertMany(problems);
-  await metaRepo.markFullyPopulated();
+  await metaRepo.markFullyPopulated(problems.length);
 }

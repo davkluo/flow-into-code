@@ -2,6 +2,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { LCProblem } from "@/types/leetcode";
 
 const COLLECTION = "problems";
+const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end of list
 
 /**
  * Fetch all LeetCode problems from Firestore.
@@ -12,7 +13,9 @@ export async function getAll(): Promise<LCProblem[]> {
 }
 
 /**
- * Insert or update many LeetCode problems using titleSlug as ID
+ * Insert or update many LeetCode problems using titleSlug as ID.
+ * WARNING: Firestore batch writes are limited to 500 operations.
+ * Ensure the problems array does not exceed this limit.
  */
 export async function upsertMany(problems: LCProblem[]): Promise<void> {
   if (problems.length === 0) return;
@@ -21,8 +24,16 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
 
   for (const problem of problems) {
     const ref = adminDb.collection(COLLECTION).doc(problem.titleSlug);
+    const parsedId = Number(problem.id);
 
-    batch.set(ref, problem, { merge: true });
+    batch.set(
+      ref,
+      {
+        ...problem,
+        idNumber: Number.isNaN(parsedId) ? FALLBACK_ID_NUMBER : parsedId,
+      },
+      { merge: true },
+    );
   }
 
   await batch.commit();

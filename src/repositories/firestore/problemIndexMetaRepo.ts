@@ -7,7 +7,8 @@ let cachedMeta: ProblemIndexMeta | null = null;
 
 export interface ProblemIndexMeta {
   fullyPopulated: boolean;
-  lastFetchedAt?: number;
+  lastFetchedAt: number;
+  totalProblems: number;
 }
 
 export async function get(): Promise<ProblemIndexMeta | null> {
@@ -19,14 +20,16 @@ export async function get(): Promise<ProblemIndexMeta | null> {
   return snap.exists ? (snap.data() as ProblemIndexMeta) : null;
 }
 
-export async function markFullyPopulated() {
+export async function markFullyPopulated(totalProblems: number) {
   const timestamp = Date.now();
   await adminDb.collection(COLLECTION).doc(DOC_ID).set({
     fullyPopulated: true,
     lastFetchedAt: timestamp,
+    totalProblems,
   });
   cachedMeta = {
     fullyPopulated: true,
     lastFetchedAt: timestamp,
+    totalProblems,
   };
 }
