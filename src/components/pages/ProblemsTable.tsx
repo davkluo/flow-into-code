@@ -1,6 +1,6 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { Eye, Lock, Search } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import {
@@ -42,6 +40,8 @@ interface ProblemsTableProps {
   totalPages: number | null;
   isLoading: boolean;
   itemsPerPage: ItemsPerPage;
+  search: string;
+  onSearchChange: (search: string) => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: ItemsPerPage) => void;
   onProblemSelect?: (problem: LCProblem) => void;
@@ -53,6 +53,8 @@ export function ProblemsTable({
   totalPages,
   isLoading,
   itemsPerPage,
+  search,
+  onSearchChange,
   onPageChange,
   onItemsPerPageChange,
   onProblemSelect,
@@ -106,153 +108,192 @@ export function ProblemsTable({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground text-sm">Per page:</span>
-          <Select
-            value={String(itemsPerPage)}
-            onValueChange={(value) =>
-              onItemsPerPageChange(Number(value) as ItemsPerPage)
-            }
-          >
-            <SelectTrigger size="sm" className="w-16">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {ITEMS_PER_PAGE_OPTIONS.map((option) => (
-                <SelectItem key={option} value={String(option)}>
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-xs">
+        <div className="relative">
+          <Search className="text-muted-foreground absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Search problems..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="border-input bg-background placeholder:text-muted-foreground h-8 w-full rounded-md border py-1 pl-7 pr-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+          />
         </div>
 
-        <Pagination className="mx-0 w-auto">
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={handlePrevious}
-                className={
-                  !canGoPrevious
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
+        <div className="flex items-center justify-end gap-3">
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent className="gap-0.5">
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={handlePrevious}
+                  className={`h-7 px-2 text-xs ${
+                    !canGoPrevious
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }`}
+                />
+              </PaginationItem>
 
-            {getVisiblePages().map((page, index) =>
-              typeof page === "string" ? (
-                <PaginationItem key={`${page}-${index}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    isActive={page === currentPage}
-                    onClick={() => onPageChange(page)}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            )}
+              {getVisiblePages().map((page, index) =>
+                typeof page === "string" ? (
+                  <PaginationItem key={`${page}-${index}`}>
+                    <PaginationEllipsis className="h-7 w-7" />
+                  </PaginationItem>
+                ) : (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      isActive={page === currentPage}
+                      onClick={() => onPageChange(page)}
+                      className="h-7 w-7 cursor-pointer text-xs"
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                )
+              )}
 
-            <PaginationItem>
-              <PaginationNext
-                onClick={handleNext}
-                className={
-                  !canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={handleNext}
+                  className={`h-7 px-2 text-xs ${
+                    !canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"
+                  }`}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-muted-foreground">Per page:</span>
+            <Select
+              value={String(itemsPerPage)}
+              onValueChange={(value) =>
+                onItemsPerPageChange(Number(value) as ItemsPerPage)
+              }
+            >
+              <SelectTrigger size="sm" className="h-7 w-14 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                  <SelectItem key={option} value={String(option)} className="text-xs">
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[60px]">#</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead className="w-[100px]">Difficulty</TableHead>
-            <TableHead>Tags</TableHead>
-            <TableHead className="w-[100px]"></TableHead>
-          </TableRow>
-        </TableHeader>
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-muted-foreground text-center">
+              <TableCell colSpan={4} className="text-muted-foreground text-center">
                 Loading...
               </TableCell>
             </TableRow>
           ) : problems.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-muted-foreground text-center">
+              <TableCell colSpan={4} className="text-muted-foreground text-center">
                 No problems found.
               </TableCell>
             </TableRow>
           ) : (
-            problems.map((problem) => (
-              <TableRow key={problem.id}>
-                <TableCell className="text-sm">{problem.id}</TableCell>
-                <TableCell className="text-sm">{problem.title}</TableCell>
-                <TableCell>
-                  <DifficultyBadge difficulty={problem.difficulty} />
-                </TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap gap-1">
-                    {problem.topicTags.slice(0, 2).map((tag) => (
-                      <TagBadge key={tag.id} tagName={tag.name} />
-                    ))}
-                    {problem.topicTags.length > 2 && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span className="text-muted-foreground cursor-default text-xs">
-                            +{problem.topicTags.length - 2}
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <div className="flex flex-wrap gap-1">
-                            {problem.topicTags.slice(2).map((tag) => (
-                              <TagBadge key={tag.id} tagName={tag.name} />
-                            ))}
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {problem.isPaidOnly ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <span className="text-muted-foreground inline-flex cursor-default">
+            problems.map((problem) =>
+              problem.isPaidOnly ? (
+                <Tooltip key={problem.id}>
+                  <TooltipTrigger asChild>
+                    <TableRow className="hover:bg-transparent opacity-50 cursor-default">
+                      <TableCell className="text-sm">
+                        {problem.id}. {problem.title}
+                      </TableCell>
+                      <TableCell className="text-center align-middle">
+                        <DifficultyBadge difficulty={problem.difficulty} />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {problem.topicTags.slice(0, 2).map((tag) => (
+                            <TagBadge key={tag.id} tagName={tag.name} />
+                          ))}
+                          {problem.topicTags.length > 2 && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="text-muted-foreground cursor-default text-xs">
+                                  +{problem.topicTags.length - 2}
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <div className="flex flex-wrap gap-1">
+                                  {problem.topicTags.slice(2).map((tag) => (
+                                    <TagBadge key={tag.id} tagName={tag.name} />
+                                  ))}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-center align-middle">
+                        <div className="inline-flex h-8 w-8 items-center justify-center">
                           <Lock className="h-4 w-4" />
-                        </span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        Premium problems are not available
-                      </TooltipContent>
-                    </Tooltip>
-                  ) : (
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Sorry! Premium problems are not available.
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <TableRow key={problem.id} className="hover:bg-transparent">
+                  <TableCell className="text-sm">
+                    {problem.id}. {problem.title}
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <DifficultyBadge difficulty={problem.difficulty} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {problem.topicTags.slice(0, 2).map((tag) => (
+                        <TagBadge key={tag.id} tagName={tag.name} />
+                      ))}
+                      {problem.topicTags.length > 2 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-muted-foreground cursor-default text-xs">
+                              +{problem.topicTags.length - 2}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="flex flex-wrap gap-1">
+                              {problem.topicTags.slice(2).map((tag) => (
+                                <TagBadge key={tag.id} tagName={tag.name} />
+                              ))}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-center">
                     <Button
-                      size="sm"
-                      variant="outline"
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         onProblemSelect?.(problem);
                       }}
                     >
-                      View
+                      <Eye className="h-4 w-4" />
                     </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))
+                  </TableCell>
+                </TableRow>
+              )
+            )
           )}
         </TableBody>
       </Table>

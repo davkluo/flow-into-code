@@ -35,9 +35,10 @@ export function ProblemSelectSection({
 
   // UI pagination state
   const [currentUIPage, setCurrentUIPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(10);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(5);
   const [totalProblems, setTotalProblems] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [search, setSearch] = useState("");
 
   // Selected problem for viewing details
   const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(null);
@@ -212,6 +213,8 @@ export function ProblemSelectSection({
             totalPages={totalUIPages}
             isLoading={isLoading}
             itemsPerPage={itemsPerPage}
+            search={search}
+            onSearchChange={setSearch}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
             onProblemSelect={setSelectedProblem}
