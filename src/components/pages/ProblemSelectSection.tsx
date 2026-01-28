@@ -19,6 +19,7 @@ import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
+import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemSelectSectionProps {
   onProblemSelect: (problem: PracticeProblem) => void;
@@ -159,6 +160,21 @@ export function ProblemSelectSection({
       <p className="text-muted-foreground text-xs">
         Select a problem from LeetCode to begin your practice session.
       </p>
+
+      <ProblemsTable
+        problems={pages[currentPage] ?? []}
+        currentPage={currentPage}
+        maxPage={maxDiscoveredPage}
+        isEndReached={isEndReached}
+        isLoading={isLoading}
+        onPageChange={(page) => {
+          setCurrentPage(page);
+          loadPage(page);
+        }}
+        onProblemSelect={(problem) => {
+          // handle selection
+        }}
+      />
 
       {/* <div className="flex flex-col gap-4">
         <Popover open={open} onOpenChange={setOpen}>
