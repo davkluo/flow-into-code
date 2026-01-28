@@ -14,90 +14,145 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { LC_PROBLEMS_API_PATH } from "@/constants/api";
 import { filterAndSortProblems } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 
 interface ProblemSelectSectionProps {
-  problems: LCProblem[];
   onProblemSelect: (problem: PracticeProblem) => void;
   isEditable: boolean;
 }
 
+const PAGE_SIZE = 20;
+
 export function ProblemSelectSection({
-  problems,
   onProblemSelect,
   isEditable,
 }: ProblemSelectSectionProps) {
-  const [open, setOpen] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
-    null,
-  );
-  const [processedProblem, setProcessedProblem] =
-    useState<PracticeProblem | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-
-  const getOrCreateProcessedProblem = async (
-    problem: LCProblem,
-  ): Promise<PracticeProblem> => {
-    const response = await fetch("/api/process-problem", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(problem),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to process problem");
-    }
-
-    const processedProblem = (await response.json()) as PracticeProblem;
-    return processedProblem;
-  };
-
-  const debouncedSetSearch = useMemo(
-    () => _.debounce((value: string) => setDebouncedSearch(value), 200),
-    [],
-  );
-
-  const handleSearchChange = (value: string) => {
-    setSearch(value);
-    debouncedSetSearch(value);
-  };
-
-  const handleProblemSelect = async (problem: LCProblem) => {
-    if (selectedProblem?.id === problem.id) {
-      setOpen(false);
-      return;
-    }
-
-    setSelectedProblem(problem);
-    setOpen(false);
-    setIsProcessing(true);
-
-    try {
-      const processed = await getOrCreateProcessedProblem(problem);
-      setProcessedProblem(processed);
-      onProblemSelect(processed);
-    } catch (error) {
-      console.error("Failed to process problem:", error);
-      // TODO: Display toast notification for error
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  const [pages, setPages] = useState<Record<number, LCProblem[]>>({});
+  const [pageCursors, setPageCursors] = useState<
+    Record<number, string | undefined>
+  >({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [maxDiscoveredPage, setMaxDiscoveredPage] = useState(1);
+  const [isEndReached, setIsEndReached] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    return () => debouncedSetSearch.cancel();
-  }, [debouncedSetSearch]);
+    // Initial load
+    loadPage(1);
+  }, []);
 
-  const filteredAndSortedProblems = useMemo(() => {
-    return filterAndSortProblems(problems, debouncedSearch);
-  }, [problems, debouncedSearch]);
+  const loadPage = async (page: number) => {
+    if (isLoading) return;
+    if (pages[page]) return; // already cached
+    if (isEndReached && page > maxDiscoveredPage) return;
+
+    setIsLoading(true);
+
+    try {
+      const cursor = pageCursors[page - 1];
+
+      const res = await fetch(
+        `${LC_PROBLEMS_API_PATH}?limit=${PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch page");
+
+      const data = await res.json();
+
+      // No more data, no extra pages
+      if (data.problems.length === 0) {
+        setIsEndReached(true);
+        return;
+      }
+
+      console.log(data.problems);
+
+      setPages((prev) => ({ ...prev, [page]: data.problems }));
+      setPageCursors((prev) => ({ ...prev, [page]: data.nextCursor }));
+      setMaxDiscoveredPage((prev) => Math.max(prev, page));
+
+      // Last page reached
+      if (!data.hasMore) {
+        setIsEndReached(true);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
+  //   null,
+  // );
+  // const [processedProblem, setProcessedProblem] =
+  //   useState<PracticeProblem | null>(null);
+  // const [isProcessing, setIsProcessing] = useState(false);
+  // const [search, setSearch] = useState("");
+  // const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // const getOrCreateProcessedProblem = async (
+  //   problem: LCProblem,
+  // ): Promise<PracticeProblem> => {
+  //   const response = await fetch("/api/process-problem", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(problem),
+  //   });
+
+  //   if (!response.ok) {
+  //     throw new Error("Failed to process problem");
+  //   }
+
+  //   const processedProblem = (await response.json()) as PracticeProblem;
+  //   return processedProblem;
+  // };
+
+  // const debouncedSetSearch = useMemo(
+  //   () => _.debounce((value: string) => setDebouncedSearch(value), 200),
+  //   [],
+  // );
+
+  // const handleSearchChange = (value: string) => {
+  //   setSearch(value);
+  //   debouncedSetSearch(value);
+  // };
+
+  // const handleProblemSelect = async (problem: LCProblem) => {
+  //   if (selectedProblem?.id === problem.id) {
+  //     setOpen(false);
+  //     return;
+  //   }
+
+  //   setSelectedProblem(problem);
+  //   setOpen(false);
+  //   setIsProcessing(true);
+
+  //   try {
+  //     const processed = await getOrCreateProcessedProblem(problem);
+  //     setProcessedProblem(processed);
+  //     onProblemSelect(processed);
+  //   } catch (error) {
+  //     console.error("Failed to process problem:", error);
+  //     // TODO: Display toast notification for error
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   return () => debouncedSetSearch.cancel();
+  // }, [debouncedSetSearch]);
+
+  // const filteredAndSortedProblems = useMemo(() => {
+  //   return filterAndSortProblems(problems, debouncedSearch);
+  // }, [problems, debouncedSearch]);
 
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -105,7 +160,7 @@ export function ProblemSelectSection({
         Select a problem from LeetCode to begin your practice session.
       </p>
 
-      <div className="flex flex-col gap-4">
+      {/* <div className="flex flex-col gap-4">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button
@@ -241,7 +296,7 @@ export function ProblemSelectSection({
           </a>
           .
         </p>
-      </div>
+      </div> */}
     </AccordionContent>
   );
 }

@@ -48,13 +48,7 @@ import { PseudocodeSection } from "./PseudocodeSection";
 import { SectionLabel } from "./SectionLabel";
 import { ThoughtProcessSection } from "./ThoughtProcessSection";
 
-interface PracticeAccordionSectionsProps {
-  problems: LCProblem[];
-}
-
-export function PracticeAccordionSections({
-  problems,
-}: PracticeAccordionSectionsProps) {
+export function PracticeAccordionSections() {
   const [openSections, setOpenSections] = useState<SectionKey[]>([
     PRACTICE_SECTIONS[0],
   ]);
@@ -87,13 +81,12 @@ export function PracticeAccordionSections({
     // For now, populate with dummy data
     setProblem({
       ...problem,
-      content: "",
+      originalContent: "",
       framing: { canonical: "" },
-      customHints: [],
-      commonMistakes: [],
-      solutionStructure: "",
-      sampleApproach: "",
-      processedAt: new Date(),
+      hints: [],
+      pitfalls: [],
+      solutions: [],
+      processedAt: 0,
     });
 
     llm.setDistilledSummary("selection", "");
@@ -171,7 +164,6 @@ export function PracticeAccordionSections({
             />
           </AccordionTrigger>
           <ProblemSelectSection
-            problems={problems}
             onProblemSelect={setProblem}
             isEditable={currentSectionIndex === 0}
           />
