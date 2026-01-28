@@ -3,6 +3,7 @@
 import { ExternalLink } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -173,7 +174,7 @@ export function ProblemsTable({
             <TableHead>Title</TableHead>
             <TableHead className="w-[100px]">Difficulty</TableHead>
             <TableHead>Tags</TableHead>
-            <TableHead className="w-[50px]"></TableHead>
+            <TableHead className="w-[100px]"></TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -191,13 +192,9 @@ export function ProblemsTable({
             </TableRow>
           ) : (
             problems.map((problem) => (
-              <TableRow
-                key={problem.id}
-                className={onProblemSelect ? "cursor-pointer" : ""}
-                onClick={() => onProblemSelect?.(problem)}
-              >
-                <TableCell className="font-medium">{problem.id}</TableCell>
-                <TableCell>{problem.title}</TableCell>
+              <TableRow key={problem.id}>
+                <TableCell className="text-sm">{problem.id}</TableCell>
+                <TableCell className="text-sm">{problem.title}</TableCell>
                 <TableCell>
                   <DifficultyBadge difficulty={problem.difficulty} />
                 </TableCell>
@@ -214,15 +211,28 @@ export function ProblemsTable({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <a
-                    href={`https://leetcode.com/problems/${problem.titleSlug}/description/`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={problem.isPaidOnly}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onProblemSelect?.(problem);
+                      }}
+                    >
+                      {problem.isPaidOnly ? "Premium" : "View"}
+                    </Button>
+                    <a
+                      href={`https://leetcode.com/problems/${problem.titleSlug}/description/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </a>
+                  </div>
                 </TableCell>
               </TableRow>
             ))

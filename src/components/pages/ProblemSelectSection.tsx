@@ -38,6 +38,9 @@ export function ProblemSelectSection({
   const [totalProblems, setTotalProblems] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Selected problem for viewing details
+  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(null);
+
   // Derived values
   const totalUIPages = useMemo(
     () => (totalProblems ? getTotalUIPages(totalProblems, itemsPerPage) : null),
@@ -200,7 +203,7 @@ export function ProblemSelectSection({
         Select a problem from LeetCode to begin your practice session.
       </p>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="col-span-1">
           <ProblemsTable
             problems={displayedProblems}
@@ -210,10 +213,53 @@ export function ProblemSelectSection({
             itemsPerPage={itemsPerPage}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
-            onProblemSelect={(_problem) => {
-              // handle selection
-            }}
+            onProblemSelect={setSelectedProblem}
           />
+        </div>
+
+        <div className="col-span-1">
+          {selectedProblem ? (
+            <div className="flex flex-col gap-4 rounded-lg border p-4">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {selectedProblem.id}. {selectedProblem.title}
+                </h3>
+                <div className="text-muted-foreground mt-1 text-sm">
+                  Difficulty: {selectedProblem.difficulty}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Problem Context</h4>
+                <p className="text-muted-foreground text-sm">
+                  This problem involves finding an optimal solution using dynamic
+                  programming techniques. The key insight is recognizing the
+                  overlapping subproblems structure.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Key Concepts</h4>
+                <ul className="text-muted-foreground list-inside list-disc text-sm">
+                  <li>Array manipulation</li>
+                  <li>Two-pointer technique</li>
+                  <li>Time complexity: O(n)</li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="mb-2 text-sm font-medium">Hints</h4>
+                <p className="text-muted-foreground text-sm">
+                  Consider how you might solve this if the array was sorted.
+                  What data structure could help track elements you&apos;ve seen?
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="text-muted-foreground flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center text-sm">
+              Select a problem to view details
+            </div>
+          )}
         </div>
       </div>
 
