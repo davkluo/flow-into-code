@@ -27,3 +27,27 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
 
   await batch.commit();
 }
+
+export async function getProblemPage({
+  pageSize,
+  cursor,
+}: {
+  pageSize: number;
+  cursor?: string;
+}): Promise<{
+  problems: LCProblem[];
+  nextCursor?: string;
+}> {
+  let q = adminDb.collection(COLLECTION).orderBy("id").limit(pageSize);
+
+  if (cursor) {
+    q = q.startAfter(cursor);
+  }
+
+  const snap = await q.get();
+
+  return {
+    problems: snap.docs.map((d) => d.data() as LCProblem),
+    nextCursor: snap.docs.at(-1)?.get("id"),
+  };
+}
