@@ -1,5 +1,6 @@
 "use client";
 
+import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
 import { LC_PROBLEMS_API_PATH, PROBLEM_INDEX_META_API_PATH } from "@/constants/api";
@@ -221,9 +222,19 @@ export function ProblemSelectSection({
           {selectedProblem ? (
             <div className="flex flex-col gap-4 rounded-lg border p-4">
               <div>
-                <h3 className="text-lg font-semibold">
-                  {selectedProblem.id}. {selectedProblem.title}
-                </h3>
+                <div className="flex items-start justify-between gap-2">
+                  <h3 className="text-lg font-semibold">
+                    {selectedProblem.id}. {selectedProblem.title}
+                  </h3>
+                  <a
+                    href={`https://leetcode.com/problems/${selectedProblem.titleSlug}/description/`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                </div>
                 <div className="text-muted-foreground mt-1 text-sm">
                   Difficulty: {selectedProblem.difficulty}
                 </div>

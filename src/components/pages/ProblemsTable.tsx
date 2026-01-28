@@ -1,9 +1,14 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { Lock } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Select,
   SelectContent,
@@ -200,39 +205,51 @@ export function ProblemsTable({
                 </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1">
-                    {problem.topicTags.slice(0, 3).map((tag) => (
+                    {problem.topicTags.slice(0, 2).map((tag) => (
                       <TagBadge key={tag.id} tagName={tag.name} />
                     ))}
-                    {problem.topicTags.length > 3 && (
-                      <span className="text-muted-foreground text-xs">
-                        +{problem.topicTags.length - 3}
-                      </span>
+                    {problem.topicTags.length > 2 && (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-muted-foreground cursor-default text-xs">
+                            +{problem.topicTags.length - 2}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="flex flex-wrap gap-1">
+                            {problem.topicTags.slice(2).map((tag) => (
+                              <TagBadge key={tag.id} tagName={tag.name} />
+                            ))}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-2">
+                  {problem.isPaidOnly ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="text-muted-foreground inline-flex cursor-default">
+                          <Lock className="h-4 w-4" />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Premium problems are not available
+                      </TooltipContent>
+                    </Tooltip>
+                  ) : (
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={problem.isPaidOnly}
                       onClick={(e) => {
                         e.stopPropagation();
                         onProblemSelect?.(problem);
                       }}
                     >
-                      {problem.isPaidOnly ? "Premium" : "View"}
+                      View
                     </Button>
-                    <a
-                      href={`https://leetcode.com/problems/${problem.titleSlug}/description/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-muted-foreground hover:text-foreground"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
-                  </div>
+                  )}
                 </TableCell>
               </TableRow>
             ))
