@@ -4,6 +4,13 @@ import { ExternalLink } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -20,28 +27,31 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { ITEMS_PER_PAGE_OPTIONS, ItemsPerPage } from "@/lib/pagination";
 import { LCProblem } from "@/types/leetcode";
 
 interface ProblemsTableProps {
   problems: LCProblem[];
   currentPage: number;
-  maxPage: number;
-  isEndReached: boolean;
+  totalPages: number | null;
   isLoading: boolean;
+  itemsPerPage: ItemsPerPage;
   onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: ItemsPerPage) => void;
   onProblemSelect?: (problem: LCProblem) => void;
 }
 
 export function ProblemsTable({
   problems,
   currentPage,
-  maxPage,
-  isEndReached,
+  totalPages,
   isLoading,
+  itemsPerPage,
   onPageChange,
+  onItemsPerPageChange,
   onProblemSelect,
 }: ProblemsTableProps) {
-  const canGoNext = !isEndReached || currentPage < maxPage;
+  const canGoNext = totalPages === null || currentPage < totalPages;
   const canGoPrevious = currentPage > 1;
 
   const handlePrevious = () => {
@@ -56,29 +66,34 @@ export function ProblemsTable({
     }
   };
 
-  const getVisiblePages = () => {
+  /**
+   * Returns visible page numbers with ellipsis.
+   * Shows current page and neighbors, with ellipsis + page 1 for navigation back.
+   * Examples:
+   * - Page 1: [1] [2] [3]
+   * - Page 5: [1] ... [4] [5] [6]
+   * - Page 20: [1] ... [19] [20] [21]
+   */
+  const getVisiblePages = (): (number | "ellipsis")[] => {
     const pages: (number | "ellipsis")[] = [];
-    const showEllipsisStart = currentPage > 3;
-    const showEllipsisEnd = !isEndReached || currentPage < maxPage - 2;
 
-    if (showEllipsisStart) {
+    // Determine visible range around current page
+    const start = Math.max(1, currentPage - 1);
+    const end = currentPage + 1;
+
+    // Add page 1 and ellipsis if current page is far from start
+    if (start > 1) {
       pages.push(1);
-      pages.push("ellipsis");
-    }
-
-    for (
-      let i = Math.max(1, currentPage - 1);
-      i <= Math.min(maxPage, currentPage + 1);
-      i++
-    ) {
-      if (!pages.includes(i)) {
-        pages.push(i);
+      if (start > 2) {
+        pages.push("ellipsis");
       }
     }
 
-    if (showEllipsisEnd && isEndReached) {
-      pages.push("ellipsis");
-      pages.push(maxPage);
+    // Add pages around current
+    for (let i = start; i <= end; i++) {
+      if (!pages.includes(i)) {
+        pages.push(i);
+      }
     }
 
     return pages;
@@ -86,6 +101,71 @@ export function ProblemsTable({
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-muted-foreground text-sm">Per page:</span>
+          <Select
+            value={String(itemsPerPage)}
+            onValueChange={(value) =>
+              onItemsPerPageChange(Number(value) as ItemsPerPage)
+            }
+          >
+            <SelectTrigger size="sm" className="w-16">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ITEMS_PER_PAGE_OPTIONS.map((option) => (
+                <SelectItem key={option} value={String(option)}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Pagination className="mx-0 w-auto">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={handlePrevious}
+                className={
+                  !canGoPrevious
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+
+            {getVisiblePages().map((page, index) =>
+              typeof page === "string" ? (
+                <PaginationItem key={`${page}-${index}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    isActive={page === currentPage}
+                    onClick={() => onPageChange(page)}
+                    className="cursor-pointer"
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            )}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={handleNext}
+                className={
+                  !canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
+
       <Table>
         <TableHeader>
           <TableRow>
@@ -149,42 +229,6 @@ export function ProblemsTable({
           )}
         </TableBody>
       </Table>
-
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={handlePrevious}
-              className={!canGoPrevious ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-
-          {getVisiblePages().map((page, index) =>
-            page === "ellipsis" ? (
-              <PaginationItem key={`ellipsis-${index}`}>
-                <PaginationEllipsis />
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={page === currentPage}
-                  onClick={() => onPageChange(page)}
-                  className="cursor-pointer"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            )
-          )}
-
-          <PaginationItem>
-            <PaginationNext
-              onClick={handleNext}
-              className={!canGoNext ? "pointer-events-none opacity-50" : "cursor-pointer"}
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
     </div>
   );
 }

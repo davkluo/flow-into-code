@@ -1,22 +1,15 @@
 "use client";
 
-import _ from "lodash";
-import { Check, ChevronsUpDown, ExternalLink } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { FixedSizeList as List } from "react-window";
-import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
-import { TagBadge } from "@/components/shared/TagBadge";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
-import { Command, CommandInput, CommandItem } from "@/components/ui/command";
+import { LC_PROBLEMS_API_PATH, PROBLEM_INDEX_META_API_PATH } from "@/constants/api";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { LC_PROBLEMS_API_PATH } from "@/constants/api";
-import { filterAndSortProblems } from "@/lib/search";
-import { cn } from "@/lib/utils";
+  CACHE_PAGE_SIZE,
+  getCachedPagesForUIPage,
+  getProblemsForUIPage,
+  getTotalUIPages,
+  ItemsPerPage,
+} from "@/lib/pagination";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
 import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
@@ -27,66 +20,111 @@ interface ProblemSelectSectionProps {
   isEditable: boolean;
 }
 
-const PAGE_SIZE = 20;
-
 export function ProblemSelectSection({
   onProblemSelect,
   isEditable,
 }: ProblemSelectSectionProps) {
-  // Fetched pages are of size PAGE_SIZE
-  const [pages, setPages] = useState<Record<number, LCProblem[]>>({});
+  // Cached pages from API (fixed size of CACHE_PAGE_SIZE = 20)
+  const [cachedPages, setCachedPages] = useState<Record<number, LCProblem[]>>(
+    {},
+  );
   const [pageCursors, setPageCursors] = useState<
     Record<number, number | undefined>
   >({});
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [maxDiscoveredPage, setMaxDiscoveredPage] = useState(1);
-  const [isEndReached, setIsEndReached] = useState(false);
+  // UI pagination state
+  const [currentUIPage, setCurrentUIPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(10);
+  const [totalProblems, setTotalProblems] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Derived values
+  const totalUIPages = useMemo(
+    () => (totalProblems ? getTotalUIPages(totalProblems, itemsPerPage) : null),
+    [totalProblems, itemsPerPage],
+  );
+
+  const displayedProblems = useMemo(
+    () => getProblemsForUIPage(currentUIPage, itemsPerPage, cachedPages),
+    [currentUIPage, itemsPerPage, cachedPages],
+  );
+
+  // Fetch total problems count on mount
   useEffect(() => {
-    // Initial load
-    loadPage(1);
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch(PROBLEM_INDEX_META_API_PATH);
+        if (res.ok) {
+          const data = await res.json();
+          setTotalProblems(data.totalProblems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch problem index meta:", err);
+      }
+    };
+    fetchMeta();
   }, []);
 
-  const loadPage = async (page: number) => {
-    if (isLoading) return;
-    if (pages[page]) return; // already cached
-    if (isEndReached && page > maxDiscoveredPage) return;
+  // Load a cached page from the API
+  const loadCachedPage = useCallback(
+    async (cachePage: number) => {
+      if (cachedPages[cachePage]) return; // already cached
 
-    setIsLoading(true);
+      setIsLoading(true);
 
-    try {
-      const cursor = pageCursors[page - 1];
+      try {
+        const cursor = pageCursors[cachePage - 1];
 
-      const res = await fetch(
-        `${LC_PROBLEMS_API_PATH}?limit=${PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
-      );
+        const res = await fetch(
+          `${LC_PROBLEMS_API_PATH}?limit=${CACHE_PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
+        );
 
-      if (!res.ok) throw new Error("Failed to fetch page");
+        if (!res.ok) throw new Error("Failed to fetch page");
 
-      const data: ProblemsPage = await res.json();
+        const data: ProblemsPage = await res.json();
 
-      // No more data, no extra pages
-      if (data.problems.length === 0) {
-        setIsEndReached(true);
-        return;
+        if (data.problems.length > 0) {
+          setCachedPages((prev) => ({ ...prev, [cachePage]: data.problems }));
+          setPageCursors((prev) => ({ ...prev, [cachePage]: data.nextCursor }));
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
       }
+    },
+    [cachedPages, pageCursors],
+  );
 
-      setPages((prev) => ({ ...prev, [page]: data.problems }));
-      setPageCursors((prev) => ({ ...prev, [page]: data.nextCursor }));
-      setMaxDiscoveredPage((prev) => Math.max(prev, page));
-
-      // Last page reached
-      if (!data.hasMore) {
-        setIsEndReached(true);
+  // Load required cached pages for a UI page
+  const loadPagesForUIPage = useCallback(
+    async (uiPage: number) => {
+      const requiredCachePages = getCachedPagesForUIPage(uiPage, itemsPerPage);
+      for (const cachePage of requiredCachePages) {
+        await loadCachedPage(cachePage);
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+    [itemsPerPage, loadCachedPage],
+  );
+
+  // Initial load
+  useEffect(() => {
+    loadPagesForUIPage(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      setCurrentUIPage(newPage);
+      loadPagesForUIPage(newPage);
+    },
+    [loadPagesForUIPage],
+  );
+
+  const handleItemsPerPageChange = useCallback((newItemsPerPage: ItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentUIPage(1);
+  }, []);
 
   // const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
   //   null,
@@ -165,16 +203,14 @@ export function ProblemSelectSection({
       <div className="grid grid-cols-1 lg:grid-cols-2">
         <div className="col-span-1">
           <ProblemsTable
-            problems={pages[currentPage] ?? []}
-            currentPage={currentPage}
-            maxPage={maxDiscoveredPage}
-            isEndReached={isEndReached}
+            problems={displayedProblems}
+            currentPage={currentUIPage}
+            totalPages={totalUIPages}
             isLoading={isLoading}
-            onPageChange={(page) => {
-              setCurrentPage(page);
-              loadPage(page);
-            }}
-            onProblemSelect={(problem) => {
+            itemsPerPage={itemsPerPage}
+            onPageChange={handlePageChange}
+            onItemsPerPageChange={handleItemsPerPageChange}
+            onProblemSelect={(_problem) => {
               // handle selection
             }}
           />
