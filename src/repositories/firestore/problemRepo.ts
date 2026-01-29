@@ -66,8 +66,7 @@ export async function getProblemPage({
   if (q) {
     const searchQuery = collectionRef
       .where("searchTerms", "array-contains", q)
-      .orderBy("idNumber")
-      .limit(pageSize);
+      .orderBy("idNumber");
 
     const snap = await searchQuery.get();
     const problems = snap.docs.map((d) => d.data() as LCProblem);
