@@ -1,6 +1,6 @@
 "use client";
 
-import _ from "lodash";
+import _, { get } from "lodash";
 import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
@@ -82,7 +82,11 @@ export function ProblemSelectSection({
       return getTotalUIPages(searchResults.length, itemsPerPage);
     }
 
-    return totalProblems ? getTotalUIPages(totalProblems, itemsPerPage) : null;
+    if (totalProblems !== null) {
+      return getTotalUIPages(totalProblems, itemsPerPage);
+    }
+
+    return null;
   }, [searchResults, totalProblems, itemsPerPage]);
   // #endregion Derived Values
 
@@ -139,13 +143,17 @@ export function ProblemSelectSection({
    */
   const handlePageChange = useCallback(
     (newPage: number) => {
+      if (totalUIPages !== null) {
+        if (newPage < 1 || newPage > totalUIPages) return;
+      }
+
       setCurrentUIPage(newPage);
 
       if (searchResults === null) {
         loadPagesForUIPage(newPage);
       }
     },
-    [searchResults, loadPagesForUIPage],
+    [totalUIPages, searchResults, loadPagesForUIPage],
   );
 
   /**
