@@ -1,9 +1,13 @@
 "use client";
 
+import _ from "lodash";
 import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { LC_PROBLEMS_API_PATH, PROBLEM_INDEX_META_API_PATH } from "@/constants/api";
+import {
+  LC_PROBLEMS_API_PATH,
+  PROBLEM_INDEX_META_API_PATH,
+} from "@/constants/api";
 import {
   CACHE_PAGE_SIZE,
   getCachedPagesForUIPage,
@@ -38,10 +42,15 @@ export function ProblemSelectSection({
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(5);
   const [totalProblems, setTotalProblems] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Search state
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Selected problem for viewing details
-  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(null);
+  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
+    null,
+  );
 
   // Derived values
   const totalUIPages = useMemo(
@@ -126,19 +135,31 @@ export function ProblemSelectSection({
     [loadPagesForUIPage],
   );
 
-  const handleItemsPerPageChange = useCallback((newItemsPerPage: ItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentUIPage(1);
-  }, []);
+  const handleItemsPerPageChange = useCallback(
+    (newItemsPerPage: ItemsPerPage) => {
+      setItemsPerPage(newItemsPerPage);
+      setCurrentUIPage(1);
+    },
+    [],
+  );
 
-  // const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
-  //   null,
-  // );
-  // const [processedProblem, setProcessedProblem] =
-  //   useState<PracticeProblem | null>(null);
-  // const [isProcessing, setIsProcessing] = useState(false);
-  // const [search, setSearch] = useState("");
-  // const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debouncedSetSearch = useMemo(
+    () =>
+      _.debounce(
+        (value: string) => setDebouncedSearch(value.trim().toLowerCase()),
+        300,
+      ),
+    [],
+  );
+
+  useEffect(() => {
+    debouncedSetSearch(search);
+
+    // Cleanup on unmount
+    return () => {
+      debouncedSetSearch.cancel();
+    };
+  }, [search, debouncedSetSearch]);
 
   // const getOrCreateProcessedProblem = async (
   //   problem: LCProblem,
@@ -157,16 +178,6 @@ export function ProblemSelectSection({
 
   //   const processedProblem = (await response.json()) as PracticeProblem;
   //   return processedProblem;
-  // };
-
-  // const debouncedSetSearch = useMemo(
-  //   () => _.debounce((value: string) => setDebouncedSearch(value), 200),
-  //   [],
-  // );
-
-  // const handleSearchChange = (value: string) => {
-  //   setSearch(value);
-  //   debouncedSetSearch(value);
   // };
 
   // const handleProblemSelect = async (problem: LCProblem) => {
@@ -190,10 +201,6 @@ export function ProblemSelectSection({
   //     setIsProcessing(false);
   //   }
   // };
-
-  // useEffect(() => {
-  //   return () => debouncedSetSearch.cancel();
-  // }, [debouncedSetSearch]);
 
   // const filteredAndSortedProblems = useMemo(() => {
   //   return filterAndSortProblems(problems, debouncedSearch);
@@ -246,9 +253,9 @@ export function ProblemSelectSection({
               <div>
                 <h4 className="mb-2 text-sm font-medium">Problem Context</h4>
                 <p className="text-muted-foreground text-sm">
-                  This problem involves finding an optimal solution using dynamic
-                  programming techniques. The key insight is recognizing the
-                  overlapping subproblems structure.
+                  This problem involves finding an optimal solution using
+                  dynamic programming techniques. The key insight is recognizing
+                  the overlapping subproblems structure.
                 </p>
               </div>
 
@@ -265,7 +272,8 @@ export function ProblemSelectSection({
                 <h4 className="mb-2 text-sm font-medium">Hints</h4>
                 <p className="text-muted-foreground text-sm">
                   Consider how you might solve this if the array was sorted.
-                  What data structure could help track elements you&apos;ve seen?
+                  What data structure could help track elements you&apos;ve
+                  seen?
                 </p>
               </div>
             </div>
