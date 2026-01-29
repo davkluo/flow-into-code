@@ -55,17 +55,37 @@ export interface ProblemsPage {
 export async function getProblemPage({
   pageSize,
   cursor,
+  q,
 }: {
   pageSize: number;
   cursor?: number;
+  q?: string;
 }): Promise<ProblemsPage> {
-  let q = adminDb.collection(COLLECTION).orderBy("idNumber").limit(pageSize);
+  const collectionRef = adminDb.collection(COLLECTION);
 
-  if (cursor) {
-    q = q.startAfter(cursor);
+  if (q) {
+    const searchQuery = collectionRef
+      .where("searchTerms", "array-contains", q)
+      .orderBy("idNumber")
+      .limit(pageSize);
+
+    const snap = await searchQuery.get();
+    const problems = snap.docs.map((d) => d.data() as LCProblem);
+
+    return {
+      problems,
+      nextCursor: undefined,
+      hasMore: false,
+    };
   }
 
-  const snap = await q.get();
+  let browseQuery = collectionRef.orderBy("idNumber").limit(pageSize);
+
+  if (cursor !== undefined) {
+    browseQuery = browseQuery.startAfter(cursor);
+  }
+
+  const snap = await browseQuery.get();
   const problems = snap.docs.map((d) => d.data() as LCProblem);
   const lastDoc = snap.docs.at(-1);
 
