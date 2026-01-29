@@ -1,4 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { computeSearchTerms } from "@/lib/search/computeSearchTerms";
 import { LCProblem } from "@/types/leetcode";
 
 const COLLECTION = "problems";
@@ -26,10 +27,13 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
     const ref = adminDb.collection(COLLECTION).doc(problem.titleSlug);
     const parsedId = Number(problem.id);
 
+    const searchTerms = computeSearchTerms(problem);
+
     batch.set(
       ref,
       {
         ...problem,
+        searchTerms,
         idNumber: Number.isNaN(parsedId) ? FALLBACK_ID_NUMBER : parsedId,
       },
       { merge: true },
@@ -51,17 +55,36 @@ export interface ProblemsPage {
 export async function getProblemPage({
   pageSize,
   cursor,
+  q,
 }: {
   pageSize: number;
   cursor?: number;
+  q?: string;
 }): Promise<ProblemsPage> {
-  let q = adminDb.collection(COLLECTION).orderBy("idNumber").limit(pageSize);
+  const collectionRef = adminDb.collection(COLLECTION);
 
-  if (cursor) {
-    q = q.startAfter(cursor);
+  if (q) {
+    const searchQuery = collectionRef
+      .where("searchTerms", "array-contains", q)
+      .orderBy("idNumber");
+
+    const snap = await searchQuery.get();
+    const problems = snap.docs.map((d) => d.data() as LCProblem);
+
+    return {
+      problems,
+      nextCursor: undefined,
+      hasMore: false,
+    };
   }
 
-  const snap = await q.get();
+  let browseQuery = collectionRef.orderBy("idNumber").limit(pageSize);
+
+  if (cursor !== undefined) {
+    browseQuery = browseQuery.startAfter(cursor);
+  }
+
+  const snap = await browseQuery.get();
   const problems = snap.docs.map((d) => d.data() as LCProblem);
   const lastDoc = snap.docs.at(-1);
 

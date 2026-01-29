@@ -61,11 +61,15 @@ export function ProblemsTable({
    * - Page 20: [1] ... [19] [20] [21]
    */
   const getVisiblePages = (): (number | "ellipsis")[] => {
+    if (totalPages === null) {
+      return [currentPage];
+    }
+
     const pages: (number | "ellipsis")[] = [];
 
     // Determine visible range around current page
     const start = Math.max(1, currentPage - 1);
-    const end = currentPage + 1;
+    const end = Math.min(totalPages, currentPage + 1);
 
     // Add page 1 and ellipsis if current page is far from start
     if (start > 1) {

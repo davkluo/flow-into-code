@@ -1,9 +1,13 @@
 "use client";
 
+import _, { get } from "lodash";
 import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
-import { LC_PROBLEMS_API_PATH, PROBLEM_INDEX_META_API_PATH } from "@/constants/api";
+import {
+  LC_PROBLEMS_API_PATH,
+  PROBLEM_INDEX_META_API_PATH,
+} from "@/constants/api";
 import {
   CACHE_PAGE_SIZE,
   getCachedPagesForUIPage,
@@ -25,7 +29,9 @@ export function ProblemSelectSection({
   onProblemSelect,
   isEditable,
 }: ProblemSelectSectionProps) {
-  // Cached pages from API (fixed size of CACHE_PAGE_SIZE = 20)
+  // #region State Variables
+  const [isLoading, setIsLoading] = useState(false);
+
   const [cachedPages, setCachedPages] = useState<Record<number, LCProblem[]>>(
     {},
   );
@@ -33,44 +39,61 @@ export function ProblemSelectSection({
     Record<number, number | undefined>
   >({});
 
-  // UI pagination state
   const [currentUIPage, setCurrentUIPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(5);
   const [totalProblems, setTotalProblems] = useState<number | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<LCProblem[] | null>(null);
 
-  // Selected problem for viewing details
-  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(null);
-
-  // Derived values
-  const totalUIPages = useMemo(
-    () => (totalProblems ? getTotalUIPages(totalProblems, itemsPerPage) : null),
-    [totalProblems, itemsPerPage],
+  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
+    null,
   );
+  // #endregion State Variables
 
-  const displayedProblems = useMemo(
-    () => getProblemsForUIPage(currentUIPage, itemsPerPage, cachedPages),
-    [currentUIPage, itemsPerPage, cachedPages],
-  );
+  // #region Local Helpers
+  const getSearchResultsForUIPage = (
+    results: LCProblem[],
+    uiPage: number,
+    itemsPerPage: ItemsPerPage,
+  ): LCProblem[] => {
+    const start = (uiPage - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return results.slice(start, end);
+  };
+  // #endregion Local Helpers
 
-  // Fetch total problems count on mount
-  useEffect(() => {
-    const fetchMeta = async () => {
-      try {
-        const res = await fetch(PROBLEM_INDEX_META_API_PATH);
-        if (res.ok) {
-          const data = await res.json();
-          setTotalProblems(data.totalProblems);
-        }
-      } catch (err) {
-        console.error("Failed to fetch problem index meta:", err);
-      }
-    };
-    fetchMeta();
-  }, []);
+  // #region Derived Values
+  const displayedProblems = useMemo(() => {
+    if (searchResults !== null) {
+      return getSearchResultsForUIPage(
+        searchResults,
+        currentUIPage,
+        itemsPerPage,
+      );
+    }
 
-  // Load a cached page from the API
+    return getProblemsForUIPage(currentUIPage, itemsPerPage, cachedPages);
+  }, [searchResults, currentUIPage, itemsPerPage, cachedPages]);
+
+  const totalUIPages = useMemo(() => {
+    if (searchResults !== null) {
+      return getTotalUIPages(searchResults.length, itemsPerPage);
+    }
+
+    if (totalProblems !== null) {
+      return getTotalUIPages(totalProblems, itemsPerPage);
+    }
+
+    return null;
+  }, [searchResults, totalProblems, itemsPerPage]);
+  // #endregion Derived Values
+
+  // #region Stable Callbacks
+  /**
+   * Load a specific cached page from the API and store it in state.
+   */
   const loadCachedPage = useCallback(
     async (cachePage: number) => {
       if (cachedPages[cachePage]) return; // already cached
@@ -101,7 +124,9 @@ export function ProblemSelectSection({
     [cachedPages, pageCursors],
   );
 
-  // Load required cached pages for a UI page
+  /**
+   * Determine which cached pages are needed for a given UI page, and load them.
+   */
   const loadPagesForUIPage = useCallback(
     async (uiPage: number) => {
       const requiredCachePages = getCachedPagesForUIPage(uiPage, itemsPerPage);
@@ -112,33 +137,110 @@ export function ProblemSelectSection({
     [itemsPerPage, loadCachedPage],
   );
 
-  // Initial load
+  /**
+   * Handle when the user changes the current UI page.
+   * NOTE: Memoized since child component ProblemsTable is a heavy component.
+   */
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      if (totalUIPages !== null) {
+        if (newPage < 1 || newPage > totalUIPages) return;
+      }
+
+      setCurrentUIPage(newPage);
+
+      if (searchResults === null) {
+        loadPagesForUIPage(newPage);
+      }
+    },
+    [totalUIPages, searchResults, loadPagesForUIPage],
+  );
+
+  /**
+   * Handle when the user changes the number of items per page.
+   * NOTE: Memoized since child component ProblemsTable is a heavy component.
+   */
+  const handleItemsPerPageChange = useCallback(
+    (newItemsPerPage: ItemsPerPage) => {
+      setItemsPerPage(newItemsPerPage);
+      setCurrentUIPage(1);
+    },
+    [],
+  );
+
+  const debouncedSetSearch = useMemo(
+    () =>
+      _.debounce(
+        (value: string) => setDebouncedSearch(value.trim().toLowerCase()),
+        300,
+      ),
+    [],
+  );
+  // #endregion Stable Callbacks
+
+  // #region Effects
+  // Fetch total problems count on mount
+  useEffect(() => {
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch(PROBLEM_INDEX_META_API_PATH);
+        if (res.ok) {
+          const data = await res.json();
+          setTotalProblems(data.totalProblems);
+        }
+      } catch (err) {
+        console.error("Failed to fetch problem index meta:", err);
+      }
+    };
+    fetchMeta();
+  }, []);
+
+  // Initial load of problems
   useEffect(() => {
     loadPagesForUIPage(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      setCurrentUIPage(newPage);
-      loadPagesForUIPage(newPage);
-    },
-    [loadPagesForUIPage],
-  );
+  // Update debounced search when search changes
+  useEffect(() => {
+    debouncedSetSearch(search);
 
-  const handleItemsPerPageChange = useCallback((newItemsPerPage: ItemsPerPage) => {
-    setItemsPerPage(newItemsPerPage);
-    setCurrentUIPage(1);
-  }, []);
+    // Cleanup on unmount
+    return () => {
+      debouncedSetSearch.cancel();
+    };
+  }, [search, debouncedSetSearch]);
 
-  // const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
-  //   null,
-  // );
-  // const [processedProblem, setProcessedProblem] =
-  //   useState<PracticeProblem | null>(null);
-  // const [isProcessing, setIsProcessing] = useState(false);
-  // const [search, setSearch] = useState("");
-  // const [debouncedSearch, setDebouncedSearch] = useState("");
+  // Fetch search results when debounced search changes
+  useEffect(() => {
+    if (!debouncedSearch) {
+      setSearchResults(null);
+      setCurrentUIPage(1);
+      return;
+    }
+
+    const fetchSearchResults = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(
+          `${LC_PROBLEMS_API_PATH}?q=${encodeURIComponent(debouncedSearch)}`,
+        );
+
+        if (!res.ok) throw new Error("Failed to fetch search results");
+
+        const data: ProblemsPage = await res.json();
+        setSearchResults(data.problems);
+        setCurrentUIPage(1);
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [debouncedSearch]);
+  // #endregion Effects
 
   // const getOrCreateProcessedProblem = async (
   //   problem: LCProblem,
@@ -157,16 +259,6 @@ export function ProblemSelectSection({
 
   //   const processedProblem = (await response.json()) as PracticeProblem;
   //   return processedProblem;
-  // };
-
-  // const debouncedSetSearch = useMemo(
-  //   () => _.debounce((value: string) => setDebouncedSearch(value), 200),
-  //   [],
-  // );
-
-  // const handleSearchChange = (value: string) => {
-  //   setSearch(value);
-  //   debouncedSetSearch(value);
   // };
 
   // const handleProblemSelect = async (problem: LCProblem) => {
@@ -190,14 +282,6 @@ export function ProblemSelectSection({
   //     setIsProcessing(false);
   //   }
   // };
-
-  // useEffect(() => {
-  //   return () => debouncedSetSearch.cancel();
-  // }, [debouncedSetSearch]);
-
-  // const filteredAndSortedProblems = useMemo(() => {
-  //   return filterAndSortProblems(problems, debouncedSearch);
-  // }, [problems, debouncedSearch]);
 
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -246,9 +330,9 @@ export function ProblemSelectSection({
               <div>
                 <h4 className="mb-2 text-sm font-medium">Problem Context</h4>
                 <p className="text-muted-foreground text-sm">
-                  This problem involves finding an optimal solution using dynamic
-                  programming techniques. The key insight is recognizing the
-                  overlapping subproblems structure.
+                  This problem involves finding an optimal solution using
+                  dynamic programming techniques. The key insight is recognizing
+                  the overlapping subproblems structure.
                 </p>
               </div>
 
@@ -265,7 +349,8 @@ export function ProblemSelectSection({
                 <h4 className="mb-2 text-sm font-medium">Hints</h4>
                 <p className="text-muted-foreground text-sm">
                   Consider how you might solve this if the array was sorted.
-                  What data structure could help track elements you&apos;ve seen?
+                  What data structure could help track elements you&apos;ve
+                  seen?
                 </p>
               </div>
             </div>
@@ -276,144 +361,6 @@ export function ProblemSelectSection({
           )}
         </div>
       </div>
-
-      {/* <div className="flex flex-col gap-4">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              className="w-[400px] justify-between"
-              disabled={!isEditable}
-            >
-              <div className="flex w-full items-center">
-                <div className="truncate text-center">
-                  {selectedProblem
-                    ? `${selectedProblem.id}. ${selectedProblem.title}`
-                    : "Select a problem"}
-                </div>
-                {selectedProblem && (
-                  <DifficultyBadge
-                    difficulty={selectedProblem.difficulty}
-                    className="ml-2"
-                  />
-                )}
-                <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-              </div>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-[400px] p-0">
-            <Command shouldFilter={false}>
-              <CommandInput
-                placeholder="Search problems..."
-                value={search}
-                onValueChange={handleSearchChange}
-              />
-              <div className="max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto">
-                {filteredAndSortedProblems.length === 0 ? (
-                  <div className="text-muted-foreground py-6 text-center text-sm">
-                    No results found.
-                  </div>
-                ) : (
-                  <div className="overflow-hidden p-1">
-                    <List
-                      height={300}
-                      itemCount={filteredAndSortedProblems.length}
-                      itemSize={40}
-                      width="100%"
-                    >
-                      {({ index, style }) => {
-                        const problem = filteredAndSortedProblems[index];
-                        return (
-                          <div style={style} key={`LC-problem-${problem.id}`}>
-                            <CommandItem
-                              onSelect={() => {
-                                handleProblemSelect(problem);
-                              }}
-                            >
-                              <div className="truncate text-center">
-                                {problem.id}. {problem.title}
-                              </div>
-                              <DifficultyBadge
-                                difficulty={problem.difficulty}
-                              />
-                              <Check
-                                className={cn(
-                                  "ml-auto",
-                                  selectedProblem === problem
-                                    ? "opacity-100"
-                                    : "opacity-0",
-                                )}
-                              />
-                            </CommandItem>
-                          </div>
-                        );
-                      }}
-                    </List>
-                  </div>
-                )}
-              </div>
-            </Command>
-          </PopoverContent>
-        </Popover>
-
-        {selectedProblem && (
-          <div className="mt-2 flex flex-col gap-2 text-xs">
-            <div className="text-muted-foreground flex gap-1">
-              Tags:{" "}
-              {selectedProblem.topicTags.map((tag) => (
-                <TagBadge key={tag.id} tagName={tag.name} />
-              ))}
-            </div>
-
-            {isProcessing && (
-              <p className="text-muted-foreground italic">
-                Loading problem context...
-              </p>
-            )}
-
-            {processedProblem && (
-              <div className="mt-2">
-                <p className="font-semibold">Problem Context:</p>
-                <p className="text-muted-foreground mt-1">
-                  {processedProblem.framing.canonical}
-                </p>
-              </div>
-            )}
-
-            <a
-              href={`https://leetcode.com/problems/${selectedProblem.titleSlug}/description/`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-fit"
-            >
-              <span className="flex items-center font-semibold hover:underline">
-                View full description on LeetCode
-                <ExternalLink className="ml-1.5 inline h-4 w-4" />
-              </span>
-            </a>
-          </div>
-        )}
-
-        <p className="text-muted-foreground text-xs">
-          LeetCode owns the copyright to all problems sourced from its platform.
-          This app is not affiliated with, endorsed by, or sponsored by
-          LeetCode. It does not claim ownership of any LeetCode problems and
-          does not distribute them for commercial gain. The inclusion of
-          LeetCode problems on this platform is purely due to the prevalence of
-          LeetCode problems in the coding interview space. Users are encouraged
-          to view the complete problem descriptions and execute their code at{" "}
-          <a
-            href="https://leetcode.com"
-            className="underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            leetcode.com
-          </a>
-          .
-        </p>
-      </div> */}
     </AccordionContent>
   );
 }
