@@ -1,4 +1,5 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { computeSearchTerms } from "@/lib/search/computeSearchTerms";
 import { LCProblem } from "@/types/leetcode";
 
 const COLLECTION = "problems";
@@ -26,10 +27,13 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
     const ref = adminDb.collection(COLLECTION).doc(problem.titleSlug);
     const parsedId = Number(problem.id);
 
+    const searchTerms = computeSearchTerms(problem);
+
     batch.set(
       ref,
       {
         ...problem,
+        searchTerms,
         idNumber: Number.isNaN(parsedId) ? FALLBACK_ID_NUMBER : parsedId,
       },
       { merge: true },
