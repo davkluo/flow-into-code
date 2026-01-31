@@ -1,6 +1,6 @@
 "use client";
 
-import _, { get } from "lodash";
+import _ from "lodash";
 import { ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AccordionContent } from "@/components/ui/accordion";
