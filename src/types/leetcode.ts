@@ -1,5 +1,11 @@
 export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
 
+export const LangSlug = {
+  PYTHON3: "python3",
+} as const;
+
+export type LangSlug = (typeof LangSlug)[keyof typeof LangSlug];
+
 export interface LCProblem {
   id: string; // LeetCode numbering
   difficulty: ProblemDifficulty;
@@ -32,3 +38,4 @@ export interface ProcessedProblem extends LCProblem {
 // test cases, grading criteria, boilerplate code, constraints
 // coreconcepts
 // needsreprocessing flag
+// sample solution in each language + explanation?
