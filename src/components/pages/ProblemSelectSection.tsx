@@ -176,6 +176,22 @@ export function ProblemSelectSection({
       ),
     [],
   );
+
+  const handleViewProblem = useCallback(async (problem: LCProblem) => {
+    setSelectedProblem(problem);
+
+    // Test: trigger process-problem API
+    try {
+      const res = await fetch("/api/process-problem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(problem),
+      });
+      console.log("process-problem response:", await res.json());
+    } catch (err) {
+      console.error("Failed to process problem:", err);
+    }
+  }, []);
   // #endregion Stable Callbacks
 
   // #region Effects
@@ -301,7 +317,7 @@ export function ProblemSelectSection({
             onSearchChange={setSearch}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
-            onProblemSelect={setSelectedProblem}
+            onProblemSelect={handleViewProblem}
           />
         </div>
 

@@ -28,10 +28,30 @@ const PROBLEM_LIST_QUERY = `
   }
 `;
 
-const PROBLEM_DETAIL_QUERY = `
-  query getQuestionDetail($titleSlug: String!) {
+const PROBLEM_CONTENT_QUERY = `
+  query questionContent($titleSlug: String!) {
     question(titleSlug: $titleSlug) {
       content
+    }
+  }
+`;
+
+const PROBLEM_TESTCASE_QUERY = `
+  query consolePanelConfig($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      exampleTestcaseList
+    }
+  }
+`;
+
+const PROBLEM_BOILERPLATE_QUERY = `
+  query questionEditorData($titleSlug: String!) {
+    question(titleSlug: $titleSlug) {
+      codeSnippets {
+        lang
+        langSlug
+        code
+      }
     }
   }
 `;
@@ -105,7 +125,7 @@ export async function fetchLCProblemContent(slug: string): Promise<string> {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      query: PROBLEM_DETAIL_QUERY,
+      query: PROBLEM_CONTENT_QUERY,
       variables: { titleSlug: slug },
     }),
   });
@@ -122,4 +142,64 @@ export async function fetchLCProblemContent(slug: string): Promise<string> {
   }
 
   return content;
+}
+
+/**
+ * Fetch example test cases for a problem.
+ */
+export async function fetchLCProblemTestCases(slug: string): Promise<string[]> {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: PROBLEM_TESTCASE_QUERY,
+      variables: { titleSlug: slug },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`LeetCode test case fetch failed: ${res.status}`);
+  }
+
+  const json = await res.json();
+  const testCases = json?.data?.question?.exampleTestcaseList;
+
+  console.log("Test cases:", testCases);
+
+  if (!Array.isArray(testCases)) {
+    throw new Error("LeetCode returned invalid test cases");
+  }
+
+  return testCases;
+}
+
+/**
+ * Fetch boilerplate code snippets for a problem.
+ */
+export async function fetchLCProblemBoilerplate(
+  slug: string,
+): Promise<{ lang: string; langSlug: string; code: string }[]> {
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      query: PROBLEM_BOILERPLATE_QUERY,
+      variables: { titleSlug: slug },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`LeetCode boilerplate fetch failed: ${res.status}`);
+  }
+
+  const json = await res.json();
+  const codeSnippets = json?.data?.question?.codeSnippets;
+
+  console.log("Boilerplate code snippets:", codeSnippets);
+
+  if (!Array.isArray(codeSnippets)) {
+    throw new Error("LeetCode returned invalid code snippets");
+  }
+
+  return codeSnippets;
 }

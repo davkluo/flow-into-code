@@ -25,5 +25,10 @@ export interface ProcessedProblem extends LCProblem {
   hints: string[];
   pitfalls: string[];
   solutions: string[];
-  processedAt: number;
+  processedAt: number; // turn into processing meta with model, promptversion, schemaversion
+  // summary tab: display for when select problem stage is collapsed and we can show a condensed version with a tooltip
 }
+// test case object with { description of case, input, expected output }
+// test cases, grading criteria, boilerplate code, constraints
+// coreconcepts
+// needsreprocessing flag
