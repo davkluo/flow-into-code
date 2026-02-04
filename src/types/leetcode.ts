@@ -1,41 +1,114 @@
-export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
+export const SCHEMA_VERSION = 1;
+
+export const GRADING_CATEGORIES: Record<GradingCategory, string> = {
+  problem_understanding: "Problem Understanding & Clarification",
+  approach_and_reasoning: "Approach & Reasoning",
+  algorithm_design: "Algorithm Design / Pseudocode",
+  implementation: "Implementation Correctness",
+  complexity_analysis: "Time & Space Complexity",
+} as const;
 
 export const LangSlug = {
   PYTHON3: "python3",
 } as const;
 
+export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
+
 export type LangSlug = (typeof LangSlug)[keyof typeof LangSlug];
 
-export interface LCProblem {
-  id: string; // LeetCode numbering
-  difficulty: ProblemDifficulty;
-  isPaidOnly: boolean;
-  title: string; // for display
-  titleSlug: string; // identifier & url
-  topicTags: LCTag[];
+export type ProcessingStatus = "complete" | "processing";
+
+export type GradingCategory =
+  | "problem_understanding"
+  | "approach_and_reasoning"
+  | "algorithm_design"
+  | "implementation"
+  | "complexity_analysis";
+
+export interface ProcessingLayerMeta {
+  status: ProcessingStatus;
+  updatedAt: number;
 }
 
-export interface LCTag {
+export interface Tag {
   name: string;
   id: string;
   slug: string;
 }
 
-export interface ProcessedProblem extends LCProblem {
-  originalContent: string;
-  framing: {
-    canonical: string;
-    backend?: string;
-    systems?: string;
-  };
-  hints: string[];
-  pitfalls: string[];
-  solutions: string[];
-  processedAt: number; // turn into processing meta with model, promptversion, schemaversion
-  // summary tab: display for when select problem stage is collapsed and we can show a condensed version with a tooltip
+export interface TestCase {
+  input: string;
+  expectedOutput: string;
+  description?: string;
+  explanation?: string;
 }
-// test case object with { description of case, input, expected output }
-// test cases, grading criteria, boilerplate code, constraints
-// coreconcepts
-// needsreprocessing flag
-// sample solution in each language + explanation?
+
+export interface GradingCriterion {
+  category: GradingCategory;
+  description: string;
+  maxScore: number;
+  guidance?: string;
+}
+
+export interface Problem {
+  id: string; // LeetCode numbering
+  difficulty: ProblemDifficulty;
+  isPaidOnly: boolean;
+  title: string; // for display
+  titleSlug: string; // identifier & url
+  topicTags: Tag[];
+}
+
+export interface ProblemDetails {
+  titleSlug: string;
+  source: {
+    originalContent: string;
+    codeSnippets: Partial<Record<LangSlug, string>>;
+    exampleTestCases: TestCase[]; // From LC
+  };
+
+  derived?: {
+    // First creation upon problem start
+    framing?: {
+      canonical: string;
+      backend?: string;
+      systems?: string;
+    };
+    testCases?: TestCase[]; // LLM-generated
+    edgeCases?: TestCase[]; // LLM-generated; to be used as hints
+    hints?: {
+      level: number;
+      text: string;
+    }[];
+    pitfalls?: {
+      level: number;
+      text: string;
+    }[];
+
+    // First creation upon submission evaluation
+    solutions?: {
+      approach: string;
+      explanation: string;
+      implementation?: Partial<Record<LangSlug, string>>;
+      timeComplexity?: string;
+      spaceComplexity?: string;
+    }[];
+    gradingCriteria?: GradingCriterion[];
+  };
+
+  processingMeta?: {
+    model: string;
+    promptVersion: number;
+    schemaVersion: number;
+
+    layers?: {
+      framing?: ProcessingLayerMeta;
+      testCases?: ProcessingLayerMeta;
+      edgeCases?: ProcessingLayerMeta;
+      hints?: ProcessingLayerMeta;
+      pitfalls?: ProcessingLayerMeta;
+      solutions?: ProcessingLayerMeta;
+      gradingCriteria?: ProcessingLayerMeta;
+    };
+  };
+}

@@ -10,10 +10,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ITEMS_PER_PAGE_OPTIONS, ItemsPerPage } from "@/lib/pagination";
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 
 interface ProblemsTableProps {
-  problems: LCProblem[];
+  problems: Problem[];
   currentPage: number;
   totalPages: number | null;
   isLoading: boolean;
@@ -22,7 +22,7 @@ interface ProblemsTableProps {
   onSearchChange: (search: string) => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: ItemsPerPage) => void;
-  onProblemSelect?: (problem: LCProblem) => void;
+  onProblemSelect?: (problem: Problem) => void;
 }
 
 export function ProblemsTable({

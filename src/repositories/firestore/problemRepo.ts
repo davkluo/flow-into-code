@@ -1,6 +1,6 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { computeSearchTerms } from "@/lib/search/computeSearchTerms";
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 
 const COLLECTION = "problems";
 const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end of list
@@ -8,9 +8,9 @@ const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end 
 /**
  * Fetch all LeetCode problems from Firestore.
  */
-export async function getAll(): Promise<LCProblem[]> {
+export async function getAll(): Promise<Problem[]> {
   const snapshot = await adminDb.collection(COLLECTION).get();
-  return snapshot.docs.map((doc) => doc.data() as LCProblem);
+  return snapshot.docs.map((doc) => doc.data() as Problem);
 }
 
 /**
@@ -18,7 +18,7 @@ export async function getAll(): Promise<LCProblem[]> {
  * WARNING: Firestore batch writes are limited to 500 operations.
  * Ensure the problems array does not exceed this limit.
  */
-export async function upsertMany(problems: LCProblem[]): Promise<void> {
+export async function upsertMany(problems: Problem[]): Promise<void> {
   if (problems.length === 0) return;
 
   const batch = adminDb.batch();
@@ -44,7 +44,7 @@ export async function upsertMany(problems: LCProblem[]): Promise<void> {
 }
 
 export interface ProblemsPage {
-  problems: LCProblem[];
+  problems: Problem[];
   nextCursor?: number;
   hasMore: boolean;
 }
@@ -69,7 +69,7 @@ export async function getProblemPage({
       .orderBy("idNumber");
 
     const snap = await searchQuery.get();
-    const problems = snap.docs.map((d) => d.data() as LCProblem);
+    const problems = snap.docs.map((d) => d.data() as Problem);
 
     return {
       problems,
@@ -85,7 +85,7 @@ export async function getProblemPage({
   }
 
   const snap = await browseQuery.get();
-  const problems = snap.docs.map((d) => d.data() as LCProblem);
+  const problems = snap.docs.map((d) => d.data() as Problem);
   const lastDoc = snap.docs.at(-1);
 
   return {

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { processProblem } from "@/services/processProblem";
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 
 export async function POST(req: Request) {
-  await processProblem((await req.json()) as LCProblem);
+  await processProblem((await req.json()) as Problem);
   return NextResponse.json({ status: "processing started" });
 }

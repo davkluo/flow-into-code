@@ -1,5 +1,5 @@
 import { SUPPORTED_LANGS } from "@/constants/languages";
-import { LangSlug, LCProblem } from "@/types/leetcode";
+import { LangSlug, Problem } from "@/types/leetcode";
 
 const ENDPOINT = "https://leetcode.com/graphql";
 const PAGE_SIZE = 100;
@@ -63,7 +63,7 @@ const PROBLEM_CODE_SNIPPET_QUERY = `
  */
 async function fetchPage(skip: number): Promise<{
   total: number;
-  questions: LCProblem[];
+  questions: Problem[];
 }> {
   const res = await fetch(ENDPOINT, {
     method: "POST",
@@ -100,8 +100,8 @@ async function fetchPage(skip: number): Promise<{
  * Fetch the complete LeetCode problem list.
  * Call this only from server-side ingestion/services.
  */
-export async function fetchLCProblems(): Promise<LCProblem[]> {
-  const allProblems: LCProblem[] = [];
+export async function fetchLCProblems(): Promise<Problem[]> {
+  const allProblems: Problem[] = [];
 
   const first = await fetchPage(0);
   allProblems.push(...first.questions);

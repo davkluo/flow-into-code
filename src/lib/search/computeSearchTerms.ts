@@ -1,7 +1,7 @@
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 import { normalizeToWords } from "../normalize";
 
-export function computeSearchTerms(problem: LCProblem): string[] {
+export function computeSearchTerms(problem: Problem): string[] {
   const terms = new Set<string>();
 
   // --- ID number (exact match) ---

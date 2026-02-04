@@ -1,9 +1,9 @@
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 
 export function filterAndSortProblems(
-  problems: LCProblem[],
-  query: string
-): LCProblem[] {
+  problems: Problem[],
+  query: string,
+): Problem[] {
   const lowercaseQuery = query.toLowerCase().trim();
 
   return problems
@@ -14,7 +14,9 @@ export function filterAndSortProblems(
     })
     .filter((problem) => {
       const fullProblemTitle = `${problem.id}. ${problem.title.toLowerCase()} ${problem.difficulty.toLowerCase()}`;
-      const tags = problem.topicTags.map((tag) => tag.name.toLowerCase()).join(" ");
+      const tags = problem.topicTags
+        .map((tag) => tag.name.toLowerCase())
+        .join(" ");
       const fullText = `${fullProblemTitle} ${tags}`.toLowerCase();
       return !problem.isPaidOnly && fullText.includes(lowercaseQuery);
     });

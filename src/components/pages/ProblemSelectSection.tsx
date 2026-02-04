@@ -16,7 +16,7 @@ import {
   ItemsPerPage,
 } from "@/lib/pagination";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ProblemsTable } from "./ProblemsTable";
 
@@ -32,9 +32,7 @@ export function ProblemSelectSection({
   // #region State Variables
   const [isLoading, setIsLoading] = useState(false);
 
-  const [cachedPages, setCachedPages] = useState<Record<number, LCProblem[]>>(
-    {},
-  );
+  const [cachedPages, setCachedPages] = useState<Record<number, Problem[]>>({});
   const [pageCursors, setPageCursors] = useState<
     Record<number, number | undefined>
   >({});
@@ -45,19 +43,17 @@ export function ProblemSelectSection({
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<LCProblem[] | null>(null);
+  const [searchResults, setSearchResults] = useState<Problem[] | null>(null);
 
-  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
-    null,
-  );
+  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
   // #endregion State Variables
 
   // #region Local Helpers
   const getSearchResultsForUIPage = (
-    results: LCProblem[],
+    results: Problem[],
     uiPage: number,
     itemsPerPage: ItemsPerPage,
-  ): LCProblem[] => {
+  ): Problem[] => {
     const start = (uiPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return results.slice(start, end);
@@ -177,7 +173,7 @@ export function ProblemSelectSection({
     [],
   );
 
-  const handleViewProblem = useCallback(async (problem: LCProblem) => {
+  const handleViewProblem = useCallback(async (problem: Problem) => {
     setSelectedProblem(problem);
 
     // Test: trigger process-problem API
