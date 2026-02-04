@@ -16,7 +16,7 @@ import {
   ItemsPerPage,
 } from "@/lib/pagination";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
-import { Problem } from "@/types/leetcode";
+import { Problem, ProblemDetails } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
 import { ProblemsTable } from "./ProblemsTable";
 
@@ -30,7 +30,8 @@ export function ProblemSelectSection({
   isEditable,
 }: ProblemSelectSectionProps) {
   // #region State Variables
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProblemList, setIsLoadingProblemList] = useState(false);
+  const [isLoadingProblemDetails, setIsLoadingProblemDetails] = useState(false);
 
   const [cachedPages, setCachedPages] = useState<Record<number, Problem[]>>({});
   const [pageCursors, setPageCursors] = useState<
@@ -46,6 +47,9 @@ export function ProblemSelectSection({
   const [searchResults, setSearchResults] = useState<Problem[] | null>(null);
 
   const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
+    null,
+  );
   // #endregion State Variables
 
   // #region Local Helpers
@@ -94,7 +98,7 @@ export function ProblemSelectSection({
     async (cachePage: number) => {
       if (cachedPages[cachePage]) return; // already cached
 
-      setIsLoading(true);
+      setIsLoadingProblemList(true);
 
       try {
         const cursor = pageCursors[cachePage - 1];
@@ -114,7 +118,7 @@ export function ProblemSelectSection({
       } catch (err) {
         console.error(err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingProblemList(false);
       }
     },
     [cachedPages, pageCursors],
@@ -176,6 +180,7 @@ export function ProblemSelectSection({
   const handleViewProblem = useCallback(async (problem: Problem) => {
     setSelectedProblem(problem);
 
+    console.log("Problem selected:", problem);
     // Test: trigger process-problem API
     try {
       const res = await fetch("/api/process-problem", {
@@ -232,7 +237,7 @@ export function ProblemSelectSection({
     }
 
     const fetchSearchResults = async () => {
-      setIsLoading(true);
+      setIsLoadingProblemList(true);
       try {
         const res = await fetch(
           `${LC_PROBLEMS_API_PATH}?q=${encodeURIComponent(debouncedSearch)}`,
@@ -246,54 +251,14 @@ export function ProblemSelectSection({
       } catch (err) {
         console.error("Search failed:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingProblemList(false);
       }
     };
 
     fetchSearchResults();
   }, [debouncedSearch]);
+
   // #endregion Effects
-
-  // const getOrCreateProcessedProblem = async (
-  //   problem: LCProblem,
-  // ): Promise<PracticeProblem> => {
-  //   const response = await fetch("/api/process-problem", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(problem),
-  //   });
-
-  //   if (!response.ok) {
-  //     throw new Error("Failed to process problem");
-  //   }
-
-  //   const processedProblem = (await response.json()) as PracticeProblem;
-  //   return processedProblem;
-  // };
-
-  // const handleProblemSelect = async (problem: LCProblem) => {
-  //   if (selectedProblem?.id === problem.id) {
-  //     setOpen(false);
-  //     return;
-  //   }
-
-  //   setSelectedProblem(problem);
-  //   setOpen(false);
-  //   setIsProcessing(true);
-
-  //   try {
-  //     const processed = await getOrCreateProcessedProblem(problem);
-  //     setProcessedProblem(processed);
-  //     onProblemSelect(processed);
-  //   } catch (error) {
-  //     console.error("Failed to process problem:", error);
-  //     // TODO: Display toast notification for error
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
 
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -307,7 +272,7 @@ export function ProblemSelectSection({
             problems={displayedProblems}
             currentPage={currentUIPage}
             totalPages={totalUIPages}
-            isLoading={isLoading}
+            isLoading={isLoadingProblemList}
             itemsPerPage={itemsPerPage}
             search={search}
             onSearchChange={setSearch}
