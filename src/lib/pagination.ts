@@ -1,4 +1,4 @@
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/problem";
 
 export const CACHE_PAGE_SIZE = 20;
 export const ITEMS_PER_PAGE_OPTIONS = [5, 10, 20] as const;
@@ -31,12 +31,12 @@ export function getCachedPagesForUIPage(
 export function getProblemsForUIPage(
   uiPage: number,
   itemsPerPage: ItemsPerPage,
-  cachedPages: Record<number, LCProblem[]>,
-): LCProblem[] {
+  cachedPages: Record<number, Problem[]>,
+): Problem[] {
   const startIndex = (uiPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage - 1;
 
-  const problems: LCProblem[] = [];
+  const problems: Problem[] = [];
 
   for (let globalIndex = startIndex; globalIndex <= endIndex; globalIndex++) {
     const cachePage = Math.floor(globalIndex / CACHE_PAGE_SIZE) + 1;
@@ -64,7 +64,7 @@ export function getProblemsForUIPage(
 export function hasAllCachedPagesForUIPage(
   uiPage: number,
   itemsPerPage: ItemsPerPage,
-  cachedPages: Record<number, LCProblem[]>,
+  cachedPages: Record<number, Problem[]>,
 ): boolean {
   const requiredPages = getCachedPagesForUIPage(uiPage, itemsPerPage);
   return requiredPages.every((page) => cachedPages[page] !== undefined);

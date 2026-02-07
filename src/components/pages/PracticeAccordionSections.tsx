@@ -26,8 +26,8 @@ import {
   SECTIONS_TO_NAME,
   sectionToIndex,
 } from "@/lib/practice";
-import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem, SectionKey } from "@/types/practice";
+import { Problem } from "@/types/problem";
 import {
   AlertDialog,
   AlertDialogAction,

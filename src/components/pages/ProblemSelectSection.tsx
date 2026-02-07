@@ -16,8 +16,8 @@ import {
   ItemsPerPage,
 } from "@/lib/pagination";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
-import { LCProblem } from "@/types/leetcode";
 import { PracticeProblem } from "@/types/practice";
+import { Problem, ProblemDetails } from "@/types/problem";
 import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemSelectSectionProps {
@@ -30,11 +30,10 @@ export function ProblemSelectSection({
   isEditable,
 }: ProblemSelectSectionProps) {
   // #region State Variables
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingProblemList, setIsLoadingProblemList] = useState(false);
+  const [isLoadingProblemDetails, setIsLoadingProblemDetails] = useState(false);
 
-  const [cachedPages, setCachedPages] = useState<Record<number, LCProblem[]>>(
-    {},
-  );
+  const [cachedPages, setCachedPages] = useState<Record<number, Problem[]>>({});
   const [pageCursors, setPageCursors] = useState<
     Record<number, number | undefined>
   >({});
@@ -45,19 +44,20 @@ export function ProblemSelectSection({
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [searchResults, setSearchResults] = useState<LCProblem[] | null>(null);
+  const [searchResults, setSearchResults] = useState<Problem[] | null>(null);
 
-  const [selectedProblem, setSelectedProblem] = useState<LCProblem | null>(
+  const [selectedProblem, setSelectedProblem] = useState<Problem | null>(null);
+  const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
     null,
   );
   // #endregion State Variables
 
   // #region Local Helpers
   const getSearchResultsForUIPage = (
-    results: LCProblem[],
+    results: Problem[],
     uiPage: number,
     itemsPerPage: ItemsPerPage,
-  ): LCProblem[] => {
+  ): Problem[] => {
     const start = (uiPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return results.slice(start, end);
@@ -98,7 +98,7 @@ export function ProblemSelectSection({
     async (cachePage: number) => {
       if (cachedPages[cachePage]) return; // already cached
 
-      setIsLoading(true);
+      setIsLoadingProblemList(true);
 
       try {
         const cursor = pageCursors[cachePage - 1];
@@ -118,7 +118,7 @@ export function ProblemSelectSection({
       } catch (err) {
         console.error(err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingProblemList(false);
       }
     },
     [cachedPages, pageCursors],
@@ -176,6 +176,32 @@ export function ProblemSelectSection({
       ),
     [],
   );
+
+  const handleViewProblem = useCallback(async (problem: Problem) => {
+    setSelectedProblem(problem);
+    setProblemDetails(null);
+  }, []);
+
+  const handleGeneratePreview = useCallback(async () => {
+    if (!selectedProblem) return;
+
+    setIsLoadingProblemDetails(true);
+    try {
+      const res = await fetch(
+        `/api/problems/${selectedProblem.titleSlug}/preview`,
+        { method: "POST" },
+      );
+
+      if (!res.ok) throw new Error("Failed to generate preview");
+
+      const data: ProblemDetails = await res.json();
+      setProblemDetails(data);
+    } catch (err) {
+      console.error("Failed to generate preview:", err);
+    } finally {
+      setIsLoadingProblemDetails(false);
+    }
+  }, [selectedProblem]);
   // #endregion Stable Callbacks
 
   // #region Effects
@@ -220,7 +246,7 @@ export function ProblemSelectSection({
     }
 
     const fetchSearchResults = async () => {
-      setIsLoading(true);
+      setIsLoadingProblemList(true);
       try {
         const res = await fetch(
           `${LC_PROBLEMS_API_PATH}?q=${encodeURIComponent(debouncedSearch)}`,
@@ -234,54 +260,14 @@ export function ProblemSelectSection({
       } catch (err) {
         console.error("Search failed:", err);
       } finally {
-        setIsLoading(false);
+        setIsLoadingProblemList(false);
       }
     };
 
     fetchSearchResults();
   }, [debouncedSearch]);
+
   // #endregion Effects
-
-  // const getOrCreateProcessedProblem = async (
-  //   problem: LCProblem,
-  // ): Promise<PracticeProblem> => {
-  //   const response = await fetch("/api/process-problem", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(problem),
-  //   });
-
-  //   if (!response.ok) {
-  //     throw new Error("Failed to process problem");
-  //   }
-
-  //   const processedProblem = (await response.json()) as PracticeProblem;
-  //   return processedProblem;
-  // };
-
-  // const handleProblemSelect = async (problem: LCProblem) => {
-  //   if (selectedProblem?.id === problem.id) {
-  //     setOpen(false);
-  //     return;
-  //   }
-
-  //   setSelectedProblem(problem);
-  //   setOpen(false);
-  //   setIsProcessing(true);
-
-  //   try {
-  //     const processed = await getOrCreateProcessedProblem(problem);
-  //     setProcessedProblem(processed);
-  //     onProblemSelect(processed);
-  //   } catch (error) {
-  //     console.error("Failed to process problem:", error);
-  //     // TODO: Display toast notification for error
-  //   } finally {
-  //     setIsProcessing(false);
-  //   }
-  // };
 
   return (
     <AccordionContent className="flex flex-col gap-4 px-3.5">
@@ -295,13 +281,13 @@ export function ProblemSelectSection({
             problems={displayedProblems}
             currentPage={currentUIPage}
             totalPages={totalUIPages}
-            isLoading={isLoading}
+            isLoading={isLoadingProblemList}
             itemsPerPage={itemsPerPage}
             search={search}
             onSearchChange={setSearch}
             onPageChange={handlePageChange}
             onItemsPerPageChange={handleItemsPerPageChange}
-            onProblemSelect={setSelectedProblem}
+            onProblemSelect={handleViewProblem}
           />
         </div>
 
@@ -327,32 +313,33 @@ export function ProblemSelectSection({
                 </div>
               </div>
 
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Problem Context</h4>
-                <p className="text-muted-foreground text-sm">
-                  This problem involves finding an optimal solution using
-                  dynamic programming techniques. The key insight is recognizing
-                  the overlapping subproblems structure.
-                </p>
-              </div>
+              <button
+                onClick={handleGeneratePreview}
+                disabled={isLoadingProblemDetails}
+                className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+              >
+                {isLoadingProblemDetails
+                  ? "Generating..."
+                  : "Generate Preview"}
+              </button>
 
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Key Concepts</h4>
-                <ul className="text-muted-foreground list-inside list-disc text-sm">
-                  <li>Array manipulation</li>
-                  <li>Two-pointer technique</li>
-                  <li>Time complexity: O(n)</li>
-                </ul>
-              </div>
+              {problemDetails?.source?.examples && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium">Examples</h4>
+                  <pre className="text-muted-foreground overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                    {JSON.stringify(problemDetails.source.examples, null, 2)}
+                  </pre>
+                </div>
+              )}
 
-              <div>
-                <h4 className="mb-2 text-sm font-medium">Hints</h4>
-                <p className="text-muted-foreground text-sm">
-                  Consider how you might solve this if the array was sorted.
-                  What data structure could help track elements you&apos;ve
-                  seen?
-                </p>
-              </div>
+              {problemDetails?.derived?.framing && (
+                <div>
+                  <h4 className="mb-2 text-sm font-medium">Framing</h4>
+                  <pre className="text-muted-foreground overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
+                    {JSON.stringify(problemDetails.derived.framing, null, 2)}
+                  </pre>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-muted-foreground flex h-full items-center justify-center rounded-lg border border-dashed p-8 text-center text-sm">

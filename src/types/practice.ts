@@ -1,6 +1,6 @@
-import { ProcessedProblem } from "./leetcode";
+import { ProblemDetails } from "./problem";
 
-export type PracticeProblem = ProcessedProblem;
+export type PracticeProblem = ProblemDetails;
 
 export type SectionKey =
   | "selection"
