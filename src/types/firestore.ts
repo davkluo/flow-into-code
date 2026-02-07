@@ -1,16 +1,16 @@
-import { SectionKey } from "@/types/practice";
-import { ProcessedProblem } from "@/types/leetcode";
-import { ProblemMetadataSchema } from "./problems";
 import z from "zod";
-import { TagDocSchema } from "./tags";
-import { FeedbackSchema, RagMetadataSchema } from "./session";
 import { LanguageKey } from "@/lib/codeMirror";
+import { SectionKey } from "@/types/practice";
+import { ProblemDetails } from "@/types/problem";
+import { ProblemMetadataSchema } from "./problems";
+import { FeedbackSchema, RagMetadataSchema } from "./session";
+import { TagDocSchema } from "./tags";
 
 export type ProblemMetadata = z.infer<typeof ProblemMetadataSchema>;
 
 // ProblemDoc stores ProcessedProblem data in Firestore
 // Document ID is the titleSlug
-export type ProblemDoc = ProcessedProblem & {
+export type ProblemDoc = ProblemDetails & {
   tags: string[]; // Tag IDs for relationships
   metadata: ProblemMetadata;
 };
@@ -34,4 +34,3 @@ export type SessionDoc = {
 export type TagDoc = z.infer<typeof TagDocSchema>;
 
 export type RagMetadata = z.infer<typeof RagMetadataSchema>;
-

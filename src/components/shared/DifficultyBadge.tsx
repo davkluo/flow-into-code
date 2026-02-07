@@ -5,12 +5,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { LCProblem } from "@/types/leetcode";
+import { Problem } from "@/types/problem";
 
 export function DifficultyBadge({
   difficulty,
   className,
-}: React.ComponentProps<"span"> & Pick<LCProblem, "difficulty">) {
+}: React.ComponentProps<"span"> & Pick<Problem, "difficulty">) {
   const Icon =
     difficulty === "Easy" ? Leaf : difficulty === "Medium" ? Zap : Flame;
 
@@ -19,7 +19,7 @@ export function DifficultyBadge({
       <TooltipTrigger asChild>
         <span
           className={cn(
-            "inline-flex items-center cursor-default",
+            "inline-flex cursor-default items-center",
             difficulty === "Easy" && "text-green-600",
             difficulty === "Medium" && "text-amber-500",
             difficulty === "Hard" && "text-red-500",
