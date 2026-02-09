@@ -1,33 +1,33 @@
+import { z } from "zod";
+import { zodTextFormat } from "openai/helpers/zod";
 import { openAIClient } from "@/lib/openai";
 
-interface CallLLMInput {
+interface CallLLMStructuredInput<T extends z.ZodType> {
   prompt: string;
+  schema: T;
+  schemaName: string;
   model?: string;
   temperature?: number;
 }
 
-export async function callLLM({
+export async function callLLMStructured<T extends z.ZodType>({
   prompt,
+  schema,
+  schemaName,
   model = "gpt-4o-mini",
   temperature = 0,
-}: CallLLMInput): Promise<string> {
-  const res = await openAIClient.chat.completions.create({
+}: CallLLMStructuredInput<T>): Promise<z.infer<T>> {
+  const response = await openAIClient.responses.parse({
     model,
     temperature,
-    messages: [
-      {
-        role: "system",
-        content: "You are a precise JSON-producing assistant.",
-      },
-      { role: "user", content: prompt },
-    ],
+    instructions: "You are a precise JSON-producing assistant.",
+    input: prompt,
+    text: { format: zodTextFormat(schema, schemaName) },
   });
 
-  const content = res.choices[0]?.message?.content;
-
-  if (!content) {
-    throw new Error("LLM returned empty response");
+  if (!response.output_parsed) {
+    throw new Error(`callLLMStructured(${schemaName}): LLM returned empty response`);
   }
 
-  return content;
+  return response.output_parsed;
 }
