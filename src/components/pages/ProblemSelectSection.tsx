@@ -7,6 +7,9 @@ import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { AccordionContent } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
+import { Item, ItemContent } from "@/components/ui/item";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -39,7 +42,7 @@ export function ProblemSelectSection({
   isEditable,
 }: ProblemSelectSectionProps) {
   // #region State Variables
-  const [isLoadingProblemList, setIsLoadingProblemList] = useState(false);
+  const [isLoadingProblemList, setIsLoadingProblemList] = useState(true);
   const [isLoadingProblemDetails, setIsLoadingProblemDetails] = useState(false);
 
   const [cachedPages, setCachedPages] = useState<Record<number, Problem[]>>({});
@@ -315,16 +318,16 @@ export function ProblemSelectSection({
           {/* Panel 2: Problem Detail */}
           <div className="w-1/2 shrink-0 p-4">
             {selectedProblem && (
-              <div className="flex flex-col gap-4">
+              <div className="mx-2 flex flex-col gap-4">
                 <button
                   onClick={handleBack}
-                  className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-sm"
+                  className="text-muted-foreground hover:text-foreground flex cursor-pointer items-center gap-1 text-xs"
                 >
                   <ArrowLeft className="h-3.5 w-3.5" />
                   Back to problems
                 </button>
 
-                <div>
+                <div className="mt-2">
                   <h3 className="text-lg font-semibold">
                     {selectedProblem.id}. {selectedProblem.title}
                     <Tooltip>
@@ -349,7 +352,7 @@ export function ProblemSelectSection({
                   </div>
                 </div>
 
-                {!problemDetails && (
+                {!problemDetails && !isLoadingProblemDetails && (
                   <div className="text-muted-foreground rounded-md border border-dashed px-3 py-2.5 text-xs">
                     <p>
                       This problem hasn&apos;t been prepared yet. You can
@@ -357,33 +360,150 @@ export function ProblemSelectSection({
                     </p>
                     <button
                       onClick={handleGeneratePreview}
-                      disabled={isLoadingProblemDetails}
-                      className="mt-2 cursor-pointer text-xs underline underline-offset-2 opacity-80 hover:opacity-100 disabled:cursor-default disabled:opacity-50"
+                      className="mt-2 cursor-pointer text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
                     >
-                      {isLoadingProblemDetails
-                        ? "Generating..."
-                        : "Generate details"}
+                      Generate details
                     </button>
                   </div>
                 )}
 
-                {problemDetails?.source?.examples && (
-                  <div>
-                    <h4 className="mb-2 text-sm font-medium">Examples</h4>
-                    <pre className="text-muted-foreground overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-                      {JSON.stringify(problemDetails.source.examples, null, 2)}
-                    </pre>
+                {isLoadingProblemDetails && (
+                  <div className="flex flex-col gap-4">
+                    {/* Framing skeleton */}
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-4 w-20" />
+                      <div className="rounded-md bg-background p-4 dark:bg-black">
+                        <div className="flex flex-col gap-2.5">
+                          <Skeleton className="h-3.5 w-full" />
+                          <Skeleton className="h-3.5 w-full" />
+                          <Skeleton className="h-3.5 w-5/6" />
+                          <Skeleton className="mt-2 h-3.5 w-full" />
+                          <Skeleton className="h-3.5 w-4/6" />
+                        </div>
+                      </div>
+                    </div>
+                    {/* Examples skeleton */}
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <div className="rounded-md bg-background p-4 dark:bg-black">
+                        <div className="flex flex-col gap-2.5">
+                          <Skeleton className="h-3.5 w-2/3" />
+                          <Skeleton className="h-3.5 w-1/2" />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {problemDetails?.derived?.framing && (
-                  <div>
-                    <h4 className="mb-2 text-sm font-medium">Framing</h4>
-                    <pre className="text-muted-foreground overflow-auto rounded bg-gray-100 p-2 text-xs dark:bg-gray-800">
-                      {JSON.stringify(problemDetails.derived.framing, null, 2)}
-                    </pre>
-                  </div>
+                  <Tabs defaultValue="general">
+                    <TabsList variant="line">
+                      <TabsTrigger value="general" className="text-xs">
+                        General
+                      </TabsTrigger>
+                      {problemDetails.derived.framing.backend && (
+                        <TabsTrigger value="backend" className="text-xs">
+                          Backend
+                        </TabsTrigger>
+                      )}
+                      {problemDetails.derived.framing.systems && (
+                        <TabsTrigger value="systems" className="text-xs">
+                          Systems
+                        </TabsTrigger>
+                      )}
+                    </TabsList>
+                    <TabsContent value="general">
+                      <Item
+                        variant="default"
+                        size="sm"
+                        className="bg-background rounded-md dark:bg-black"
+                      >
+                        <ItemContent>
+                          <p className="whitespace-pre-line text-sm leading-loose">
+                            {problemDetails.derived.framing.canonical}
+                          </p>
+                        </ItemContent>
+                      </Item>
+                    </TabsContent>
+                    {problemDetails.derived.framing.backend && (
+                      <TabsContent value="backend">
+                        <Item
+                          variant="default"
+                          size="sm"
+                          className="bg-background rounded-md dark:bg-black"
+                        >
+                          <ItemContent>
+                            <p className="whitespace-pre-line text-sm leading-loose">
+                              {problemDetails.derived.framing.backend}
+                            </p>
+                          </ItemContent>
+                        </Item>
+                      </TabsContent>
+                    )}
+                    {problemDetails.derived.framing.systems && (
+                      <TabsContent value="systems">
+                        <Item
+                          variant="default"
+                          size="sm"
+                          className="bg-background rounded-md dark:bg-black"
+                        >
+                          <ItemContent>
+                            <p className="whitespace-pre-line text-sm leading-loose">
+                              {problemDetails.derived.framing.systems}
+                            </p>
+                          </ItemContent>
+                        </Item>
+                      </TabsContent>
+                    )}
+                  </Tabs>
                 )}
+
+                {problemDetails?.source?.examples &&
+                  problemDetails.source.examples.length > 0 && (
+                    <Tabs defaultValue="example-0">
+                      <TabsList variant="line">
+                        {problemDetails.source.examples.map((_, index) => (
+                          <TabsTrigger
+                            key={index}
+                            value={`example-${index}`}
+                            className="text-xs"
+                          >
+                            Example {index + 1}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      {problemDetails.source.examples.map((example, index) => (
+                        <TabsContent key={index} value={`example-${index}`}>
+                          <Item
+                            variant="default"
+                            size="sm"
+                            className="bg-background rounded-md dark:bg-black"
+                          >
+                            <ItemContent className="gap-2">
+                              <p className="font-mono text-sm">
+                                <span className="text-muted-foreground">
+                                  Input:{" "}
+                                </span>
+                                {example.input}
+                              </p>
+                              <p className="font-mono text-sm">
+                                <span className="text-muted-foreground">
+                                  Output:{" "}
+                                </span>
+                                {example.output}
+                              </p>
+                              {example.explanation &&
+                                example.explanation !== "null" && (
+                                  <p className="mt-1 text-sm leading-relaxed">
+                                    {example.explanation}
+                                  </p>
+                                )}
+                            </ItemContent>
+                          </Item>
+                        </TabsContent>
+                      ))}
+                    </Tabs>
+                  )}
               </div>
             )}
           </div>

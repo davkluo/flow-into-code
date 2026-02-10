@@ -5,6 +5,7 @@ import { useRef } from "react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { TruncatedText } from "@/components/shared/TruncatedText";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
@@ -94,7 +95,7 @@ export function ProblemsTable({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       <div className="mx-2 grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-sm">
         <div className="flex items-center gap-1.5 border-b border-transparent py-0.5 focus-within:border-current">
           <button
@@ -202,14 +203,22 @@ export function ProblemsTable({
         </colgroup>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell
-                colSpan={3}
-                className="text-muted-foreground text-center"
-              >
-                Loading...
-              </TableCell>
-            </TableRow>
+            Array.from({ length: itemsPerPage }).map((_, i) => (
+              <TableRow key={i} className="hover:bg-transparent">
+                <TableCell>
+                  <Skeleton className="h-4 w-3/4" />
+                </TableCell>
+                <TableCell className="text-center">
+                  <Skeleton className="mx-auto h-5 w-12 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end gap-1">
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                    <Skeleton className="h-5 w-14 rounded-full" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))
           ) : problems.length === 0 ? (
             <TableRow>
               <TableCell
