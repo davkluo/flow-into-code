@@ -192,6 +192,22 @@ export function ProblemSelectSection({
   const handleViewProblem = useCallback(async (problem: Problem) => {
     setSelectedProblem(problem);
     setProblemDetails(null);
+    setIsLoadingProblemDetails(true);
+
+    try {
+      const res = await fetch(
+        `/api/problems/${problem.titleSlug}/preview`,
+      );
+
+      if (res.ok) {
+        const data: ProblemDetails = await res.json();
+        setProblemDetails(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch problem details:", err);
+    } finally {
+      setIsLoadingProblemDetails(false);
+    }
   }, []);
 
   const handleBack = useCallback(() => {
