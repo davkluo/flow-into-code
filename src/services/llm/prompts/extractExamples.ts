@@ -18,13 +18,15 @@ Your task:
 - If no examples exist, return an empty array.
 
 Return valid JSON with this exact shape:
-[
-  {
-    "input": string,
-    "output": string,
-    "explanation"?: string
-  }
-]
+{
+  "examples": [
+    {
+      "input": string,
+      "output": string,
+      "explanation": string | null
+    }
+  ]
+}
 
 Problem title:
 ${input.title}
