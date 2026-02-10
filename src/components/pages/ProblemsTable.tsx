@@ -1,6 +1,11 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Lock, Search } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Lock,
+  Search,
+} from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { TruncatedText } from "@/components/shared/TruncatedText";
@@ -205,15 +210,26 @@ export function ProblemsTable({
           ) : (
             problems.map((problem) =>
               problem.isPaidOnly ? (
-                <TableRow key={problem.id} className="cursor-default opacity-50 hover:bg-transparent">
+                <TableRow key={problem.id} className="opacity-50 hover:bg-transparent">
                   <TableCell className="text-sm">
-                    <TruncatedText
-                      className="flex items-center gap-1.5 truncate"
-                      tooltip={<>{problem.title} (Premium)</>}
-                    >
-                      <Lock className="h-3.5 w-3.5 shrink-0" />
-                      {problem.id}. {problem.title}
-                    </TruncatedText>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <a
+                          href={`https://leetcode.com/problems/${problem.titleSlug}/`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex w-full items-center gap-1.5 hover:underline"
+                        >
+                          <span className="truncate">
+                            {problem.id}. {problem.title}
+                          </span>
+                          <Lock className="h-3.5 w-3.5 shrink-0" />
+                        </a>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        &quot;{problem.title}&quot; is a premium problem. Click to open on LeetCode in a new window.
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     <DifficultyBadge difficulty={problem.difficulty} />
