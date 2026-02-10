@@ -1,13 +1,7 @@
 "use client";
 
+import { ChevronLeft, ChevronRight, Lock, Search, X } from "lucide-react";
 import { useRef } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-  Search,
-  X,
-} from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { TruncatedText } from "@/components/shared/TruncatedText";
@@ -100,12 +94,12 @@ export function ProblemsTable({
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-sm">
+    <div className="flex flex-col gap-6">
+      <div className="mx-2 grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-sm">
         <div className="flex items-center gap-1.5 border-b border-transparent py-0.5 focus-within:border-current">
           <button
             onClick={() => inputRef.current?.focus()}
-            className="text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+            className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
           >
             <Search className="h-3.5 w-3.5" />
           </button>
@@ -115,38 +109,38 @@ export function ProblemsTable({
             placeholder="Search problems..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="placeholder:text-muted-foreground w-full bg-transparent text-sm focus:outline-none"
+            className="placeholder:text-muted-foreground w-full bg-transparent text-xs focus:outline-none"
           />
           {search && (
             <button
               onClick={() => onSearchChange("")}
-              className="text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+              className="text-muted-foreground hover:text-foreground shrink-0 cursor-pointer"
             >
               <X className="h-3.5 w-3.5" />
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-end gap-4">
           <nav className="flex items-center gap-1">
             <button
               onClick={handlePrevious}
               disabled={!canGoPrevious}
-              className={`flex items-center gap-0.5 px-1 ${
+              className={`flex items-center gap-0.5 px-1 text-xs ${
                 canGoPrevious
                   ? "cursor-pointer hover:underline"
                   : "text-muted-foreground cursor-default"
               }`}
             >
               <ChevronLeft className="h-3 w-3" />
-              Previous
+              Prev
             </button>
 
             {getVisiblePages().map((page, index) =>
               typeof page === "string" ? (
                 <span
                   key={`${page}-${index}`}
-                  className="text-muted-foreground px-1"
+                  className="text-muted-foreground px-0.5 text-xs"
                 >
                   ...
                 </span>
@@ -154,7 +148,7 @@ export function ProblemsTable({
                 <button
                   key={page}
                   onClick={() => onPageChange(page)}
-                  className={`px-1 ${
+                  className={`px-0.5 text-xs ${
                     page === currentPage
                       ? "underline"
                       : "cursor-pointer hover:underline"
@@ -168,7 +162,7 @@ export function ProblemsTable({
             <button
               onClick={handleNext}
               disabled={!canGoNext}
-              className={`flex items-center gap-0.5 px-1 ${
+              className={`flex items-center gap-0.5 px-1 text-xs ${
                 canGoNext
                   ? "cursor-pointer hover:underline"
                   : "text-muted-foreground cursor-default"
@@ -179,14 +173,14 @@ export function ProblemsTable({
             </button>
           </nav>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 text-xs">
             <span className="text-muted-foreground">Per page:</span>
             <div className="flex items-center gap-1">
               {ITEMS_PER_PAGE_OPTIONS.map((option) => (
                 <button
                   key={option}
                   onClick={() => onItemsPerPageChange(option)}
-                  className={`px-1 ${
+                  className={`px-0.5 ${
                     option === itemsPerPage
                       ? "underline"
                       : "cursor-pointer hover:underline"
@@ -200,7 +194,7 @@ export function ProblemsTable({
         </div>
       </div>
 
-      <Table className="table-fixed">
+      <Table className="mt-1 table-fixed">
         <colgroup>
           <col className="w-auto" />
           <col className="w-10" />
@@ -228,7 +222,10 @@ export function ProblemsTable({
           ) : (
             problems.map((problem) =>
               problem.isPaidOnly ? (
-                <TableRow key={problem.id} className="opacity-50 hover:bg-transparent">
+                <TableRow
+                  key={problem.id}
+                  className="opacity-50 hover:bg-transparent"
+                >
                   <TableCell className="text-sm">
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -245,7 +242,8 @@ export function ProblemsTable({
                         </a>
                       </TooltipTrigger>
                       <TooltipContent>
-                        &quot;{problem.title}&quot; is a premium problem. Click to open on LeetCode in a new window.
+                        &quot;{problem.title}&quot; is a premium problem. Click
+                        to open on LeetCode in a new window.
                       </TooltipContent>
                     </Tooltip>
                   </TableCell>
@@ -253,7 +251,7 @@ export function ProblemsTable({
                     <DifficultyBadge difficulty={problem.difficulty} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center gap-1">
+                    <div className="flex flex-wrap items-center justify-end gap-1">
                       {problem.topicTags.slice(0, 2).map((tag) => (
                         <TagBadge key={tag.id} tagName={tag.name} />
                       ))}
@@ -292,7 +290,7 @@ export function ProblemsTable({
                     <DifficultyBadge difficulty={problem.difficulty} />
                   </TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap items-center gap-1">
+                    <div className="flex flex-wrap items-center justify-end gap-1">
                       {problem.topicTags.slice(0, 2).map((tag) => (
                         <TagBadge key={tag.id} tagName={tag.name} />
                       ))}
