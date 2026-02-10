@@ -14,7 +14,7 @@ export function buildGenerateFramingPrompt(
       : "";
 
   return `
-You are reframing a coding interview problem into real-world engineering scenarios.
+You are reframing a coding interview problem into real-world engineering scenarios. The audience is entry-level software engineers preparing for technical interviews. The goal is to help them see how algorithmic problems connect to real-world engineering work — exposing them to practical concepts, terminology, and contexts they'll encounter on the job.
 
 Your task:
 - Read the problem and produce up to 3 alternative framings that describe the SAME underlying algorithm/data structure challenge but as a real-world software engineering task.
@@ -22,9 +22,9 @@ Your task:
 - The user will still be implementing a function, so always frame the task around writing/implementing a function — NOT designing a module, creating an endpoint, or building a system. For example, say "Write a function for a module that..." instead of "Design a module that...", or "Implement the core logic function for an API endpoint that..." instead of "Create an API endpoint that...".
 
 Framings:
-- "canonical" is required: phrase it as implementing a function for a real-world software engineering context (e.g. "Write a function that, given a routing table with weighted connections, finds the cheapest path between two servers").
-- "backend" is optional: reframe as implementing a function for a backend/API scenario if it fits naturally. Only include this if the backend context introduces meaningfully different terminology or perspective from the canonical framing. If it would just be the canonical framing with "API" or "endpoint" added, omit it.
-- "systems" is optional: reframe as implementing a function for a systems-level scenario if it fits naturally. Only include this if the systems context introduces meaningfully different terminology or perspective from the canonical framing. If it would just be the canonical framing with "distributed" or "server" added, omit it.
+- "canonical" is REQUIRED: phrase it as implementing a function for a real-world software engineering context (e.g. "Write a function that, given a routing table with weighted connections, finds the cheapest path between two servers").
+- "backend" is OPTIONAL — you should OMIT it unless the problem maps onto a genuinely distinct backend/API scenario with its own natural terminology and mental model. Do NOT include it if it reads like the canonical framing reworded with "API", "endpoint", "request", or "database" sprinkled in. A forced backend framing that doesn't add real value is worse than omitting it. When in doubt, omit it.
+- "systems" is OPTIONAL — you should OMIT it unless the problem maps onto a genuinely distinct systems-level scenario with its own natural terminology and mental model. Do NOT include it if it reads like the canonical framing reworded with "distributed", "server", "node", or "cluster" sprinkled in. A forced systems framing that doesn't add real value is worse than omitting it. When in doubt, omit it.
 
 Constraints and definitions:
 - Each framing MUST include all relevant constraints from the original problem: input bounds, required time/space complexity, edge cases, and any assumptions the user may rely on (e.g. "the input is guaranteed to have exactly one solution").
@@ -33,6 +33,7 @@ Constraints and definitions:
 
 Style:
 - Each framing should be concise but complete — include enough detail to fully specify the problem without the user needing to reference the original.
+- Use newline characters (\\n) within each framing string to separate logical sections for readability. In particular, separate the problem constraints (input bounds, complexity requirements, guarantees) into their own paragraph.
 - Do NOT reveal the solution approach.
 
 Return valid JSON with this exact shape:
