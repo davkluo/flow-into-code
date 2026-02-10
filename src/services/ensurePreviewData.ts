@@ -1,3 +1,4 @@
+import { stripHtml } from "@/lib/formatting";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
 import { fetchLCProblemContent } from "@/services/leetcode/client";
@@ -17,15 +18,14 @@ export async function ensurePreviewData(slug: string): Promise<ProblemDetails> {
     return existing;
   }
 
-  const originalContent =
+  const rawContent =
     existing?.source?.originalContent ?? (await fetchLCProblemContent(slug));
+  const originalContent = stripHtml(rawContent);
 
   const examples = await extractExamples({
     title: problem.title,
     originalContent,
   });
-
-  console.log("Generated examples for", slug, examples);
 
   const framing = await generateFraming({
     title: problem.title,
@@ -33,8 +33,6 @@ export async function ensurePreviewData(slug: string): Promise<ProblemDetails> {
     originalContent,
     examples,
   });
-
-  console.log("Generated framing for", slug, framing);
 
   // await problemDetailsRepo.createIfNotExists(slug, { titleSlug: slug });
   // await problemDetailsRepo.updateSource(slug, {
