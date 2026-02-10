@@ -1,10 +1,12 @@
 "use client";
 
+import { useRef } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   Lock,
   Search,
+  X,
 } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
@@ -43,6 +45,8 @@ export function ProblemsTable({
   onItemsPerPageChange,
   onProblemSelect,
 }: ProblemsTableProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const canGoNext = totalPages === null || currentPage < totalPages;
   const canGoPrevious = currentPage > 1;
 
@@ -98,18 +102,32 @@ export function ProblemsTable({
   return (
     <div className="flex flex-col gap-3">
       <div className="grid grid-cols-[minmax(120px,200px)_1fr] items-center gap-3 text-sm">
-        <div className="flex items-center gap-1.5 border-b py-0.5">
-          <Search className="text-muted-foreground h-3.5 w-3.5" />
+        <div className="flex items-center gap-1.5 border-b border-transparent py-0.5 focus-within:border-current">
+          <button
+            onClick={() => inputRef.current?.focus()}
+            className="text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+          >
+            <Search className="h-3.5 w-3.5" />
+          </button>
           <input
+            ref={inputRef}
             type="text"
             placeholder="Search problems..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
             className="placeholder:text-muted-foreground w-full bg-transparent text-sm focus:outline-none"
           />
+          {search && (
+            <button
+              onClick={() => onSearchChange("")}
+              className="text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
 
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center gap-4">
           <nav className="flex items-center gap-1">
             <button
               onClick={handlePrevious}
