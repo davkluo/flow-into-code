@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Eye, Lock, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, Search } from "lucide-react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
+import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
@@ -181,13 +182,12 @@ export function ProblemsTable({
           <col className="w-auto" />
           <col className="w-10" />
           <col className="w-60" />
-          <col className="w-12" />
         </colgroup>
         <TableBody>
           {isLoading ? (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={3}
                 className="text-muted-foreground text-center"
               >
                 Loading...
@@ -196,7 +196,7 @@ export function ProblemsTable({
           ) : problems.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={3}
                 className="text-muted-foreground text-center"
               >
                 No problems found.
@@ -205,53 +205,15 @@ export function ProblemsTable({
           ) : (
             problems.map((problem) =>
               problem.isPaidOnly ? (
-                <Tooltip key={problem.id}>
-                  <TooltipTrigger asChild>
-                    <TableRow className="cursor-default opacity-50 hover:bg-transparent">
-                      <TableCell className="text-sm">
-                        {problem.id}. {problem.title}
-                      </TableCell>
-                      <TableCell className="text-center align-middle">
-                        <DifficultyBadge difficulty={problem.difficulty} />
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap items-center gap-1">
-                          {problem.topicTags.slice(0, 2).map((tag) => (
-                            <TagBadge key={tag.id} tagName={tag.name} />
-                          ))}
-                          {problem.topicTags.length > 2 && (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="text-muted-foreground cursor-default text-xs">
-                                  +{problem.topicTags.length - 2}
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <div className="flex flex-wrap gap-1">
-                                  {problem.topicTags.slice(2).map((tag) => (
-                                    <TagBadge key={tag.id} tagName={tag.name} />
-                                  ))}
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center align-middle">
-                        <div className="inline-flex h-8 w-8 items-center justify-center">
-                          <Lock className="h-4 w-4" />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Sorry! Premium problems are not available.
-                  </TooltipContent>
-                </Tooltip>
-              ) : (
-                <TableRow key={problem.id} className="hover:bg-transparent">
+                <TableRow key={problem.id} className="cursor-default opacity-50 hover:bg-transparent">
                   <TableCell className="text-sm">
-                    {problem.id}. {problem.title}
+                    <TruncatedText
+                      className="flex items-center gap-1.5 truncate"
+                      tooltip={<>{problem.title} (Premium)</>}
+                    >
+                      <Lock className="h-3.5 w-3.5 shrink-0" />
+                      {problem.id}. {problem.title}
+                    </TruncatedText>
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     <DifficultyBadge difficulty={problem.difficulty} />
@@ -279,16 +241,44 @@ export function ProblemsTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="text-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onProblemSelect?.(problem);
-                      }}
-                      className="inline-flex h-8 w-8 cursor-pointer items-center justify-center hover:underline"
+                </TableRow>
+              ) : (
+                <TableRow key={problem.id} className="hover:bg-transparent">
+                  <TableCell className="text-sm">
+                    <TruncatedText
+                      as="button"
+                      className="block w-full cursor-pointer truncate text-left hover:underline"
+                      tooltip={problem.title}
+                      onClick={() => onProblemSelect?.(problem)}
                     >
-                      <Eye className="h-4 w-4" />
-                    </button>
+                      {problem.id}. {problem.title}
+                    </TruncatedText>
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <DifficultyBadge difficulty={problem.difficulty} />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {problem.topicTags.slice(0, 2).map((tag) => (
+                        <TagBadge key={tag.id} tagName={tag.name} />
+                      ))}
+                      {problem.topicTags.length > 2 && (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="text-muted-foreground cursor-default text-xs">
+                              +{problem.topicTags.length - 2}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <div className="flex flex-wrap gap-1">
+                              {problem.topicTags.slice(2).map((tag) => (
+                                <TagBadge key={tag.id} tagName={tag.name} />
+                              ))}
+                            </div>
+                          </TooltipContent>
+                        </Tooltip>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ),
