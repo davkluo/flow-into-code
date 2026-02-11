@@ -2,7 +2,8 @@
 
 import _ from "lodash";
 import { ArrowLeft, ExternalLink } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { Card } from "@/components/ui/card";
@@ -61,6 +62,7 @@ export function ProblemSelectSection({
   const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
     null,
   );
+  const pollAbortRef = useRef<AbortController | null>(null);
   // #endregion State Variables
 
   // #region Local Helpers
@@ -188,26 +190,68 @@ export function ProblemSelectSection({
     [],
   );
 
-  const handleViewProblem = useCallback(async (problem: Problem) => {
-    setSelectedProblem(problem);
-    setProblemDetails(null);
-    setIsLoadingProblemDetails(true);
+  const pollForPreview = useCallback(
+    async (slug: string): Promise<ProblemDetails | null> => {
+      pollAbortRef.current?.abort();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
 
-    try {
-      const res = await fetch(`/api/problems/${problem.titleSlug}/preview`);
+      const delays = [1000, 2000, 4000, 8000, 8000, 8000];
+      for (const delay of delays) {
+        if (controller.signal.aborted) return null;
+        await new Promise((r) => setTimeout(r, delay));
+        if (controller.signal.aborted) return null;
 
-      if (res.ok) {
-        const data: ProblemDetails = await res.json();
-        setProblemDetails(data);
+        try {
+          const res = await fetch(`/api/problems/${slug}/preview`, {
+            signal: controller.signal,
+          });
+          if (res.ok) return (await res.json()) as ProblemDetails;
+          if (res.status !== 202) return null;
+        } catch {
+          if (controller.signal.aborted) return null;
+        }
       }
-    } catch (err) {
-      console.error("Failed to fetch problem details:", err);
-    } finally {
-      setIsLoadingProblemDetails(false);
-    }
-  }, []);
+
+      return null;
+    },
+    [],
+  );
+
+  const handleViewProblem = useCallback(
+    async (problem: Problem) => {
+      setSelectedProblem(problem);
+      setProblemDetails(null);
+      setIsLoadingProblemDetails(true);
+
+      try {
+        const res = await fetch(
+          `/api/problems/${problem.titleSlug}/preview`,
+        );
+
+        if (res.ok) {
+          const data: ProblemDetails = await res.json();
+          setProblemDetails(data);
+          return;
+        }
+
+        if (res.status === 202) {
+          const data = await pollForPreview(problem.titleSlug);
+          if (data) {
+            setProblemDetails(data);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch problem details:", err);
+      } finally {
+        setIsLoadingProblemDetails(false);
+      }
+    },
+    [pollForPreview],
+  );
 
   const handleBack = useCallback(() => {
+    pollAbortRef.current?.abort();
     setSelectedProblem(null);
     setProblemDetails(null);
   }, []);
@@ -222,16 +266,30 @@ export function ProblemSelectSection({
         { method: "POST" },
       );
 
-      if (!res.ok) throw new Error("Failed to generate preview");
+      if (res.ok) {
+        const data: ProblemDetails = await res.json();
+        setProblemDetails(data);
+        return;
+      }
 
-      const data: ProblemDetails = await res.json();
-      setProblemDetails(data);
+      if (res.status === 202) {
+        const data = await pollForPreview(selectedProblem.titleSlug);
+        if (data) {
+          setProblemDetails(data);
+          return;
+        }
+        toast("Generation is taking longer than expected", {
+          description: "Please try again in a moment.",
+        });
+      } else {
+        throw new Error("Failed to generate preview");
+      }
     } catch (err) {
       console.error("Failed to generate preview:", err);
     } finally {
       setIsLoadingProblemDetails(false);
     }
-  }, [selectedProblem]);
+  }, [selectedProblem, pollForPreview]);
   // #endregion Stable Callbacks
 
   // #region Effects

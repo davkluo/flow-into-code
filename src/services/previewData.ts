@@ -6,29 +6,59 @@ import { extractExamples } from "@/services/llm/extractExamples";
 import { generateFraming } from "@/services/llm/generateFraming";
 import { ProblemDetails } from "@/types/problem";
 
+const STALE_AFTER_MS = 2 * 60 * 1000; // 2 minutes
+
+export type PreviewDataResult =
+  | { status: "complete"; data: ProblemDetails }
+  | { status: "processing" }
+  | { status: "not_found" };
+
 export async function getPreviewData(
   slug: string,
-): Promise<ProblemDetails | null> {
+): Promise<PreviewDataResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
-  if (details?.processingMeta?.layers?.framing?.status !== "complete") {
-    return null;
+  if (!details) {
+    return { status: "not_found" };
   }
 
-  return details;
+  const framingStatus = details.processingMeta?.layers?.framing?.status;
+
+  if (framingStatus === "complete") {
+    return { status: "complete", data: details };
+  }
+
+  if (framingStatus === "processing") {
+    return { status: "processing" };
+  }
+
+  return { status: "not_found" };
 }
 
 export async function generatePreviewData(
   slug: string,
-): Promise<ProblemDetails> {
+): Promise<ProblemDetails | null> {
   const problem = await problemRepo.getBySlug(slug);
   if (!problem) {
     throw new Error(`Problem not found: ${slug}`);
   }
 
-  const existing = await getPreviewData(slug);
-  if (existing) return existing;
+  const claim = await problemDetailsRepo.claimGeneration(
+    slug,
+    "framing",
+    STALE_AFTER_MS,
+  );
 
+  if (claim.status === "already_complete") {
+    const result = await getPreviewData(slug);
+    return result.status === "complete" ? result.data : null;
+  }
+
+  if (claim.status === "already_processing") {
+    return null;
+  }
+
+  // claimed — proceed with generation
   const partial = await problemDetailsRepo.getBySlug(slug);
   const rawContent =
     partial?.source?.originalContent ?? (await fetchLCProblemContent(slug));
@@ -46,7 +76,6 @@ export async function generatePreviewData(
     examples,
   });
 
-  await problemDetailsRepo.createIfNotExists(slug, { titleSlug: slug });
   await problemDetailsRepo.updateSource(slug, {
     ...partial?.source,
     originalContent,
