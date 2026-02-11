@@ -2,6 +2,8 @@ import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
 import { openAIClient } from "@/lib/openai";
 
+const DEFAULT_MODEL = "gpt-4o-mini";
+
 interface CallLLMStructuredInput<T extends z.ZodType> {
   prompt: string;
   schema: T;
@@ -10,13 +12,22 @@ interface CallLLMStructuredInput<T extends z.ZodType> {
   temperature?: number;
 }
 
+export interface LLMStructuredResult<T> {
+  data: T;
+  model: string;
+}
+
+export interface LLMGenerationResult<T> extends LLMStructuredResult<T> {
+  promptVersion: number;
+}
+
 export async function callLLMStructured<T extends z.ZodType>({
   prompt,
   schema,
   schemaName,
-  model = "gpt-4o-mini",
+  model = DEFAULT_MODEL,
   temperature = 0,
-}: CallLLMStructuredInput<T>): Promise<z.infer<T>> {
+}: CallLLMStructuredInput<T>): Promise<LLMStructuredResult<z.infer<T>>> {
   const response = await openAIClient.responses.parse({
     model,
     temperature,
@@ -29,5 +40,5 @@ export async function callLLMStructured<T extends z.ZodType>({
     throw new Error(`callLLMStructured(${schemaName}): LLM returned empty response`);
   }
 
-  return response.output_parsed;
+  return { data: response.output_parsed, model };
 }

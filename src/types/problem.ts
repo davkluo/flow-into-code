@@ -1,6 +1,6 @@
 import { SectionKey } from "./practice";
 
-export const SCHEMA_VERSION = 1;
+export const PROBLEM_SCHEMA_VERSION = 1;
 
 export const GRADING_CATEGORIES: Record<SectionKey, string> = {
   problem_understanding: "Problem Understanding & Clarification",
@@ -20,10 +20,14 @@ export type LangSlug = (typeof LangSlug)[keyof typeof LangSlug];
 
 export type ProcessingStatus = "complete" | "processing";
 
-export interface ProcessingLayerMeta {
-  status: ProcessingStatus;
-  updatedAt: number;
-}
+export type ProcessingLayerMeta =
+  | { status: "processing"; updatedAt: number }
+  | {
+      status: "complete";
+      updatedAt: number;
+      model: string;
+      promptVersion: number;
+    };
 
 export interface Tag {
   name: string;
@@ -100,8 +104,6 @@ export interface ProblemDetails {
   };
 
   processingMeta?: {
-    model: string;
-    promptVersion: number;
     schemaVersion: number;
 
     layers?: {

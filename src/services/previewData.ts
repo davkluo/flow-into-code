@@ -13,9 +13,7 @@ export type PreviewDataResult =
   | { status: "processing" }
   | { status: "not_found" };
 
-export async function getPreviewData(
-  slug: string,
-): Promise<PreviewDataResult> {
+export async function getPreviewData(slug: string): Promise<PreviewDataResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
   if (!details) {
@@ -64,12 +62,16 @@ export async function generatePreviewData(
     partial?.source?.originalContent ?? (await fetchLCProblemContent(slug));
   const originalContent = stripHtml(rawContent);
 
-  const examples = await extractExamples({
+  const { data: examples } = await extractExamples({
     title: problem.title,
     originalContent,
   });
 
-  const framing = await generateFraming({
+  const {
+    data: framing,
+    model,
+    promptVersion,
+  } = await generateFraming({
     title: problem.title,
     difficulty: problem.difficulty,
     originalContent,
@@ -86,6 +88,8 @@ export async function generatePreviewData(
   await problemDetailsRepo.updateProcessingMeta(slug, "framing", {
     status: "complete",
     updatedAt: Date.now(),
+    model,
+    promptVersion,
   });
 
   return {

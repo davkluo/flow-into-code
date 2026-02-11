@@ -1,5 +1,9 @@
 import { adminDb } from "@/lib/firebaseAdmin";
-import { ProblemDetails, ProcessingLayerMeta } from "@/types/problem";
+import {
+  PROBLEM_SCHEMA_VERSION,
+  ProblemDetails,
+  ProcessingLayerMeta,
+} from "@/types/problem";
 
 type ProcessingLayer = keyof NonNullable<
   NonNullable<ProblemDetails["processingMeta"]>["layers"]
@@ -117,6 +121,7 @@ export async function claimGeneration(
       tx.set(ref, {
         titleSlug: slug,
         processingMeta: {
+          schemaVersion: PROBLEM_SCHEMA_VERSION,
           layers: { [layer]: { status: "processing", updatedAt: Date.now() } },
         },
       });
