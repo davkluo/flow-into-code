@@ -5,7 +5,6 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
-import { AccordionContent } from "@/components/ui/accordion";
 import { Card } from "@/components/ui/card";
 import { Item, ItemContent } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,12 +27,12 @@ import {
 } from "@/lib/pagination";
 import { cn } from "@/lib/utils";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
-import { PracticeProblem } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
+import { Button } from "../ui/button";
 import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemSelectSectionProps {
-  onProblemSelect: (problem: PracticeProblem) => void;
+  onProblemSelect: (problem: Problem, problemDetails: ProblemDetails) => void;
   isEditable: boolean;
 }
 
@@ -195,9 +194,7 @@ export function ProblemSelectSection({
     setIsLoadingProblemDetails(true);
 
     try {
-      const res = await fetch(
-        `/api/problems/${problem.titleSlug}/preview`,
-      );
+      const res = await fetch(`/api/problems/${problem.titleSlug}/preview`);
 
       if (res.ok) {
         const data: ProblemDetails = await res.json();
@@ -303,11 +300,7 @@ export function ProblemSelectSection({
   // #endregion Effects
 
   return (
-    <AccordionContent className="flex flex-col gap-4 px-3.5">
-      <p className="text-muted-foreground text-xs">
-        Select a problem from LeetCode to begin your practice session.
-      </p>
-
+    <div className="flex flex-col gap-4 px-3.5">
       <Card className="mx-auto mt-12 overflow-hidden py-0 lg:max-w-3xl">
         <div
           className={cn(
@@ -371,15 +364,19 @@ export function ProblemSelectSection({
                 {!problemDetails && !isLoadingProblemDetails && (
                   <div className="text-muted-foreground rounded-md border border-dashed px-3 py-2.5 text-xs">
                     <p>
-                      This problem hasn&apos;t been prepared yet. You can
-                      generate its details below — it may take a short moment.
+                      It looks like you are the first to attempt this problem!
+                      This problem hasn&apos;t been prepared yet, but you can
+                      generate its details below if you are interested in
+                      practicing this problem — it may take a short moment.
                     </p>
-                    <button
-                      onClick={handleGeneratePreview}
-                      className="mt-2 cursor-pointer text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
-                    >
-                      Generate details
-                    </button>
+                    <div className="flex w-full justify-center">
+                      <button
+                        onClick={handleGeneratePreview}
+                        className="mt-2 cursor-pointer text-xs underline underline-offset-2 opacity-80 hover:opacity-100"
+                      >
+                        Generate details
+                      </button>
+                    </div>
                   </div>
                 )}
 
@@ -388,7 +385,7 @@ export function ProblemSelectSection({
                     {/* Framing skeleton */}
                     <div className="flex flex-col gap-2">
                       <Skeleton className="h-4 w-20" />
-                      <div className="rounded-md bg-background p-4 dark:bg-black">
+                      <div className="bg-background rounded-md p-4 dark:bg-black">
                         <div className="flex flex-col gap-2.5">
                           <Skeleton className="h-3.5 w-full" />
                           <Skeleton className="h-3.5 w-full" />
@@ -401,7 +398,7 @@ export function ProblemSelectSection({
                     {/* Examples skeleton */}
                     <div className="flex flex-col gap-2">
                       <Skeleton className="h-4 w-24" />
-                      <div className="rounded-md bg-background p-4 dark:bg-black">
+                      <div className="bg-background rounded-md p-4 dark:bg-black">
                         <div className="flex flex-col gap-2.5">
                           <Skeleton className="h-3.5 w-2/3" />
                           <Skeleton className="h-3.5 w-1/2" />
@@ -435,7 +432,7 @@ export function ProblemSelectSection({
                         className="bg-background rounded-md dark:bg-black"
                       >
                         <ItemContent>
-                          <p className="whitespace-pre-line text-sm leading-loose">
+                          <p className="text-sm leading-loose whitespace-pre-line">
                             {problemDetails.derived.framing.canonical}
                           </p>
                         </ItemContent>
@@ -449,7 +446,7 @@ export function ProblemSelectSection({
                           className="bg-background rounded-md dark:bg-black"
                         >
                           <ItemContent>
-                            <p className="whitespace-pre-line text-sm leading-loose">
+                            <p className="text-sm leading-loose whitespace-pre-line">
                               {problemDetails.derived.framing.backend}
                             </p>
                           </ItemContent>
@@ -464,7 +461,7 @@ export function ProblemSelectSection({
                           className="bg-background rounded-md dark:bg-black"
                         >
                           <ItemContent>
-                            <p className="whitespace-pre-line text-sm leading-loose">
+                            <p className="text-sm leading-loose whitespace-pre-line">
                               {problemDetails.derived.framing.systems}
                             </p>
                           </ItemContent>
@@ -520,11 +517,24 @@ export function ProblemSelectSection({
                       ))}
                     </Tabs>
                   )}
+
+                {isEditable && problemDetails && (
+                  <div className="flex justify-center">
+                    <Button
+                      className="w-min"
+                      onClick={() =>
+                        onProblemSelect(selectedProblem, problemDetails)
+                      }
+                    >
+                      Begin Practice
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </Card>
-    </AccordionContent>
+    </div>
   );
 }

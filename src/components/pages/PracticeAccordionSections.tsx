@@ -15,19 +15,9 @@ import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { LanguageKey } from "@/lib/codeMirror";
-// import {
-//   createProblem,
-//   getProblemById,
-//   getProblemByLeetCodeId,
-// } from "@/lib/firestore/problems";
-// import { createSessionDoc } from "@/lib/firestore/session";
-import {
-  PRACTICE_SECTIONS,
-  SECTIONS_TO_NAME,
-  sectionToIndex,
-} from "@/lib/practice";
-import { PracticeProblem, SectionKey } from "@/types/practice";
-import { Problem } from "@/types/problem";
+import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
+import { SectionKey } from "@/types/practice";
+import { Problem, ProblemDetails } from "@/types/problem";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +29,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from "../ui/breadcrumb";
 import { Button } from "../ui/button";
 import { AISummaryDialog } from "./AISummaryDialog";
 import { ClarificationSection } from "./ClarificationSection";
@@ -49,11 +46,14 @@ import { SectionLabel } from "./SectionLabel";
 import { ThoughtProcessSection } from "./ThoughtProcessSection";
 
 export function PracticeAccordionSections() {
-  const [openSections, setOpenSections] = useState<SectionKey[]>([
-    PRACTICE_SECTIONS[0],
-  ]);
-  const [problem, setProblem] = useState<PracticeProblem | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
+    null,
+  );
+
+  const [isPracticeStarted, setIsPracticeStarted] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+
   const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
 
@@ -66,91 +66,130 @@ export function PracticeAccordionSections() {
     }
   }, [router, status]);
 
-  const llm = useLLM(problem);
-  const {
-    setpoint,
-    timeLeft,
-    start: startTimer,
-    pause: pauseTimer,
-  } = useTimer();
+  // const llm = useLLM(problem);
+  // const {
+  //   setpoint,
+  //   timeLeft,
+  //   start: startTimer,
+  //   pause: pauseTimer,
+  // } = useTimer();
 
-  const handleProblemStart = async () => {
-    if (!problem) return;
+  // const handleProblemStart = async () => {
+  //   if (!problem) return;
 
-    // TODO: Fetch from Firestore or generate ProcessedProblem
-    // For now, populate with dummy data
-    setProblem({
-      ...problem,
-      originalContent: "",
-      framing: { canonical: "" },
-      hints: [],
-      pitfalls: [],
-      solutions: [],
-      processedAt: 0,
-    });
+  //   // TODO: Fetch from Firestore or generate ProcessedProblem
+  //   // For now, populate with dummy data
+  //   setProblem({
+  //     ...problem,
+  //     originalContent: "",
+  //     framing: { canonical: "" },
+  //     hints: [],
+  //     pitfalls: [],
+  //     solutions: [],
+  //     processedAt: 0,
+  //   });
 
-    llm.setDistilledSummary("selection", "");
-  };
+  //   llm.setDistilledSummary("selection", "");
+  // };
 
-  const handleSessionFinish = async () => {
-    if (!problem || !user) return;
+  // const handleSessionFinish = async () => {
+  //   if (!problem || !user) return;
 
-    const distilledSummaries = llm.getAllDistilledSummaries();
-    const pseudocode = llm.getArtifact("pseudocode")?.content;
-    const implementationArtifact = llm.getArtifact("implementation");
+  //   const distilledSummaries = llm.getAllDistilledSummaries();
+  //   const pseudocode = llm.getArtifact("pseudocode")?.content;
+  //   const implementationArtifact = llm.getArtifact("implementation");
 
-    if (!implementationArtifact || !implementationArtifact.language) {
-      toast("Implementation not found", {
-        description:
-          "Please complete the implementation section to receive feedback.",
-      });
-      return;
-    }
+  //   if (!implementationArtifact || !implementationArtifact.language) {
+  //     toast("Implementation not found", {
+  //       description:
+  //         "Please complete the implementation section to receive feedback.",
+  //     });
+  //     return;
+  //   }
 
-    setIsGeneratingFeedback(true);
+  //   setIsGeneratingFeedback(true);
 
-    const sessionDocId = await createSessionDoc({
-      userId: user.uid,
-      practiceProblem: problem,
-      distilledSummaries,
-      implementation: implementationArtifact.content,
-      implementationLanguage: implementationArtifact.language,
-      totalTimeSec: setpoint - timeLeft,
-      pseudocode,
-    });
+  //   const sessionDocId = await createSessionDoc({
+  //     userId: user.uid,
+  //     practiceProblem: problem,
+  //     distilledSummaries,
+  //     implementation: implementationArtifact.content,
+  //     implementationLanguage: implementationArtifact.language,
+  //     totalTimeSec: setpoint - timeLeft,
+  //     pseudocode,
+  //   });
 
-    router.push(`/feedback/${sessionDocId}`);
-  };
+  //   router.push(`/feedback/${sessionDocId}`);
+  // };
 
-  const proceedNextSection = () => {
-    if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
+  // const proceedNextSection = () => {
+  //   if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
 
-    // Handle distilled summaries for problem in handleProblemStart
-    if (currentSectionIndex > 0) {
-      llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
-    }
+  //   // Handle distilled summaries for problem in handleProblemStart
+  //   if (currentSectionIndex > 0) {
+  //     llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
+  //   }
 
-    setOpenSections((prev) => {
-      const newOpenSections = [
-        ...prev.filter(
-          (section) => sectionToIndex(section) !== currentSectionIndex,
-        ),
-      ];
+  //   setOpenSections((prev) => {
+  //     const newOpenSections = [
+  //       ...prev.filter(
+  //         (section) => sectionToIndex(section) !== currentSectionIndex,
+  //       ),
+  //     ];
 
-      if (currentSectionIndex < PRACTICE_SECTIONS.length - 1) {
-        const next = PRACTICE_SECTIONS[currentSectionIndex + 1];
-        newOpenSections.push(next);
-      }
+  //     if (currentSectionIndex < PRACTICE_SECTIONS.length - 1) {
+  //       const next = PRACTICE_SECTIONS[currentSectionIndex + 1];
+  //       newOpenSections.push(next);
+  //     }
 
-      return newOpenSections;
-    });
+  //     return newOpenSections;
+  //   });
 
-    setCurrentSectionIndex((prev) => prev + 1);
-  };
+  //   setCurrentSectionIndex((prev) => prev + 1);
+  // };
 
   return (
     <div className="relative w-full">
-      <Accordion
+      {isPracticeStarted && (
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink>Selection</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>Demonstrate Understanding</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>Thought Process</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>Pseudocode</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>Implementation</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink>Analysis</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+
+      <ProblemSelectSection
+        onProblemSelect={(problem, problemDetails) => {
+          console.log("Problem selected, but handler not implemented yet");
+          console.log("Problem:", problem);
+          console.log("Problem Details:", problemDetails);
+        }}
+        isEditable={currentSectionIndex === 0}
+      />
+
+      {/* <Accordion
         type="multiple"
         className="w-full"
         value={openSections}
@@ -164,7 +203,11 @@ export function PracticeAccordionSections() {
             />
           </AccordionTrigger>
           <ProblemSelectSection
-            onProblemSelect={setProblem}
+            onProblemSelect={(problem, problemDetails) => {
+              console.log("Problem selected, but handler not implemented yet");
+              console.log("Problem:", problem);
+              console.log("Problem Details:", problemDetails);
+            }}
             isEditable={currentSectionIndex === 0}
           />
         </AccordionItem>
@@ -277,7 +320,7 @@ export function PracticeAccordionSections() {
             )}
           </>
         )}
-      </Accordion>
+      </Accordion> */}
 
       {/* {currentSectionIndex === 0 && (
         <AlertDialog>

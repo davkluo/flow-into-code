@@ -1,6 +1,8 @@
+import { SectionKey } from "./practice";
+
 export const SCHEMA_VERSION = 1;
 
-export const GRADING_CATEGORIES: Record<GradingCategory, string> = {
+export const GRADING_CATEGORIES: Record<SectionKey, string> = {
   problem_understanding: "Problem Understanding & Clarification",
   approach_and_reasoning: "Approach & Reasoning",
   algorithm_design: "Algorithm Design / Pseudocode",
@@ -17,13 +19,6 @@ export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
 export type LangSlug = (typeof LangSlug)[keyof typeof LangSlug];
 
 export type ProcessingStatus = "complete" | "processing";
-
-export type GradingCategory =
-  | "problem_understanding"
-  | "approach_and_reasoning"
-  | "algorithm_design"
-  | "implementation"
-  | "complexity_analysis";
 
 export interface ProcessingLayerMeta {
   status: ProcessingStatus;
@@ -56,7 +51,7 @@ export interface Framing {
 }
 
 export interface GradingCriterion {
-  category: GradingCategory;
+  category: SectionKey;
   description: string;
   maxScore: number;
   guidance?: string;

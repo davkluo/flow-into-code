@@ -1,11 +1,6 @@
-import { ProblemDetails } from "./problem";
-
-export type PracticeProblem = ProblemDetails;
-
 export type SectionKey =
-  | "selection"
-  | "clarification"
-  | "thought_process"
-  | "pseudocode"
+  | "problem_understanding"
+  | "approach_and_reasoning"
+  | "algorithm_design"
   | "implementation"
   | "complexity_analysis";
