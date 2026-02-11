@@ -4,7 +4,8 @@ import * as problemRepo from "@/repositories/firestore/problemRepo";
 import { fetchLCProblemContent } from "@/services/leetcode/client";
 import { extractExamples } from "@/services/llm/extractExamples";
 import { generateFraming } from "@/services/llm/generateFraming";
-import { ProblemDetails } from "@/types/problem";
+import { GENERATE_FRAMING_PROMPT_VERSION } from "@/services/llm/prompts/generateFraming";
+import { PROBLEM_SCHEMA_VERSION, ProblemDetails } from "@/types/problem";
 
 const STALE_AFTER_MS = 2 * 60 * 1000; // 2 minutes
 
@@ -20,13 +21,19 @@ export async function getPreviewData(slug: string): Promise<PreviewDataResult> {
     return { status: "not_found" };
   }
 
-  const framingStatus = details.processingMeta?.layers?.framing?.status;
+  const schemaOutdated =
+    (details.processingMeta?.schemaVersion ?? 0) < PROBLEM_SCHEMA_VERSION;
+  const framingLayer = details.processingMeta?.layers?.framing;
 
-  if (framingStatus === "complete") {
-    return { status: "complete", data: details };
+  if (framingLayer?.status === "complete" && !schemaOutdated) {
+    const promptOutdated =
+      framingLayer.promptVersion < GENERATE_FRAMING_PROMPT_VERSION;
+    if (!promptOutdated) {
+      return { status: "complete", data: details };
+    }
   }
 
-  if (framingStatus === "processing") {
+  if (framingLayer?.status === "processing") {
     return { status: "processing" };
   }
 
@@ -41,11 +48,10 @@ export async function generatePreviewData(
     throw new Error(`Problem not found: ${slug}`);
   }
 
-  const claim = await problemDetailsRepo.claimGeneration(
-    slug,
-    "framing",
-    STALE_AFTER_MS,
-  );
+  const claim = await problemDetailsRepo.claimGeneration(slug, "framing", {
+    staleAfterMs: STALE_AFTER_MS,
+    currentPromptVersion: GENERATE_FRAMING_PROMPT_VERSION,
+  });
 
   if (claim.status === "already_complete") {
     const result = await getPreviewData(slug);

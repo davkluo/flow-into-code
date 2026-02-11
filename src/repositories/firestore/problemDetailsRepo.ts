@@ -88,35 +88,65 @@ export async function updateProcessingMeta(
   });
 }
 
+export interface ClaimGenerationOpts {
+  staleAfterMs: number;
+  currentPromptVersion: number;
+}
+
 /**
  * Atomically claims a generation slot for a processing layer.
  * Uses a Firestore transaction to prevent concurrent generation and
  * protect completed data from being overwritten.
+ *
+ * A layer is claimable when:
+ * - No status exists (first generation)
+ * - Schema version is outdated (full regeneration needed)
+ * - Prompt version is outdated (layer regeneration needed)
+ * - Status is "processing" but stale (previous attempt died)
  */
 export async function claimGeneration(
   slug: string,
   layer: ProcessingLayer,
-  staleAfterMs: number,
+  opts: ClaimGenerationOpts,
 ): Promise<ClaimResult> {
+  const { staleAfterMs, currentPromptVersion } = opts;
   const ref = adminDb.collection(COLLECTION).doc(slug);
 
   return adminDb.runTransaction(async (tx) => {
     const doc = await tx.get(ref);
     const data = doc.exists ? (doc.data() as ProblemDetails) : null;
+    const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
     const layerMeta = data?.processingMeta?.layers?.[layer];
 
-    if (layerMeta?.status === "complete") {
+    const schemaOutdated = storedSchemaVersion < PROBLEM_SCHEMA_VERSION;
+    const promptOutdated =
+      layerMeta?.status === "complete" &&
+      layerMeta.promptVersion < currentPromptVersion;
+
+    if (
+      layerMeta?.status === "complete" &&
+      !schemaOutdated &&
+      !promptOutdated
+    ) {
       return { status: "already_complete" } as const;
     }
 
     if (
       layerMeta?.status === "processing" &&
+      !schemaOutdated &&
       Date.now() - layerMeta.updatedAt < staleAfterMs
     ) {
       return { status: "already_processing" } as const;
     }
 
-    // No status or stale "processing" — claim it
+    // Claimable: no status, stale, or outdated version
+    const processingMeta: Record<string, unknown> = {
+      [`processingMeta.layers.${layer}`]: {
+        status: "processing",
+        updatedAt: Date.now(),
+      },
+    };
+
     if (!doc.exists) {
       tx.set(ref, {
         titleSlug: slug,
@@ -126,12 +156,11 @@ export async function claimGeneration(
         },
       });
     } else {
-      tx.update(ref, {
-        [`processingMeta.layers.${layer}`]: {
-          status: "processing",
-          updatedAt: Date.now(),
-        },
-      });
+      if (schemaOutdated) {
+        processingMeta["processingMeta.schemaVersion"] =
+          PROBLEM_SCHEMA_VERSION;
+      }
+      tx.update(ref, processingMeta);
     }
 
     return { status: "claimed" } as const;
