@@ -1,4 +1,4 @@
-export const GENERATE_FRAMING_PROMPT_VERSION = 1;
+export const GENERATE_FRAMING_PROMPT_VERSION = 2;
 
 interface GenerateFramingPromptInput {
   title: string;
@@ -30,6 +30,7 @@ Framings:
 
 Constraints and definitions:
 - Each framing MUST include all relevant constraints from the original problem: input bounds, required time/space complexity, edge cases, and any assumptions the user may rely on (e.g. "the input is guaranteed to have exactly one solution").
+- The mathematical/logical relationship at the core of the problem MUST be preserved exactly. Do NOT soften, generalize, or approximate it. For example, if the original problem requires two values that sum to an exact target, the framing must also require an exact match — not "at most", "at least", or "does not exceed".
 - If the problem involves domain-specific terminology or concepts that need definition (e.g. "happy numbers", "balanced binary tree", "anagram"), include a brief clarifying definition within the framing.
 - Do NOT include input/output format details or examples in the framings.
 
