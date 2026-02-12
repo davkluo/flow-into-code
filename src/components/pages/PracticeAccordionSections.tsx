@@ -1,49 +1,21 @@
 "use client";
 
-import { Loader2Icon, MoveRight, Sparkles } from "lucide-react";
-import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
-import { useLLM } from "@/hooks/useLLM";
-import { LanguageKey } from "@/lib/codeMirror";
 import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
-import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
+  BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../ui/breadcrumb";
-import { Button } from "../ui/button";
-import { AISummaryDialog } from "./AISummaryDialog";
-import { ClarificationSection } from "./ClarificationSection";
-import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
-import { ImplementationSection } from "./ImplementationSection";
-import { PseudocodeSection } from "./PseudocodeSection";
-import { SectionLabel } from "./SectionLabel";
-import { ThoughtProcessSection } from "./ThoughtProcessSection";
+import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
+import { UnderstandingSection } from "./UnderstandingSection";
 
 export function PracticeAccordionSections() {
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -53,11 +25,12 @@ export function PracticeAccordionSections() {
 
   const [isPracticeStarted, setIsPracticeStarted] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
 
   const [isLoadingProblem, setIsLoadingProblem] = useState(false);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
 
-  const { user, status } = useAuth();
+  const { status } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -150,44 +123,62 @@ export function PracticeAccordionSections() {
 
   return (
     <div className="relative w-full">
-      {isPracticeStarted && (
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink>Selection</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Demonstrate Understanding</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Thought Process</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Pseudocode</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Implementation</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink>Analysis</BreadcrumbLink>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+      {!isPracticeStarted && (
+        <ProblemSelectSection
+          onProblemSelect={(selectedProblem, selectedProblemDetails) => {
+            setProblem(selectedProblem);
+            setProblemDetails(selectedProblemDetails);
+            setIsPracticeStarted(true);
+            setCurrentSectionIndex(0);
+          }}
+          isEditable={true}
+        />
       )}
 
-      <ProblemSelectSection
-        onProblemSelect={(problem, problemDetails) => {
-          console.log("Problem selected, but handler not implemented yet");
-          console.log("Problem:", problem);
-          console.log("Problem Details:", problemDetails);
-        }}
-        isEditable={currentSectionIndex === 0}
-      />
+      {isPracticeStarted && problem && problemDetails && (
+        <>
+          <div className="flex justify-center px-3.5 pt-4">
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <button
+                      onClick={() => setIsSheetOpen(true)}
+                      className="cursor-pointer underline-offset-4 hover:underline"
+                    >
+                      {problem.title}
+                    </button>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator>:</BreadcrumbSeparator>
+                <BreadcrumbItem>
+                  <BreadcrumbPage>
+                    {SECTION_KEY_TO_DETAILS.problem_understanding.title}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+
+          <div className="mx-auto mt-6 max-w-5xl px-3.5">
+            {currentSectionIndex === 0 && (
+              <UnderstandingSection
+                messages={[]}
+                onSend={async (content) => {
+                  console.log("Understanding message:", content);
+                }}
+              />
+            )}
+          </div>
+
+          <ProblemReferenceSheet
+            problem={problem}
+            problemDetails={problemDetails}
+            open={isSheetOpen}
+            onOpenChange={setIsSheetOpen}
+          />
+        </>
+      )}
 
       {/* <Accordion
         type="multiple"

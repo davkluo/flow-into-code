@@ -21,7 +21,7 @@ export function ClarificationSection({
         the problem in your own words.
       </p>
       <ChatBox
-        location="clarification"
+        location="problem_understanding"
         messages={messages}
         onSend={onSend}
         layoutMode="grow"

@@ -10,7 +10,7 @@ export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
   problem_understanding: {
     title: "Understanding",
     description:
-      "Demonstrate your understanding of the problem by restating it in your own words and asking clarifying questions. " +
+      "Restate the problem in your own words and asking clarifying questions if necessary. " +
       "Identify edge cases and constraints that may impact your solution.",
     explanation:
       "Demonstrating your understanding of the problem shows how you think before you code. " +

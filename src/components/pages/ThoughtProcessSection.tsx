@@ -22,7 +22,7 @@ export function ThoughtProcessSection({
         guide your thinking.
       </p>
       <ChatBox
-        location="thought_process"
+        location="approach_and_reasoning"
         messages={messages}
         onSend={onSend}
         layoutMode="grow"

@@ -63,7 +63,7 @@ export function PseudocodeSection({
           <div className="flex h-full min-h-0 w-full items-center justify-center">
             <div className="bg-background h-full min-h-0 w-full rounded-r-md border border-l-0 p-2 text-sm">
               <ChatBox
-                location="pseudocode"
+                location="algorithm_design"
                 messages={messages}
                 onSend={onSend}
                 layoutMode="fixed"

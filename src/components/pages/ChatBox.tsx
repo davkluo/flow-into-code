@@ -6,17 +6,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/chat";
+import { SectionKey } from "@/types/practice";
 
 interface ChatBoxProps {
-  location:
-    | "clarification"
-    | "thought_process"
-    | "pseudocode"
-    | "implementation"
-    | "complexity_analysis";
+  location: SectionKey;
   messages: Message[];
   onSend: (message: string) => Promise<void>;
   layoutMode?: "grow" | "fixed";
+  title?: string;
   placeholder?: string;
   inputDescription?: string;
   emptyStateMessage?: string;
@@ -27,6 +24,7 @@ export function ChatBox({
   messages,
   onSend,
   layoutMode = "grow",
+  title,
   placeholder = "Type your message. Press ⌘+Enter to send.",
   inputDescription = "",
   emptyStateMessage = "Your conversation with the mock interview assistant will appear here.",
@@ -70,13 +68,24 @@ export function ChatBox({
         layoutMode === "fixed" && "h-full",
       )}
     >
-      <ScrollArea
+      <div
         className={cn(
-          "overflow-auto",
-          layoutMode === "fixed" ? "flex-grow" : "max-h-[40vh]",
+          "border-input overflow-hidden rounded-md border",
+          layoutMode === "fixed" ? "min-h-0 flex-grow" : "",
         )}
       >
-        <div className="mt-4 flex flex-col gap-2">
+        {title && (
+          <div className="border-input border-b px-3 py-2">
+            <span className="text-sm font-medium">{title}</span>
+          </div>
+        )}
+        <ScrollArea
+          className={cn(
+            "overflow-auto",
+            layoutMode === "fixed" ? "h-full" : "max-h-[40vh]",
+          )}
+        >
+          <div className="mt-4 flex flex-col gap-2 px-3">
           {messagesLength === 0 ? (
             <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
               {emptyStateMessage}
@@ -109,8 +118,9 @@ export function ChatBox({
           )}
         </div>
 
-        <div ref={scrollAreaRef} />
-      </ScrollArea>
+          <div ref={scrollAreaRef} />
+        </ScrollArea>
+      </div>
 
       <div className="group focus-within:border-ring border-input relative flex flex-col rounded-md border focus-within:border">
         <Textarea
