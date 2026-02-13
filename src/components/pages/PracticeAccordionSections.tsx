@@ -85,6 +85,7 @@ export function PracticeAccordionSections() {
                     variant="outline"
                     size="xs"
                     onClick={() => setIsProblemSheetOpen(true)}
+                    className="uppercase"
                   >
                     {problem.title}
                   </Button>
@@ -95,7 +96,7 @@ export function PracticeAccordionSections() {
                     <Fragment key={sectionKey}>
                       <BreadcrumbItem>
                         {index === currentSectionIndex ? (
-                          <BreadcrumbPage>
+                          <BreadcrumbPage className="font-semibold tracking-wide text-lime-400 uppercase">
                             {SECTION_KEY_TO_DETAILS[sectionKey].title}
                           </BreadcrumbPage>
                         ) : (
@@ -106,6 +107,7 @@ export function PracticeAccordionSections() {
                               setSummarySectionKey(sectionKey);
                               setIsSummarySheetOpen(true);
                             }}
+                            className="uppercase"
                           >
                             {SECTION_KEY_TO_DETAILS[sectionKey].title}
                           </Button>
@@ -154,9 +156,8 @@ export function PracticeAccordionSections() {
               <MoveLeft className="h-4 w-4" />
               Back:{" "}
               {
-                SECTION_KEY_TO_DETAILS[
-                  SECTION_ORDER[currentSectionIndex - 1]
-                ].title
+                SECTION_KEY_TO_DETAILS[SECTION_ORDER[currentSectionIndex - 1]]
+                  .title
               }
             </Button>
           )}
@@ -170,9 +171,8 @@ export function PracticeAccordionSections() {
             >
               Next:{" "}
               {
-                SECTION_KEY_TO_DETAILS[
-                  SECTION_ORDER[currentSectionIndex + 1]
-                ].title
+                SECTION_KEY_TO_DETAILS[SECTION_ORDER[currentSectionIndex + 1]]
+                  .title
               }
               <MoveRight className="h-4 w-4" />
             </Button>
