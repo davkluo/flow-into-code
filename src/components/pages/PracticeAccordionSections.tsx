@@ -20,6 +20,7 @@ import { Button } from "../ui/button";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionHeader } from "./SectionHeader";
 import { SectionSummarySheet } from "./SectionSummarySheet";
+import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { UnderstandingSection } from "./UnderstandingSection";
 
 export function PracticeAccordionSections() {
@@ -29,6 +30,7 @@ export function PracticeAccordionSections() {
   );
 
   const [isPracticeStarted, setIsPracticeStarted] = useState(false);
+  const [isPreparingSession, setIsPreparingSession] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [highestVisitedIndex, setHighestVisitedIndex] = useState(0);
   const [isProblemSheetOpen, setIsProblemSheetOpen] = useState(false);
@@ -46,6 +48,18 @@ export function PracticeAccordionSections() {
     }
   }, [router, status]);
 
+  // TODO: Replace with actual session generation logic
+  useEffect(() => {
+    if (!isPreparingSession) return;
+    const timeout = setTimeout(() => {
+      setIsPreparingSession(false);
+      setIsPracticeStarted(true);
+      setCurrentSectionIndex(0);
+      setHighestVisitedIndex(0);
+    }, 5000);
+    return () => clearTimeout(timeout);
+  }, [isPreparingSession]);
+
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
   const proceedNextSection = () => {
@@ -62,18 +76,18 @@ export function PracticeAccordionSections() {
 
   return (
     <div className="relative w-full">
-      {!isPracticeStarted && (
+      {!isPracticeStarted && !isPreparingSession && (
         <ProblemSelectSection
           onProblemSelect={(selectedProblem, selectedProblemDetails) => {
             setProblem(selectedProblem);
             setProblemDetails(selectedProblemDetails);
-            setIsPracticeStarted(true);
-            setCurrentSectionIndex(0);
-            setHighestVisitedIndex(0);
+            setIsPreparingSession(true);
           }}
           isEditable={true}
         />
       )}
+
+      {isPreparingSession && <SessionLoadingScreen />}
 
       {isPracticeStarted && problem && problemDetails && (
         <>
