@@ -6,6 +6,14 @@ interface SectionDetails {
   explanation: string;
 }
 
+export const SECTION_ORDER: SectionKey[] = [
+  "problem_understanding",
+  "approach_and_reasoning",
+  "algorithm_design",
+  "implementation",
+  "complexity_analysis",
+];
+
 export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
   problem_understanding: {
     title: "Understanding",

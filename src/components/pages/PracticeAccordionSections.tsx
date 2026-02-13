@@ -1,20 +1,25 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { MoveLeft, MoveRight } from "lucide-react";
+import { Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { useAuth } from "@/hooks/useAuth";
-import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
+import { cn } from "@/lib/utils";
+import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "../ui/breadcrumb";
+import { Button } from "../ui/button";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
+import { SectionHeader } from "./SectionHeader";
+import { SectionSummarySheet } from "./SectionSummarySheet";
 import { UnderstandingSection } from "./UnderstandingSection";
 
 export function PracticeAccordionSections() {
@@ -25,10 +30,12 @@ export function PracticeAccordionSections() {
 
   const [isPracticeStarted, setIsPracticeStarted] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-
-  const [isLoadingProblem, setIsLoadingProblem] = useState(false);
-  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [highestVisitedIndex, setHighestVisitedIndex] = useState(0);
+  const [isProblemSheetOpen, setIsProblemSheetOpen] = useState(false);
+  const [isSummarySheetOpen, setIsSummarySheetOpen] = useState(false);
+  const [summarySectionKey, setSummarySectionKey] = useState<SectionKey>(
+    SECTION_ORDER[0],
+  );
 
   const { status } = useAuth();
   const router = useRouter();
@@ -39,87 +46,19 @@ export function PracticeAccordionSections() {
     }
   }, [router, status]);
 
-  // const llm = useLLM(problem);
-  // const {
-  //   setpoint,
-  //   timeLeft,
-  //   start: startTimer,
-  //   pause: pauseTimer,
-  // } = useTimer();
+  const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
-  // const handleProblemStart = async () => {
-  //   if (!problem) return;
+  const proceedNextSection = () => {
+    if (isLastSection) return;
+    const nextIndex = currentSectionIndex + 1;
+    setCurrentSectionIndex(nextIndex);
+    setHighestVisitedIndex((prev) => Math.max(prev, nextIndex));
+  };
 
-  //   // TODO: Fetch from Firestore or generate ProcessedProblem
-  //   // For now, populate with dummy data
-  //   setProblem({
-  //     ...problem,
-  //     originalContent: "",
-  //     framing: { canonical: "" },
-  //     hints: [],
-  //     pitfalls: [],
-  //     solutions: [],
-  //     processedAt: 0,
-  //   });
-
-  //   llm.setDistilledSummary("selection", "");
-  // };
-
-  // const handleSessionFinish = async () => {
-  //   if (!problem || !user) return;
-
-  //   const distilledSummaries = llm.getAllDistilledSummaries();
-  //   const pseudocode = llm.getArtifact("pseudocode")?.content;
-  //   const implementationArtifact = llm.getArtifact("implementation");
-
-  //   if (!implementationArtifact || !implementationArtifact.language) {
-  //     toast("Implementation not found", {
-  //       description:
-  //         "Please complete the implementation section to receive feedback.",
-  //     });
-  //     return;
-  //   }
-
-  //   setIsGeneratingFeedback(true);
-
-  //   const sessionDocId = await createSessionDoc({
-  //     userId: user.uid,
-  //     practiceProblem: problem,
-  //     distilledSummaries,
-  //     implementation: implementationArtifact.content,
-  //     implementationLanguage: implementationArtifact.language,
-  //     totalTimeSec: setpoint - timeLeft,
-  //     pseudocode,
-  //   });
-
-  //   router.push(`/feedback/${sessionDocId}`);
-  // };
-
-  // const proceedNextSection = () => {
-  //   if (currentSectionIndex >= PRACTICE_SECTIONS.length - 1) return;
-
-  //   // Handle distilled summaries for problem in handleProblemStart
-  //   if (currentSectionIndex > 0) {
-  //     llm.generateDistilledSummary(PRACTICE_SECTIONS[currentSectionIndex]);
-  //   }
-
-  //   setOpenSections((prev) => {
-  //     const newOpenSections = [
-  //       ...prev.filter(
-  //         (section) => sectionToIndex(section) !== currentSectionIndex,
-  //       ),
-  //     ];
-
-  //     if (currentSectionIndex < PRACTICE_SECTIONS.length - 1) {
-  //       const next = PRACTICE_SECTIONS[currentSectionIndex + 1];
-  //       newOpenSections.push(next);
-  //     }
-
-  //     return newOpenSections;
-  //   });
-
-  //   setCurrentSectionIndex((prev) => prev + 1);
-  // };
+  const goBackSection = () => {
+    if (currentSectionIndex <= 0) return;
+    setCurrentSectionIndex((prev) => prev - 1);
+  };
 
   return (
     <div className="relative w-full">
@@ -130,6 +69,7 @@ export function PracticeAccordionSections() {
             setProblemDetails(selectedProblemDetails);
             setIsPracticeStarted(true);
             setCurrentSectionIndex(0);
+            setHighestVisitedIndex(0);
           }}
           isEditable={true}
         />
@@ -141,41 +81,114 @@ export function PracticeAccordionSections() {
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <button
-                      onClick={() => setIsSheetOpen(true)}
-                      className="cursor-pointer underline-offset-4 hover:underline"
-                    >
-                      {problem.title}
-                    </button>
-                  </BreadcrumbLink>
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    onClick={() => setIsProblemSheetOpen(true)}
+                  >
+                    {problem.title}
+                  </Button>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator>:</BreadcrumbSeparator>
-                <BreadcrumbItem>
-                  <BreadcrumbPage>
-                    {SECTION_KEY_TO_DETAILS.problem_understanding.title}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
+                {SECTION_ORDER.slice(0, highestVisitedIndex + 1).map(
+                  (sectionKey, index) => (
+                    <Fragment key={sectionKey}>
+                      <BreadcrumbItem>
+                        {index === currentSectionIndex ? (
+                          <BreadcrumbPage>
+                            {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                          </BreadcrumbPage>
+                        ) : (
+                          <Button
+                            variant="outline"
+                            size="xs"
+                            onClick={() => {
+                              setSummarySectionKey(sectionKey);
+                              setIsSummarySheetOpen(true);
+                            }}
+                          >
+                            {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                          </Button>
+                        )}
+                      </BreadcrumbItem>
+                      {index < highestVisitedIndex && <BreadcrumbSeparator />}
+                    </Fragment>
+                  ),
+                )}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
 
           <div className="mx-auto mt-6 max-w-5xl px-3.5">
-            {currentSectionIndex === 0 && (
+            <div className={cn(currentSectionIndex !== 0 && "hidden")}>
               <UnderstandingSection
                 messages={[]}
                 onSend={async (content) => {
                   console.log("Understanding message:", content);
                 }}
               />
-            )}
+            </div>
+
+            {SECTION_ORDER.slice(1).map((sectionKey, i) => (
+              <div
+                key={sectionKey}
+                className={cn(currentSectionIndex !== i + 1 && "hidden")}
+              >
+                <div className="flex h-[calc(100vh-12rem)] flex-col gap-8">
+                  <SectionHeader sectionKey={sectionKey} />
+                  <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
+                    Section content coming soon.
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
+
+          {currentSectionIndex > 0 && (
+            <Button
+              variant="outline"
+              size="lg"
+              className="fixed bottom-24 left-8 rounded-full"
+              onClick={goBackSection}
+            >
+              <MoveLeft className="h-4 w-4" />
+              Back:{" "}
+              {
+                SECTION_KEY_TO_DETAILS[
+                  SECTION_ORDER[currentSectionIndex - 1]
+                ].title
+              }
+            </Button>
+          )}
+
+          {!isLastSection && (
+            <Button
+              variant="default"
+              size="lg"
+              className="fixed right-8 bottom-24 rounded-full"
+              onClick={proceedNextSection}
+            >
+              Next:{" "}
+              {
+                SECTION_KEY_TO_DETAILS[
+                  SECTION_ORDER[currentSectionIndex + 1]
+                ].title
+              }
+              <MoveRight className="h-4 w-4" />
+            </Button>
+          )}
 
           <ProblemReferenceSheet
             problem={problem}
             problemDetails={problemDetails}
-            open={isSheetOpen}
-            onOpenChange={setIsSheetOpen}
+            open={isProblemSheetOpen}
+            onOpenChange={setIsProblemSheetOpen}
+          />
+
+          <SectionSummarySheet
+            sectionKey={summarySectionKey}
+            open={isSummarySheetOpen}
+            onOpenChange={setIsSummarySheetOpen}
           />
         </>
       )}
