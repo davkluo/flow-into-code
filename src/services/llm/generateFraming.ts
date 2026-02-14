@@ -28,8 +28,8 @@ export async function generateFraming(
   return {
     data: {
       canonical: data.canonical,
-      ...(data.backend != null && { backend: data.backend }),
-      ...(data.systems != null && { systems: data.systems }),
+      ...(data.backend !== null && data.backend !== "null" && { backend: data.backend }),
+      ...(data.systems !== null && data.systems !== "null" && { systems: data.systems }),
     },
     model,
     promptVersion: GENERATE_FRAMING_PROMPT_VERSION,

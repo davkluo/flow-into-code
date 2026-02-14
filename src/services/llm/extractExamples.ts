@@ -33,7 +33,7 @@ export async function extractExamples(
   return {
     data: data.examples.map(({ explanation, ...rest }) => ({
       ...rest,
-      ...(explanation != null && { explanation }),
+      ...(explanation !== null && explanation !== "null" && { explanation }),
     })),
     model,
     promptVersion: EXTRACT_EXAMPLES_PROMPT_VERSION,

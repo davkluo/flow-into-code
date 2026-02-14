@@ -193,8 +193,7 @@ export function ProblemDetailContent({
                       <span className="text-muted-foreground">Output: </span>
                       {example.output}
                     </p>
-                    {example.explanation &&
-                      example.explanation !== "null" && (
+                    {example.explanation && (
                         <p className="mt-1 text-sm leading-relaxed">
                           {example.explanation}
                         </p>
