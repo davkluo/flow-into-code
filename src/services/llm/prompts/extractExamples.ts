@@ -1,6 +1,6 @@
 export const EXTRACT_EXAMPLES_PROMPT_VERSION = 1;
 
-interface ExtractExamplesPromptInput {
+export interface ExtractExamplesPromptInput {
   title: string;
   originalContent: string;
 }

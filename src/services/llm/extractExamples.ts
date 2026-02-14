@@ -3,6 +3,7 @@ import { Example } from "@/types/problem";
 import { LLMGenerationResult, callLLMStructured } from "./client";
 import {
   EXTRACT_EXAMPLES_PROMPT_VERSION,
+  ExtractExamplesPromptInput,
   buildExtractExamplesPrompt,
 } from "./prompts/extractExamples";
 
@@ -17,18 +18,10 @@ const ExamplesSchema = z.object({
   ),
 });
 
-interface ExtractExamplesInput {
-  title: string;
-  originalContent: string;
-}
-
 export async function extractExamples(
-  input: ExtractExamplesInput,
+  input: ExtractExamplesPromptInput,
 ): Promise<LLMGenerationResult<Example[]>> {
-  const prompt = buildExtractExamplesPrompt({
-    title: input.title,
-    originalContent: input.originalContent,
-  });
+  const prompt = buildExtractExamplesPrompt(input);
 
   const { data, model } = await callLLMStructured({
     prompt,

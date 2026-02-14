@@ -1,8 +1,9 @@
 import { z } from "zod";
-import { Example, Framing } from "@/types/problem";
+import { Framing } from "@/types/problem";
 import { LLMGenerationResult, callLLMStructured } from "./client";
 import {
   GENERATE_FRAMING_PROMPT_VERSION,
+  GenerateFramingPromptInput,
   buildGenerateFramingPrompt,
 } from "./prompts/generateFraming";
 
@@ -12,22 +13,10 @@ const FramingSchema = z.object({
   systems: z.string().nullable(),
 });
 
-interface GenerateFramingInput {
-  title: string;
-  difficulty: string;
-  originalContent: string;
-  examples?: Example[];
-}
-
 export async function generateFraming(
-  input: GenerateFramingInput,
+  input: GenerateFramingPromptInput,
 ): Promise<LLMGenerationResult<Framing>> {
-  const prompt = buildGenerateFramingPrompt({
-    title: input.title,
-    difficulty: input.difficulty,
-    originalContent: input.originalContent,
-    examples: input.examples,
-  });
+  const prompt = buildGenerateFramingPrompt(input);
 
   const { data, model } = await callLLMStructured({
     prompt,

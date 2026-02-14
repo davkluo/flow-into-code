@@ -1,6 +1,6 @@
 export const GENERATE_FRAMING_PROMPT_VERSION = 3;
 
-interface GenerateFramingPromptInput {
+export interface GenerateFramingPromptInput {
   title: string;
   difficulty: string;
   originalContent: string;
