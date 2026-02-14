@@ -29,6 +29,11 @@ export type ProcessingLayerMeta =
       promptVersion: number;
     };
 
+export type ProcessingResult =
+  | { status: "complete"; data: ProblemDetails }
+  | { status: "processing" }
+  | { status: "not_found" };
+
 export interface Tag {
   name: string;
   id: string;
@@ -79,8 +84,10 @@ export interface ProblemDetails {
   };
 
   derived?: {
-    // First creation upon problem start
+    // First creation on problem view
     framing?: Framing;
+
+    // First creation upon problem start
     testCases?: TestCase[]; // LLM-generated
     edgeCases?: TestCase[]; // LLM-generated; to be used as hints
     hints?: {

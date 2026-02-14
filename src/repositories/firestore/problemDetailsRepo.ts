@@ -5,16 +5,25 @@ import {
   ProcessingLayerMeta,
 } from "@/types/problem";
 
+const COLLECTION = "problemDetails";
+
+export const STALE_AFTER_MS = 2 * 60 * 1000; // 2 minutes
+
 type ProcessingLayer = keyof NonNullable<
   NonNullable<ProblemDetails["processingMeta"]>["layers"]
 >;
 
-export type ClaimResult =
+export type PracticeLayer = "testCases" | "edgeCases" | "hints" | "pitfalls";
+
+export type ClaimFramingResult =
   | { status: "claimed" }
   | { status: "already_complete" }
   | { status: "already_processing" };
 
-const COLLECTION = "problemDetails";
+export type ClaimPracticeLayersResult =
+  | { status: "claimed"; claimedLayers: PracticeLayer[] }
+  | { status: "already_complete" }
+  | { status: "already_processing" };
 
 export interface ProblemDetailsRepo {
   getBySlug(slug: string): Promise<ProblemDetails | null>;
@@ -88,27 +97,21 @@ export async function updateProcessingMeta(
   });
 }
 
-export interface ClaimGenerationOpts {
-  staleAfterMs: number;
-  currentPromptVersion: number;
-}
-
 /**
- * Atomically claims a generation slot for a processing layer.
+ * Atomically claims a generation slot for framing layer.
  * Uses a Firestore transaction to prevent concurrent generation and
  * protect completed data from being overwritten.
  *
- * A layer is claimable when:
+ * Framing layer is claimable when:
  * - No status exists (first generation)
  * - Schema version is outdated (full regeneration needed)
  * - Prompt version is outdated (layer regeneration needed)
  * - Status is "processing" but stale (previous attempt died)
  */
-export async function claimGeneration(
+export async function claimFramingGeneration(
   slug: string,
-  layer: ProcessingLayer,
-  opts: ClaimGenerationOpts,
-): Promise<ClaimResult> {
+  opts: { staleAfterMs: number; currentPromptVersion: number },
+): Promise<ClaimFramingResult> {
   const { staleAfterMs, currentPromptVersion } = opts;
   const ref = adminDb.collection(COLLECTION).doc(slug);
 
@@ -116,7 +119,7 @@ export async function claimGeneration(
     const doc = await tx.get(ref);
     const data = doc.exists ? (doc.data() as ProblemDetails) : null;
     const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
-    const layerMeta = data?.processingMeta?.layers?.[layer];
+    const layerMeta = data?.processingMeta?.layers?.framing;
 
     const schemaOutdated = storedSchemaVersion < PROBLEM_SCHEMA_VERSION;
     const promptOutdated =
@@ -141,7 +144,7 @@ export async function claimGeneration(
 
     // Claimable: no status, stale, or outdated version
     const processingMeta: Record<string, unknown> = {
-      [`processingMeta.layers.${layer}`]: {
+      ["processingMeta.layers.framing"]: {
         status: "processing",
         updatedAt: Date.now(),
       },
@@ -152,17 +155,108 @@ export async function claimGeneration(
         titleSlug: slug,
         processingMeta: {
           schemaVersion: PROBLEM_SCHEMA_VERSION,
-          layers: { [layer]: { status: "processing", updatedAt: Date.now() } },
+          layers: { framing: { status: "processing", updatedAt: Date.now() } },
         },
       });
     } else {
       if (schemaOutdated) {
-        processingMeta["processingMeta.schemaVersion"] =
-          PROBLEM_SCHEMA_VERSION;
+        processingMeta["processingMeta.schemaVersion"] = PROBLEM_SCHEMA_VERSION;
       }
       tx.update(ref, processingMeta);
     }
 
     return { status: "claimed" } as const;
+  });
+}
+
+/**
+ * Atomically claims generation slots for all outdated practice layers.
+ * Uses all-or-nothing semantics: if any needed layer is currently being
+ * processed by another request (non-stale), returns "already_processing"
+ * rather than partially claiming.
+ */
+export async function claimPracticeLayers(
+  slug: string,
+  layerPromptVersions: Record<PracticeLayer, number>,
+  opts: { staleAfterMs: number },
+): Promise<ClaimPracticeLayersResult> {
+  const { staleAfterMs } = opts;
+  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const layers: PracticeLayer[] = [
+    "testCases",
+    "edgeCases",
+    "hints",
+    "pitfalls",
+  ];
+
+  return adminDb.runTransaction(async (tx) => {
+    const doc = await tx.get(ref);
+    const data = doc.exists ? (doc.data() as ProblemDetails) : null;
+    const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
+    const schemaOutdated = storedSchemaVersion < PROBLEM_SCHEMA_VERSION;
+
+    const needsGeneration: PracticeLayer[] = [];
+    let hasInFlight = false;
+
+    for (const layer of layers) {
+      const meta = data?.processingMeta?.layers?.[layer];
+
+      if (
+        meta?.status === "complete" &&
+        !schemaOutdated &&
+        meta.promptVersion >= layerPromptVersions[layer]
+      ) {
+        continue; // up-to-date
+      }
+
+      if (
+        meta?.status === "processing" &&
+        !schemaOutdated &&
+        Date.now() - meta.updatedAt < staleAfterMs
+      ) {
+        hasInFlight = true;
+        break;
+      }
+
+      needsGeneration.push(layer);
+    }
+
+    if (hasInFlight) {
+      return { status: "already_processing" } as const;
+    }
+
+    if (needsGeneration.length === 0) {
+      return { status: "already_complete" } as const;
+    }
+
+    const now = Date.now();
+    const updates: Record<string, unknown> = {};
+    for (const layer of needsGeneration) {
+      updates[`processingMeta.layers.${layer}`] = {
+        status: "processing",
+        updatedAt: now,
+      };
+    }
+
+    if (!doc.exists) {
+      const layersInit: Record<string, unknown> = {};
+      for (const layer of needsGeneration) {
+        layersInit[layer] = { status: "processing", updatedAt: now };
+      }
+      tx.set(ref, {
+        titleSlug: slug,
+        processingMeta: {
+          schemaVersion: PROBLEM_SCHEMA_VERSION,
+          layers: layersInit,
+        },
+      });
+    } else {
+      if (schemaOutdated) {
+        updates["processingMeta.schemaVersion"] = PROBLEM_SCHEMA_VERSION;
+      }
+      tx.update(ref, updates);
+    }
+
+    return { status: "claimed", claimedLayers: needsGeneration } as const;
   });
 }

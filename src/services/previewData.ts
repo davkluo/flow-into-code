@@ -5,16 +5,13 @@ import { fetchLCProblemContent } from "@/services/leetcode/client";
 import { extractExamples } from "@/services/llm/extractExamples";
 import { generateFraming } from "@/services/llm/generateFraming";
 import { GENERATE_FRAMING_PROMPT_VERSION } from "@/services/llm/prompts/generateFraming";
-import { PROBLEM_SCHEMA_VERSION, ProblemDetails } from "@/types/problem";
+import {
+  PROBLEM_SCHEMA_VERSION,
+  ProblemDetails,
+  ProcessingResult,
+} from "@/types/problem";
 
-const STALE_AFTER_MS = 2 * 60 * 1000; // 2 minutes
-
-export type PreviewDataResult =
-  | { status: "complete"; data: ProblemDetails }
-  | { status: "processing" }
-  | { status: "not_found" };
-
-export async function getPreviewData(slug: string): Promise<PreviewDataResult> {
+export async function getPreviewData(slug: string): Promise<ProcessingResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
   if (!details) {
@@ -48,8 +45,8 @@ export async function generatePreviewData(
     throw new Error(`Problem not found: ${slug}`);
   }
 
-  const claim = await problemDetailsRepo.claimGeneration(slug, "framing", {
-    staleAfterMs: STALE_AFTER_MS,
+  const claim = await problemDetailsRepo.claimFramingGeneration(slug, {
+    staleAfterMs: problemDetailsRepo.STALE_AFTER_MS,
     currentPromptVersion: GENERATE_FRAMING_PROMPT_VERSION,
   });
 
