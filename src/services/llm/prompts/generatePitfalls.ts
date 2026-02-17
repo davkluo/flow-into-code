@@ -13,7 +13,7 @@ export function buildGeneratePitfallsPrompt(
   input: GeneratePitfallsPromptInput,
 ): string {
   return `
-You are generating common pitfalls for a coding interview problem. The audience is entry-level software engineers preparing for technical interviews. The goal is to help them recognize and avoid mistakes that candidates frequently make on this problem.
+You are generating common pitfalls for a coding interview problem. The audience is entry-level software engineers preparing for technical interviews. The goal is to warn them about mistakes candidates frequently make, written in a direct, imperative voice.
 
 Context — the problem has been reframed as:
 ${input.framing.canonical}
@@ -25,7 +25,7 @@ Your task:
 - Higher-level pitfalls should address subtle issues (e.g. complexity traps, edge cases that break otherwise-correct solutions, integer overflow).
 - Each pitfall should be specific to this problem, not generic advice like "test your code".
 - Calibrate the subtlety of pitfalls to the problem's difficulty. Easier problems tend toward straightforward mistakes, while harder problems involve more nuanced traps like complexity issues or non-obvious edge cases.
-- Describe the mistake and briefly explain why it's wrong, without revealing the correct solution approach.
+- Write each pitfall in a direct, imperative voice that warns the candidate — for example: "Make sure you aren't...", "Double-check that...", "Don't assume...". Briefly explain why the mistake is wrong without revealing the correct solution approach.
 
 Return valid JSON with this exact shape:
 {

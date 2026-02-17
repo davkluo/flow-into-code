@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { generatePreviewData, getPreviewData } from "@/services/previewData";
+import { generatePracticeData, getPracticeData } from "@/services/practiceData";
 
 export async function GET(
   _req: Request,
@@ -8,12 +8,13 @@ export async function GET(
   const { slug } = await params;
 
   try {
-    const result = await getPreviewData(slug);
+    const result = await getPracticeData(slug);
 
     if (result.status === "complete") {
       return NextResponse.json(result.data, {
         headers: {
-          "Cache-Control": "s-maxage=86400, stale-while-revalidate=604800",
+          "Cache-Control": "no-store",
+          // "Cache-Control": "s-maxage=86400, stale-while-revalidate=604800",
         },
       });
     }
@@ -30,9 +31,9 @@ export async function GET(
       headers: { "Cache-Control": "no-store" },
     });
   } catch (err) {
-    console.error("getPreviewData failed", err);
+    console.error("getPracticeData failed", err);
     return NextResponse.json(
-      { error: "Failed to fetch preview data" },
+      { error: "Failed to fetch practice data" },
       { status: 500 },
     );
   }
@@ -45,7 +46,7 @@ export async function POST(
   const { slug } = await params;
 
   try {
-    const details = await generatePreviewData(slug);
+    const details = await generatePracticeData(slug);
 
     if (!details) {
       return NextResponse.json(
@@ -58,9 +59,9 @@ export async function POST(
       headers: { "Cache-Control": "no-store" },
     });
   } catch (err) {
-    console.error("generatePreviewData failed", err);
+    console.error("generatePracticeData failed", err);
     return NextResponse.json(
-      { error: "Failed to generate preview data" },
+      { error: "Failed to generate practice data" },
       { status: 500 },
     );
   }

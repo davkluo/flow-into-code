@@ -1,7 +1,7 @@
 "use client";
 
 import { MoveLeft, MoveRight } from "lucide-react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { useAuth } from "@/hooks/useAuth";
@@ -41,6 +41,7 @@ export function PracticeAccordionSections() {
 
   const { status } = useAuth();
   const router = useRouter();
+  const pollAbortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -48,17 +49,88 @@ export function PracticeAccordionSections() {
     }
   }, [router, status]);
 
-  // TODO: Replace with actual session generation logic
-  useEffect(() => {
-    if (!isPreparingSession) return;
-    const timeout = setTimeout(() => {
-      setIsPreparingSession(false);
-      setIsPracticeStarted(true);
-      setCurrentSectionIndex(0);
-      setHighestVisitedIndex(0);
-    }, 5000);
-    return () => clearTimeout(timeout);
-  }, [isPreparingSession]);
+  const pollForPractice = useCallback(
+    async (slug: string): Promise<ProblemDetails | null> => {
+      pollAbortRef.current?.abort();
+      const controller = new AbortController();
+      pollAbortRef.current = controller;
+
+      const delays = [1000, 2000, 4000, 8000, 8000, 8000];
+      for (const delay of delays) {
+        if (controller.signal.aborted) return null;
+        await new Promise((r) => setTimeout(r, delay));
+        if (controller.signal.aborted) return null;
+
+        try {
+          const res = await fetch(`/api/problems/${slug}/practice`, {
+            signal: controller.signal,
+          });
+          if (res.ok) return (await res.json()) as ProblemDetails;
+          if (res.status !== 202) return null;
+        } catch {
+          if (controller.signal.aborted) return null;
+        }
+      }
+      return null;
+    },
+    [],
+  );
+
+  const generatePractice = useCallback(
+    async (slug: string): Promise<ProblemDetails | null> => {
+      try {
+        const res = await fetch(`/api/problems/${slug}/practice`, {
+          method: "POST",
+        });
+
+        if (res.ok) return (await res.json()) as ProblemDetails;
+        if (res.status === 202) return pollForPractice(slug);
+        throw new Error("Failed to generate practice data");
+      } catch (err) {
+        console.error("Failed to generate practice data:", err);
+        return null;
+      }
+    },
+    [pollForPractice],
+  );
+
+  const handleStartSession = useCallback(
+    async (
+      selectedProblem: Problem,
+      selectedProblemDetails: ProblemDetails,
+    ) => {
+      setProblem(selectedProblem);
+      setProblemDetails(selectedProblemDetails);
+      setIsPreparingSession(true);
+
+      try {
+        const slug = selectedProblem.titleSlug;
+        let data: ProblemDetails | null = null;
+
+        const res = await fetch(`/api/problems/${slug}/practice`);
+        if (res.ok) {
+          data = (await res.json()) as ProblemDetails;
+        } else if (res.status === 202) {
+          data = await pollForPractice(slug);
+        } else if (res.status === 404) {
+          data = await generatePractice(slug);
+        }
+
+        if (data) {
+          setProblemDetails(data);
+        }
+
+        setIsPracticeStarted(true);
+        setCurrentSectionIndex(0);
+        setHighestVisitedIndex(0);
+      } catch (err) {
+        console.error("Failed to start practice session:", err);
+      } finally {
+        setIsPreparingSession(false);
+      }
+    },
+    [pollForPractice, generatePractice],
+  );
 
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
@@ -78,11 +150,7 @@ export function PracticeAccordionSections() {
     <div className="relative w-full">
       {!isPracticeStarted && !isPreparingSession && (
         <ProblemSelectSection
-          onProblemSelect={(selectedProblem, selectedProblemDetails) => {
-            setProblem(selectedProblem);
-            setProblemDetails(selectedProblemDetails);
-            setIsPreparingSession(true);
-          }}
+          onProblemSelect={handleStartSession}
           isEditable={true}
         />
       )}

@@ -28,7 +28,7 @@ Your task:
 - Standard test cases should cover typical scenarios and common patterns the solution must handle.
 - Edge cases should cover boundary conditions, minimal/maximal inputs, empty inputs, single-element cases, and other scenarios that commonly trip up candidates.
 - Each test case must have an \`input\` (the function arguments as a string) and an \`expectedOutput\` (the correct return value as a string).
-- Optionally include a short \`description\` (what scenario the case tests) and \`explanation\` (why the expected output is correct).
+- Optionally include a \`description\` and \`explanation\`. The \`description\` must be a concise noun phrase label (2-4 words, no verbs) — e.g. "Identical elements", "Minimum input size", "Single character string". The \`explanation\` should be a sentence explaining why the expected output is correct.
 - Do NOT duplicate any of the existing examples from the problem statement.
 - Ensure no overlap between standard test cases and edge cases.
 - All inputs and outputs must be valid for the original problem's constraints.
