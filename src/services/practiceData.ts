@@ -40,9 +40,7 @@ function isLayerUpToDate(
   );
 }
 
-export async function getPracticeData(
-  slug: string,
-): Promise<ProcessingResult> {
+export async function getPracticeData(slug: string): Promise<ProcessingResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
   if (!details) {
@@ -120,24 +118,26 @@ export async function generatePracticeData(
         framing,
       });
       if (claimed.has("testCases")) {
-        console.log("[generateCases] testCases:", JSON.stringify(data.testCases, null, 2));
-        // await problemDetailsRepo.updateDerived(slug, { testCases: data.testCases });
-        // await problemDetailsRepo.updateProcessingMeta(slug, "testCases", {
-        //   status: "complete",
-        //   updatedAt: Date.now(),
-        //   model,
-        //   promptVersion,
-        // });
+        await problemDetailsRepo.updateDerived(slug, {
+          testCases: data.testCases,
+        });
+        await problemDetailsRepo.updateProcessingMeta(slug, "testCases", {
+          status: "complete",
+          updatedAt: Date.now(),
+          model,
+          promptVersion,
+        });
       }
       if (claimed.has("edgeCases")) {
-        console.log("[generateCases] edgeCases:", JSON.stringify(data.edgeCases, null, 2));
-        // await problemDetailsRepo.updateDerived(slug, { edgeCases: data.edgeCases });
-        // await problemDetailsRepo.updateProcessingMeta(slug, "edgeCases", {
-        //   status: "complete",
-        //   updatedAt: Date.now(),
-        //   model,
-        //   promptVersion,
-        // });
+        await problemDetailsRepo.updateDerived(slug, {
+          edgeCases: data.edgeCases,
+        });
+        await problemDetailsRepo.updateProcessingMeta(slug, "edgeCases", {
+          status: "complete",
+          updatedAt: Date.now(),
+          model,
+          promptVersion,
+        });
       }
     });
   }
@@ -150,14 +150,13 @@ export async function generatePracticeData(
         originalContent,
         framing,
       });
-      console.log("[generateHints] hints:", JSON.stringify(data, null, 2));
-      // await problemDetailsRepo.updateDerived(slug, { hints: data });
-      // await problemDetailsRepo.updateProcessingMeta(slug, "hints", {
-      //   status: "complete",
-      //   updatedAt: Date.now(),
-      //   model,
-      //   promptVersion,
-      // });
+      await problemDetailsRepo.updateDerived(slug, { hints: data });
+      await problemDetailsRepo.updateProcessingMeta(slug, "hints", {
+        status: "complete",
+        updatedAt: Date.now(),
+        model,
+        promptVersion,
+      });
     });
   }
 
@@ -169,14 +168,13 @@ export async function generatePracticeData(
         originalContent,
         framing,
       });
-      console.log("[generatePitfalls] pitfalls:", JSON.stringify(data, null, 2));
-      // await problemDetailsRepo.updateDerived(slug, { pitfalls: data });
-      // await problemDetailsRepo.updateProcessingMeta(slug, "pitfalls", {
-      //   status: "complete",
-      //   updatedAt: Date.now(),
-      //   model,
-      //   promptVersion,
-      // });
+      await problemDetailsRepo.updateDerived(slug, { pitfalls: data });
+      await problemDetailsRepo.updateProcessingMeta(slug, "pitfalls", {
+        status: "complete",
+        updatedAt: Date.now(),
+        model,
+        promptVersion,
+      });
     });
   }
 
