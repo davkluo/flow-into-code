@@ -1,7 +1,7 @@
 "use client";
 
 import { MoveLeft, MoveRight } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,21 +9,15 @@ import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "../ui/breadcrumb";
 import { Button } from "../ui/button";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionHeader } from "./SectionHeader";
 import { SectionSummarySheet } from "./SectionSummarySheet";
+import { SessionBreadcrumb } from "./SessionBreadcrumb";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { UnderstandingSection } from "./UnderstandingSection";
 
-export function PracticeAccordionSections() {
+export function PracticeSession() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
     null,
@@ -159,49 +153,16 @@ export function PracticeAccordionSections() {
 
       {isPracticeStarted && problem && problemDetails && (
         <>
-          <div className="flex justify-center px-3.5 pt-4">
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem>
-                  <Button
-                    variant="outline"
-                    size="xs"
-                    onClick={() => setIsProblemSheetOpen(true)}
-                    className="uppercase"
-                  >
-                    {problem.title}
-                  </Button>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator>:</BreadcrumbSeparator>
-                {SECTION_ORDER.slice(0, highestVisitedIndex + 1).map(
-                  (sectionKey, index) => (
-                    <Fragment key={sectionKey}>
-                      <BreadcrumbItem>
-                        {index === currentSectionIndex ? (
-                          <BreadcrumbPage className="font-semibold tracking-wide text-lime-400 uppercase">
-                            {SECTION_KEY_TO_DETAILS[sectionKey].title}
-                          </BreadcrumbPage>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="xs"
-                            onClick={() => {
-                              setSummarySectionKey(sectionKey);
-                              setIsSummarySheetOpen(true);
-                            }}
-                            className="uppercase"
-                          >
-                            {SECTION_KEY_TO_DETAILS[sectionKey].title}
-                          </Button>
-                        )}
-                      </BreadcrumbItem>
-                      {index < highestVisitedIndex && <BreadcrumbSeparator />}
-                    </Fragment>
-                  ),
-                )}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
+          <SessionBreadcrumb
+            problemTitle={problem.title}
+            currentSectionIndex={currentSectionIndex}
+            highestVisitedIndex={highestVisitedIndex}
+            onProblemClick={() => setIsProblemSheetOpen(true)}
+            onSectionClick={(sectionKey) => {
+              setSummarySectionKey(sectionKey);
+              setIsSummarySheetOpen(true);
+            }}
+          />
 
           <div className="mx-auto mt-6 max-w-5xl px-3.5">
             <div className={cn(currentSectionIndex !== 0 && "hidden")}>
