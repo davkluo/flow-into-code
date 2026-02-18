@@ -2,14 +2,15 @@
 
 import _ from "lodash";
 import { ArrowLeft } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ProblemDetailContent } from "./ProblemDetailContent";
 import {
+  getProblemDataApiPath,
   LC_PROBLEMS_API_PATH,
   PROBLEM_INDEX_META_API_PATH,
 } from "@/constants/api";
+import { authFetch } from "@/lib/authFetch";
 import {
   CACHE_PAGE_SIZE,
   getCachedPagesForUIPage,
@@ -21,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { ProblemsPage } from "@/repositories/firestore/problemRepo";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
+import { ProblemDetailContent } from "./ProblemDetailContent";
 import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemSelectSectionProps {
@@ -107,7 +109,7 @@ export function ProblemSelectSection({
       try {
         const cursor = pageCursors[cachePage - 1];
 
-        const res = await fetch(
+        const res = await authFetch(
           `${LC_PROBLEMS_API_PATH}?limit=${CACHE_PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
         );
 
@@ -194,7 +196,7 @@ export function ProblemSelectSection({
         if (controller.signal.aborted) return null;
 
         try {
-          const res = await fetch(`/api/problems/${slug}/preview`, {
+          const res = await authFetch(getProblemDataApiPath(slug, "preview"), {
             signal: controller.signal,
           });
           if (res.ok) return (await res.json()) as ProblemDetails;
@@ -216,8 +218,8 @@ export function ProblemSelectSection({
       setIsLoadingProblemDetails(true);
 
       try {
-        const res = await fetch(
-          `/api/problems/${problem.titleSlug}/preview`,
+        const res = await authFetch(
+          getProblemDataApiPath(problem.titleSlug, "preview"),
         );
 
         if (res.status === 200) {
@@ -252,8 +254,8 @@ export function ProblemSelectSection({
 
     setIsLoadingProblemDetails(true);
     try {
-      const res = await fetch(
-        `/api/problems/${selectedProblem.titleSlug}/preview`,
+      const res = await authFetch(
+        getProblemDataApiPath(selectedProblem.titleSlug, "preview"),
         { method: "POST" },
       );
 
@@ -288,7 +290,7 @@ export function ProblemSelectSection({
   useEffect(() => {
     const fetchMeta = async () => {
       try {
-        const res = await fetch(PROBLEM_INDEX_META_API_PATH);
+        const res = await authFetch(PROBLEM_INDEX_META_API_PATH);
         if (res.ok) {
           const data = await res.json();
           setTotalProblems(data.totalProblems);
@@ -327,7 +329,7 @@ export function ProblemSelectSection({
     const fetchSearchResults = async () => {
       setIsLoadingProblemList(true);
       try {
-        const res = await fetch(
+        const res = await authFetch(
           `${LC_PROBLEMS_API_PATH}?q=${encodeURIComponent(debouncedSearch)}`,
         );
 

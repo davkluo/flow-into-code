@@ -4,7 +4,9 @@ import { MoveLeft, MoveRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
+import { getProblemDataApiPath } from "@/constants/api";
 import { useAuth } from "@/hooks/useAuth";
+import { authFetch } from "@/lib/authFetch";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
@@ -56,7 +58,7 @@ export function PracticeSession() {
         if (controller.signal.aborted) return null;
 
         try {
-          const res = await fetch(`/api/problems/${slug}/practice`, {
+          const res = await authFetch(getProblemDataApiPath(slug, "practice"), {
             signal: controller.signal,
           });
           if (res.ok) return (await res.json()) as ProblemDetails;
@@ -73,7 +75,7 @@ export function PracticeSession() {
   const generatePractice = useCallback(
     async (slug: string): Promise<ProblemDetails | null> => {
       try {
-        const res = await fetch(`/api/problems/${slug}/practice`, {
+        const res = await authFetch(getProblemDataApiPath(slug, "practice"), {
           method: "POST",
         });
 
@@ -101,7 +103,7 @@ export function PracticeSession() {
         const slug = selectedProblem.titleSlug;
         let data: ProblemDetails | null = null;
 
-        const res = await fetch(`/api/problems/${slug}/practice`);
+        const res = await authFetch(getProblemDataApiPath(slug, "practice"));
         if (res.status === 200) {
           data = (await res.json()) as ProblemDetails;
         } else if (res.status === 202) {

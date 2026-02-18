@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
 import { getProblemPage } from "@/repositories/firestore/problemRepo";
 import { ensureLCProblemIndex } from "@/services/ensureLCProblemIndex";
 
 export async function GET(req: Request) {
+  const uid = await verifyFirebaseToken(req);
+  if (!uid)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   await ensureLCProblemIndex();
 
   const { searchParams } = new URL(req.url);

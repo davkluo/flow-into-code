@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
+import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
 import { generatePreviewData, getPreviewData } from "@/services/previewData";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const uid = await verifyFirebaseToken(req);
+  if (!uid)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { slug } = await params;
 
   try {
@@ -39,9 +44,13 @@ export async function GET(
 }
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const uid = await verifyFirebaseToken(req);
+  if (!uid)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { slug } = await params;
 
   try {

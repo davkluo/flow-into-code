@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
+import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
 import { generatePracticeData, getPracticeData } from "@/services/practiceData";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const uid = await verifyFirebaseToken(req);
+  if (!uid)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { slug } = await params;
 
   try {
@@ -13,8 +18,7 @@ export async function GET(
     if (result.status === "complete") {
       return NextResponse.json(result.data, {
         headers: {
-          "Cache-Control": "no-store",
-          // "Cache-Control": "s-maxage=86400, stale-while-revalidate=604800",
+          "Cache-Control": "s-maxage=86400, stale-while-revalidate=604800",
         },
       });
     }
@@ -40,9 +44,13 @@ export async function GET(
 }
 
 export async function POST(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
+  const uid = await verifyFirebaseToken(req);
+  if (!uid)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const { slug } = await params;
 
   try {
