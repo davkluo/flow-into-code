@@ -32,7 +32,7 @@ export function SessionBreadcrumb({
           <BreadcrumbItem>
             <Button
               variant="outline"
-              size="xs"
+              size="sm"
               onClick={onProblemClick}
               className="uppercase"
             >
@@ -51,7 +51,7 @@ export function SessionBreadcrumb({
                   ) : (
                     <Button
                       variant="outline"
-                      size="xs"
+                      size="sm"
                       onClick={() => onSectionClick(sectionKey)}
                       className="uppercase"
                     >
