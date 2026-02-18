@@ -45,8 +45,8 @@ export function SessionBreadcrumb({
               <Fragment key={sectionKey}>
                 <BreadcrumbItem>
                   {index === currentSectionIndex ? (
-                    <BreadcrumbPage className="font-semibold tracking-wide text-lime-400 uppercase">
-                      {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                    <BreadcrumbPage className="text-base font-semibold tracking-wide text-lime-400 uppercase">
+                      {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
                     </BreadcrumbPage>
                   ) : (
                     <Button
@@ -55,7 +55,7 @@ export function SessionBreadcrumb({
                       onClick={() => onSectionClick(sectionKey)}
                       className="uppercase"
                     >
-                      {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                      {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
                     </Button>
                   )}
                 </BreadcrumbItem>

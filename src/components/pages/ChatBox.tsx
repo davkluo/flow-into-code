@@ -1,9 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { InfoIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/chat";
 import { SectionKey } from "@/types/practice";
@@ -14,6 +20,7 @@ interface ChatBoxProps {
   onSend: (message: string) => Promise<void>;
   layoutMode?: "grow" | "fixed";
   title?: string;
+  titleTooltip?: React.ReactNode;
   placeholder?: string;
   inputDescription?: string;
   emptyStateMessage?: string;
@@ -25,6 +32,7 @@ export function ChatBox({
   onSend,
   layoutMode = "grow",
   title,
+  titleTooltip,
   placeholder = "Type your message. Press ⌘+Enter to send.",
   inputDescription = "",
   emptyStateMessage = "Your conversation with the mock interview assistant will appear here.",
@@ -71,18 +79,30 @@ export function ChatBox({
       <div
         className={cn(
           "border-input overflow-hidden rounded-md border",
-          layoutMode === "fixed" ? "min-h-0 flex-grow" : "",
+          layoutMode === "fixed" ? "flex min-h-0 flex-grow flex-col" : "",
         )}
       >
         {title && (
-          <div className="border-input border-b px-3 py-2">
+          <div className="border-input flex items-center gap-2 border-b px-3 py-2">
             <span className="text-sm font-medium">{title}</span>
+            {titleTooltip && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex">
+                    <InfoIcon className="text-muted-foreground size-3.5" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="w-[22rem] [text-wrap:wrap]">
+                  {titleTooltip}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </div>
         )}
         <ScrollArea
           className={cn(
             "overflow-auto",
-            layoutMode === "fixed" ? "h-full" : "max-h-[40vh]",
+            layoutMode === "fixed" ? "min-h-0 flex-1" : "max-h-[40vh]",
           )}
         >
           <div className="mt-4 flex flex-col gap-2 px-3">

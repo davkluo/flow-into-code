@@ -19,8 +19,8 @@ export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
   problem_understanding: {
     title: "Understanding",
     description:
-      "Restate the problem in your own words and asking clarifying questions if necessary. " +
-      "Identify edge cases and constraints that may impact your solution.",
+      "Ensure that you fully understand the requirements and edge cases of the problem before diving into the solution. " +
+      "Restate the problem in your own words and asking clarifying questions using the AI interviewer if necessary.",
     explanation: (
       <>
         <p>
@@ -141,8 +141,7 @@ export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
       <>
         <p>
           Understanding complexity shows you can think beyond small test cases
-          and reason about how your solution{" "}
-          <strong>behaves at scale</strong>.
+          and reason about how your solution <strong>behaves at scale</strong>.
         </p>
         <ul className="mt-3 list-disc space-y-1.5 pl-4">
           <li>

@@ -6,7 +6,6 @@ export default function PracticePage() {
   return (
     <TimerProvider defaultTime={1800}>
       <div className="px-12 py-8 pb-16">
-        <h1 className="mb-4 text-2xl font-bold">Practice Problems</h1>
         <PracticeSession />
       </div>
       <Timer />
