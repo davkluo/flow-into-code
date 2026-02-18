@@ -1,6 +1,7 @@
-import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
+import { z } from "zod";
 import { openAIClient } from "@/lib/openai";
+import { Message } from "@/types/chat";
 
 const DEFAULT_MODEL = "gpt-4o-mini";
 
@@ -21,6 +22,12 @@ export interface LLMGenerationResult<T> extends LLMStructuredResult<T> {
   promptVersion: number;
 }
 
+interface CallLLMChatStreamInput {
+  messages: Message[];
+  model?: string;
+  temperature?: number;
+}
+
 export async function callLLMStructured<T extends z.ZodType>({
   prompt,
   schema,
@@ -37,8 +44,24 @@ export async function callLLMStructured<T extends z.ZodType>({
   });
 
   if (!response.output_parsed) {
-    throw new Error(`callLLMStructured(${schemaName}): LLM returned empty response`);
+    throw new Error(
+      `callLLMStructured(${schemaName}): LLM returned empty response`,
+    );
   }
 
   return { data: response.output_parsed, model };
+}
+
+export async function streamChatCompletion({
+  messages,
+  model = DEFAULT_MODEL,
+  temperature = 0.7,
+}: CallLLMChatStreamInput): Promise<ReadableStream<Uint8Array>> {
+  const stream = await openAIClient.chat.completions.create({
+    model,
+    messages,
+    temperature,
+    stream: true,
+  });
+  return stream.toReadableStream();
 }
