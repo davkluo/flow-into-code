@@ -242,43 +242,6 @@ export function PracticeSession() {
         value={openSections}
         onValueChange={(value) => setOpenSections(value as SectionKey[])}
       >
-        <AccordionItem value={PRACTICE_SECTIONS[0]}>
-          <AccordionTrigger>
-            <SectionLabel
-              label="Select Problem"
-              isCurrentStep={currentSectionIndex === 0}
-            />
-          </AccordionTrigger>
-          <ProblemSelectSection
-            onProblemSelect={(problem, problemDetails) => {
-              console.log("Problem selected, but handler not implemented yet");
-              console.log("Problem:", problem);
-              console.log("Problem Details:", problemDetails);
-            }}
-            isEditable={currentSectionIndex === 0}
-          />
-        </AccordionItem>
-        {problem && (
-          <>
-            {currentSectionIndex >= 1 && (
-              <AccordionItem value={PRACTICE_SECTIONS[1]}>
-                <AccordionTrigger disabled={currentSectionIndex < 1}>
-                  <SectionLabel
-                    label="Clarify Problem"
-                    isCurrentStep={currentSectionIndex === 1}
-                  />
-                </AccordionTrigger>
-                <ClarificationSection
-                  messages={llm.getMessages("clarification")}
-                  onSend={(content) => {
-                    if (currentSectionIndex > 1) {
-                      llm.generateDistilledSummary("clarification");
-                    }
-                    return llm.sendMessage("clarification", content);
-                  }}
-                />
-              </AccordionItem>
-            )}
             {currentSectionIndex >= 2 && (
               <AccordionItem value={PRACTICE_SECTIONS[2]}>
                 <AccordionTrigger disabled={currentSectionIndex < 2}>
