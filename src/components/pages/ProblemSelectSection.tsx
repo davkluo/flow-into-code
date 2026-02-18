@@ -220,7 +220,7 @@ export function ProblemSelectSection({
           `/api/problems/${problem.titleSlug}/preview`,
         );
 
-        if (res.ok) {
+        if (res.status === 200) {
           const data: ProblemDetails = await res.json();
           setProblemDetails(data);
           return;
@@ -257,7 +257,7 @@ export function ProblemSelectSection({
         { method: "POST" },
       );
 
-      if (res.ok) {
+      if (res.status === 200) {
         const data: ProblemDetails = await res.json();
         setProblemDetails(data);
         return;

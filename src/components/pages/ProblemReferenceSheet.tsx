@@ -28,12 +28,10 @@ export function ProblemReferenceSheet({
         <SheetHeader>
           <SheetTitle>Problem Reference</SheetTitle>
           <SheetDescription className="text-xs">
-            Use this sheet to review the details of the problem as necessary.
-            During an interview, it may convey a sense of uncertainty if you
-            frequently refer to the problem statement. You should try to use
-            this sheet primarily for quick reference when you need to clarify
-            specific details or constraints, rather than relying on it for every
-            aspect of the problem.
+            Use this sheet to review the details of the problem as necessary. To
+            best prepare for interviews, try to use this sheet primarily for
+            quick reference when you need to clarify specific details or
+            constraints, rather than constantly referring back to it.
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="flex-1 px-4 pb-4">

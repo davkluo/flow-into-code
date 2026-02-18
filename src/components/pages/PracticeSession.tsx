@@ -102,7 +102,7 @@ export function PracticeSession() {
         let data: ProblemDetails | null = null;
 
         const res = await fetch(`/api/problems/${slug}/practice`);
-        if (res.ok) {
+        if (res.status === 200) {
           data = (await res.json()) as ProblemDetails;
         } else if (res.status === 202) {
           data = await pollForPractice(slug);
