@@ -48,10 +48,11 @@ export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
   },
 
   approach_and_reasoning: {
-    title: "Thought Process",
+    title: "Approach & Reasoning",
     description:
-      "Explain your high-level approach and the reasoning behind it before writing code. " +
-      "Discuss why you chose this strategy and any alternatives you considered.",
+      "Go through your thought process in coming up with a solution. " +
+      "Feel free to start with a naive approach and iteratively optimize it. " +
+      "The key is to clearly articulate your reasoning and any tradeoffs you considered.",
     explanation: (
       <>
         <p>
@@ -79,7 +80,7 @@ export const SECTION_KEY_TO_DETAILS: Record<SectionKey, SectionDetails> = {
   },
 
   algorithm_design: {
-    title: "Pseudocode",
+    title: "Algorithm Design",
     description:
       "Translate your approach into clear, step-by-step pseudocode that outlines the core logic of your solution.",
     explanation: (
