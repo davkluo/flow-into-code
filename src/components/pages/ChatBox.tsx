@@ -11,12 +11,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { Message } from "@/types/chat";
+import { SessionMessage } from "@/types/chat";
 import { SectionKey } from "@/types/practice";
 
 interface ChatBoxProps {
   location: SectionKey;
-  messages: Message[];
+  messages: SessionMessage[];
   onSend: (message: string) => Promise<void>;
   layoutMode?: "grow" | "fixed";
   title?: string;
@@ -65,9 +65,12 @@ export function ChatBox({
     scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const messagesLength = messages.filter((msg) => msg.role !== "system").length;
+  const messagesLength = messages.length;
+  const lastMessage = messages[messagesLength - 1];
   const showLoadingBubble =
-    messagesLength > 0 && messages[messagesLength - 1].role === "user";
+    messagesLength > 0 &&
+    (lastMessage.role === "user" ||
+      (lastMessage.role === "assistant" && lastMessage.content === ""));
 
   return (
     <div
@@ -114,7 +117,7 @@ export function ChatBox({
             <>
               {messages.map(
                 (msg, i) =>
-                  msg.role !== "system" && (
+                  msg.content !== "" && (
                     <div
                       key={`${location}-${i}`}
                       className={cn(

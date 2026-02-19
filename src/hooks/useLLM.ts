@@ -1,183 +1,171 @@
 import { useState } from "react";
-import { SECTION_PROMPTS, GLOBAL_PROMPT } from "@/lib/prompts";
-import { getArtifactsContext, getDistilledSummariesContext, getProblemContext } from "@/lib/buildContext";
-import { PracticeProblem, SectionKey } from "@/types/practice";
-import { Message } from "@/types/chat";
-import { LanguageKey } from "@/lib/codeMirror";
+import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
+import { buildProblemContext, SectionSnapshotData } from "@/lib/chat/context";
+import { SectionKey } from "@/types/practice";
+import { SessionMessage, Message } from "@/types/chat";
+import { Problem, ProblemDetails } from "@/types/problem";
+import { authFetch } from "@/lib/authFetch";
 
-type ArtifactKind = "code" | "pseudocode";
-export type SectionArtifact = {
-  kind: ArtifactKind;
-  content: string;
-  language?: LanguageKey;
+// ---------------------------------------------------------------------------
+// Snapshot types (typed per-section; tightened in Step 3)
+// ---------------------------------------------------------------------------
+
+export type Snapshot = {
+  data: SectionSnapshotData;
+  messageIndex: number;
+  timestamp: number;
 };
 
-type SectionChat = {
-  messages: Message[];
-  distilledSummary?: string;
-  artifact?: SectionArtifact;
+export type SectionState = {
+  snapshots: Snapshot[];
 };
+
+// ---------------------------------------------------------------------------
+// LLM state — single shared message list + per-section snapshot history
+// ---------------------------------------------------------------------------
 
 export type LLMState = {
-  [section in SectionKey]?: SectionChat;
+  messages: SessionMessage[];
+  sections: Partial<Record<SectionKey, SectionState>>;
 };
 
-export function useLLM(problem: PracticeProblem | null) {
-  const [llmState, setLlmState] = useState<LLMState>({});
+// ---------------------------------------------------------------------------
+// Hook
+// ---------------------------------------------------------------------------
 
-  if (!problem) {
-    return {
-      sendMessage: async () => { },
-      getMessages: () => [],
-      getDistilledSummary: () => undefined,
-      setDistilledSummary: () => { },
-      generateDistilledSummary: async () => undefined,
-      hasDistilledSummaries: () => false,
-      getAllDistilledSummaries: () => ({} as Record<SectionKey, string>),
-      getArtifact: () => undefined,
-      setArtifact: () => { },
-      llmState
-    };
-  }
+export function useLLM(problem: Problem | null, problemDetails: ProblemDetails | null) {
+  const [llmState, setLlmState] = useState<LLMState>({
+    messages: [],
+    sections: {},
+  });
 
-  const updateSection = (
-    section: SectionKey,
-    newMessages: Message[],
-    distilledSummary?: string
-  ) => {
-    setLlmState((prev) => ({
-      ...prev,
-      [section]: {
-        messages: newMessages,
-        distilledSummary: distilledSummary ?? prev[section]?.distilledSummary,
-      },
-    }));
-  };
+  /** Messages for a specific section, for display in that section's ChatBox. */
+  const getMessages = (section: SectionKey): SessionMessage[] =>
+    llmState.messages.filter((m) => m.section === section);
 
-  const getMessages = (section: SectionKey): Message[] => {
-    return llmState[section]?.messages ?? [];
-  };
-
-  const getDistilledSummary = (section: SectionKey): string | undefined => {
-    return llmState[section]?.distilledSummary;
-  };
-
-  const setDistilledSummary = (section: SectionKey, summary: string) => {
-    setLlmState((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        messages: prev[section]?.messages ?? [],
-        distilledSummary: summary,
-      },
-    }));
-  };
-
-  const generateDistilledSummary = async (
-    section: SectionKey
-  ): Promise<string | undefined> => {
-    const messages = llmState[section]?.messages ?? [];
-    const artifact = llmState[section]?.artifact;
-    if (!messages.length && section !== "selection") return undefined;
-
-    const res = await fetch("/api/summarize-chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ sectionKey: section, messages, problem, artifact }),
-    });
-
-    if (!res.ok) {
-      console.error("Distill failed:", await res.text());
-      return undefined;
-    }
-
-    const data = await res.json();
-    if (data.summary) {
-      setDistilledSummary(section, data.summary);
-      return data.summary;
-    }
-  };
-
-  const hasDistilledSummaries = (): boolean => {
-    return Object.values(llmState).some(
-      (section) => section?.distilledSummary && section.distilledSummary.trim() !== ""
-    );
-  };
-
-  const getAllDistilledSummaries = (): Record<SectionKey, string> => {
-    return Object.entries(llmState).reduce((acc, [sectionKey, section]) => {
-      if (section?.distilledSummary) {
-        acc[sectionKey as SectionKey] = section.distilledSummary;
-      }
-      return acc;
-    }, {} as Record<SectionKey, string>);
-  };
-
-  const getArtifact = (section: SectionKey): SectionArtifact | undefined => {
-    return llmState[section]?.artifact;
-  };
-
-  const setArtifact = (section: SectionKey, artifact: SectionArtifact) => {
-    setLlmState(prev => ({
-      ...prev,
-      [section]: {
-        messages: prev[section]?.messages ?? [],
-        distilledSummary: prev[section]?.distilledSummary,
-        artifact,
-      },
-    }));
-  };
-
+  /**
+   * Send a user message for a given section.
+   *
+   * @param section     The current section key.
+   * @param userMessage The user's chat input.
+   * @param snapshot    Current snapshot of this section's work fields (optional).
+   *                    Stored for later analysis; injected into context in Step 3.
+   */
   const sendMessage = async (
     section: SectionKey,
-    userMessage: string
+    userMessage: string,
+    snapshot?: SectionSnapshotData,
   ): Promise<void> => {
-    const messages = llmState[section]?.messages ?? [];
-    messages.push({ role: "user", content: userMessage });
-    updateSection(section, [...messages]);
+    if (!problem || !problemDetails) return;
 
-    const sharedContext = getDistilledSummariesContext(llmState);
-    const artifactsContext = getArtifactsContext(llmState);
+    const userMsg: SessionMessage = {
+      role: "user",
+      content: userMessage,
+      section,
+      timestamp: Date.now(),
+    };
+
+    // Capture current state before setState (avoids stale closure in async)
+    const currentMessages = [...llmState.messages, userMsg];
+
+    // Persist user message + optional snapshot
+    setLlmState((prev) => {
+      const prevSnapshots = prev.sections[section]?.snapshots ?? [];
+      return {
+        ...prev,
+        messages: [...prev.messages, userMsg],
+        sections: {
+          ...prev.sections,
+          [section]: {
+            snapshots: snapshot
+              ? [
+                  ...prevSnapshots,
+                  {
+                    data: snapshot,
+                    messageIndex: currentMessages.length - 1,
+                    timestamp: Date.now(),
+                  },
+                ]
+              : prevSnapshots,
+          },
+        },
+      };
+    });
+
+    // Build payload — system messages + section-filtered conversation history
+    // TODO (Step 3): add buildPriorSectionsContext + buildCurrentSectionContext here
+    const sectionHistory = currentMessages
+      .filter((m) => m.section === section)
+      .map((m): Message => ({ role: m.role, content: m.content }));
 
     const payload: Message[] = [
       { role: "system", content: GLOBAL_PROMPT.trim() },
-      { role: "system", content: getProblemContext(problem) },
-      { role: "system", content: SECTION_PROMPTS[section] },
+      { role: "system", content: buildProblemContext(problem, problemDetails) },
+      { role: "system", content: SECTION_PROMPTS[section].trim() },
+      ...sectionHistory,
     ];
-    if (sharedContext) {
-      payload.push({ role: "system", content: sharedContext });
-    }
-    if (artifactsContext) {
-      payload.push({ role: "system", content: artifactsContext });
-    }
-    payload.push(...messages);
 
-    const res = await fetch("/api/chat", {
+    const res = await authFetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages: payload }),
     });
 
-    const data = await res.json();
-    const aiMsg: Message = {
-      role: "assistant",
-      content: data.message,
-    };
+    if (!res.ok || !res.body) return;
 
-    messages.push(aiMsg);
-    updateSection(section, [...messages]);
+    // Add empty assistant placeholder — ChatBox shows loading state until content arrives
+    setLlmState((prev) => ({
+      ...prev,
+      messages: [
+        ...prev.messages,
+        { role: "assistant", content: "", section, timestamp: Date.now() },
+      ],
+    }));
+
+    // Stream content into the last assistant message
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    outer: while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") break outer;
+
+        try {
+          const chunk = JSON.parse(data);
+          const delta: string = chunk.delta ?? "";
+          if (!delta) continue;
+
+          setLlmState((prev) => {
+            const msgs = [...prev.messages];
+            // Update the last assistant message in-place
+            for (let i = msgs.length - 1; i >= 0; i--) {
+              if (msgs[i].role === "assistant") {
+                msgs[i] = { ...msgs[i], content: msgs[i].content + delta };
+                break;
+              }
+            }
+            return { ...prev, messages: msgs };
+          });
+        } catch {
+          // Ignore malformed SSE chunks
+        }
+      }
+    }
   };
 
   return {
     sendMessage,
     getMessages,
-    getDistilledSummary,
-    setDistilledSummary,
-    generateDistilledSummary,
-    hasDistilledSummaries,
-    getAllDistilledSummaries,
-    getArtifact,
-    setArtifact,
     llmState,
   };
 }

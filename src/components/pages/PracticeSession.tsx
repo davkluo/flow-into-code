@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { getProblemDataApiPath } from "@/constants/api";
 import { useAuth } from "@/hooks/useAuth";
+import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export function PracticeSession() {
   );
 
   const { status } = useAuth();
+  const llm = useLLM(problem, problemDetails);
   const router = useRouter();
   const pollAbortRef = useRef<AbortController | null>(null);
 
@@ -169,10 +171,10 @@ export function PracticeSession() {
           <div className="mx-auto mt-6 max-w-5xl px-3.5">
             <div className={cn(currentSectionIndex !== 0 && "hidden")}>
               <UnderstandingSection
-                messages={[]}
-                onSend={async (content) => {
-                  console.log("Understanding message:", content);
-                }}
+                messages={llm.getMessages("problem_understanding")}
+                onSend={(content, snapshot) =>
+                  llm.sendMessage("problem_understanding", content, snapshot)
+                }
               />
             </div>
 

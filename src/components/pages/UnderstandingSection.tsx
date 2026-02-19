@@ -16,11 +16,18 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Message } from "@/types/chat";
+import { SessionMessage } from "@/types/chat";
+
+export type UnderstandingSnapshot = {
+  restatement: string;
+  inputsOutputs: string;
+  constraints: string;
+  edgeCases: string;
+};
 
 interface UnderstandingSectionProps {
-  messages: Message[];
-  onSend: (content: string) => Promise<void>;
+  messages: SessionMessage[];
+  onSend: (content: string, snapshot: UnderstandingSnapshot) => Promise<void>;
 }
 
 type FieldKey = "restatement" | "inputsOutputs" | "constraints" | "edgeCases";
@@ -185,7 +192,7 @@ export function UnderstandingSection({
           <ChatBox
             location="problem_understanding"
             messages={messages}
-            onSend={onSend}
+            onSend={(content) => onSend(content, { ...fields })}
             layoutMode="fixed"
             title="AI Interviewer"
             titleTooltip={
