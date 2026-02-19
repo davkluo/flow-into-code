@@ -63,5 +63,21 @@ export async function streamChatCompletion({
     temperature,
     stream: true,
   });
-  return stream.toReadableStream();
+
+  const encoder = new TextEncoder();
+
+  return new ReadableStream<Uint8Array>({
+    async start(controller) {
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content ?? "";
+        if (delta) {
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ delta })}\n\n`),
+          );
+        }
+      }
+      controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+      controller.close();
+    },
+  });
 }
