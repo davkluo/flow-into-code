@@ -37,7 +37,12 @@ export function PracticeSession() {
   );
 
   const { status } = useAuth();
-  const llm = useLLM(problem, problemDetails);
+  const {
+    sendMessage: llmSendMessage,
+    getMessages: llmGetMessages,
+    cooldownUntil: llmCooldownUntil,
+    reset: llmReset,
+  } = useLLM(problem, problemDetails);
   const router = useRouter();
   const pollAbortRef = useRef<AbortController | null>(null);
 
@@ -97,7 +102,7 @@ export function PracticeSession() {
       selectedProblem: Problem,
       selectedProblemDetails: ProblemDetails,
     ) => {
-      llm.reset();
+      llmReset();
       setProblem(selectedProblem);
       setProblemDetails(selectedProblemDetails);
       setIsPreparingSession(true);
@@ -128,7 +133,7 @@ export function PracticeSession() {
         setIsPreparingSession(false);
       }
     },
-    [llm.reset, pollForPractice, generatePractice],
+    [llmReset, pollForPractice, generatePractice],
   );
 
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
@@ -172,11 +177,11 @@ export function PracticeSession() {
           <div className="mx-auto mt-6 max-w-5xl px-3.5">
             <div className={cn(currentSectionIndex !== 0 && "hidden")}>
               <UnderstandingSection
-                messages={llm.getMessages("problem_understanding")}
+                messages={llmGetMessages("problem_understanding")}
                 onSend={(content, snapshot) =>
-                  llm.sendMessage("problem_understanding", content, snapshot)
+                  llmSendMessage("problem_understanding", content, snapshot)
                 }
-                cooldownUntil={llm.cooldownUntil}
+                cooldownUntil={llmCooldownUntil}
               />
             </div>
 
