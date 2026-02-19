@@ -1,9 +1,13 @@
-import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 
+// ---------------------------------------------------------------------------
+// Problem context
+// ---------------------------------------------------------------------------
+
 /**
- * Formats the problem statement into a context block for the LLM to reference
+ * Formats the problem statement into a context block for the LLM to reference.
  */
 export const buildProblemContext = (
   problem: Problem,
@@ -14,66 +18,68 @@ export const buildProblemContext = (
 
 // ---------------------------------------------------------------------------
 // Section snapshot context
-// These functions are stubs — full implementation comes in Step 3 once the
-// snapshot system is wired up across all sections.
 // ---------------------------------------------------------------------------
 
 export type SectionSnapshotData = Record<string, string>;
 
 /**
- * Formats the latest snapshot for each completed section into a system
- * context block so the LLM knows what the user has worked on previously.
- * Sections with no snapshots are omitted.
+ * Short human-readable labels for snapshot field keys.
+ * Unrecognized keys fall back to camelCase → Title Case conversion.
  */
-export const buildPriorSectionsContext = (
+const FIELD_LABELS: Record<string, string> = {
+  // problem_understanding
+  restatement: "Problem Restatement",
+  inputsOutputs: "Inputs & Outputs",
+  constraints: "Constraints",
+  edgeCases: "Edge Cases",
+
+  // approach_and_reasoning
+  approach: "Thought Process Notes",
+
+  // algorithm_design
+  pseudocode: "Pseudocode",
+
+  // implementation
+  language: "Language",
+  code: "Code",
+
+  // complexity_analysis
+  timeComplexity: "Time Complexity",
+  spaceComplexity: "Space Complexity",
+};
+
+/** Converts an unrecognized camelCase key to Title Case as a fallback. */
+const formatFieldKey = (key: string): string =>
+  FIELD_LABELS[key] ??
+  key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+
+/**
+ * Formats the latest snapshot for every section that has one into a single
+ * system context block. Sections with no snapshots or only empty fields are
+ * omitted. All sections are included regardless of which section is current —
+ * the LLM always sees the full picture of what the user has filled in.
+ */
+export const buildSnapshotContext = (
   sections: Partial<
     Record<SectionKey, { snapshots: { data: SectionSnapshotData }[] }>
   >,
-  currentSection: SectionKey,
 ): string => {
-  const sectionOrder: SectionKey[] = [
-    "problem_understanding",
-    "approach_and_reasoning",
-    "algorithm_design",
-    "implementation",
-    "complexity_analysis",
-  ];
-
   const lines: string[] = [];
 
-  for (const key of sectionOrder) {
-    if (key === currentSection) break; // only include sections before the current one
+  for (const key of SECTION_ORDER) {
     const latest = sections[key]?.snapshots.at(-1);
     if (!latest) continue;
+
     const title = SECTION_KEY_TO_DETAILS[key].title;
     const formatted = Object.entries(latest.data)
       .filter(([, v]) => v.trim() !== "")
-      .map(([k, v]) => `  ${k}: ${v}`)
+      .map(([k, v]) => `  ${formatFieldKey(k)}: ${v}`)
       .join("\n");
+
     if (formatted) lines.push(`${title}:\n${formatted}`);
   }
 
   return lines.length > 0
-    ? `User's work from prior sections:\n\n${lines.join("\n\n")}`
+    ? `User's session notes:\n\n${lines.join("\n\n")}`
     : "";
-};
-
-/**
- * Formats the current section's latest snapshot so the LLM can see
- * what the user has filled in alongside the chat.
- */
-export const buildCurrentSectionContext = (
-  snapshots: { data: SectionSnapshotData }[] | undefined,
-  currentSection: SectionKey,
-): string => {
-  const latest = snapshots?.at(-1);
-  if (!latest) return "";
-
-  const title = SECTION_KEY_TO_DETAILS[currentSection].title;
-  const formatted = Object.entries(latest.data)
-    .filter(([, v]) => v.trim() !== "")
-    .map(([k, v]) => `  ${k}: ${v}`)
-    .join("\n");
-
-  return formatted ? `User's current ${title} notes:\n${formatted}` : "";
 };

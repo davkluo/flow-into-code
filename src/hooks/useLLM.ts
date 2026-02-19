@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
-import { buildProblemContext, SectionSnapshotData } from "@/lib/chat/context";
-import { SectionKey } from "@/types/practice";
-import { SessionMessage, Message } from "@/types/chat";
-import { Problem, ProblemDetails } from "@/types/problem";
 import { authFetch } from "@/lib/authFetch";
+import { buildProblemContext, SectionSnapshotData } from "@/lib/chat/context";
+import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
+import { Message, SessionMessage } from "@/types/chat";
+import { SectionKey } from "@/types/practice";
+import { Problem, ProblemDetails } from "@/types/problem";
 
 // ---------------------------------------------------------------------------
 // Snapshot types (typed per-section; tightened in Step 3)
@@ -33,7 +33,10 @@ export type LLMState = {
 // Hook
 // ---------------------------------------------------------------------------
 
-export function useLLM(problem: Problem | null, problemDetails: ProblemDetails | null) {
+export function useLLM(
+  problem: Problem | null,
+  problemDetails: ProblemDetails | null,
+) {
   const [llmState, setLlmState] = useState<LLMState>({
     messages: [],
     sections: {},
@@ -92,17 +95,17 @@ export function useLLM(problem: Problem | null, problemDetails: ProblemDetails |
       };
     });
 
-    // Build payload — system messages + section-filtered conversation history
-    // TODO (Step 3): add buildPriorSectionsContext + buildCurrentSectionContext here
-    const sectionHistory = currentMessages
-      .filter((m) => m.section === section)
-      .map((m): Message => ({ role: m.role, content: m.content }));
+    // Build payload — system messages + full session history
+    // TODO (Step 3): add buildSnapshotContext here
+    const fullHistory = currentMessages.map(
+      (m): Message => ({ role: m.role, content: m.content }),
+    );
 
     const payload: Message[] = [
       { role: "system", content: GLOBAL_PROMPT.trim() },
       { role: "system", content: buildProblemContext(problem, problemDetails) },
       { role: "system", content: SECTION_PROMPTS[section].trim() },
-      ...sectionHistory,
+      ...fullHistory,
     ];
 
     const res = await authFetch("/api/chat", {
