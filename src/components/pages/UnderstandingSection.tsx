@@ -28,6 +28,7 @@ export type UnderstandingSnapshot = {
 interface UnderstandingSectionProps {
   messages: SessionMessage[];
   onSend: (content: string, snapshot: UnderstandingSnapshot) => Promise<void>;
+  cooldownUntil?: number;
 }
 
 type FieldKey = "restatement" | "inputsOutputs" | "constraints" | "edgeCases";
@@ -126,6 +127,7 @@ const FIELDS: Field[] = [
 export function UnderstandingSection({
   messages,
   onSend,
+  cooldownUntil,
 }: UnderstandingSectionProps) {
   const [fields, setFields] = useState<Record<FieldKey, string>>({
     restatement: "",
@@ -193,8 +195,9 @@ export function UnderstandingSection({
             location="problem_understanding"
             messages={messages}
             onSend={(content) => onSend(content, { ...fields })}
+            cooldownUntil={cooldownUntil}
             layoutMode="fixed"
-            title="AI Interviewer"
+            title="AI Interviewer &mdash; Ask Clarifying Questions"
             titleTooltip={
               <div className="space-y-1.5">
                 <p>
@@ -212,7 +215,6 @@ export function UnderstandingSection({
                 </p>
               </div>
             }
-            placeholder="Ask clarifying questions about the problem"
             emptyStateMessage="No messages yet."
           />
         </div>

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { authFetch } from "@/lib/authFetch";
 import { buildProblemContext, SectionSnapshotData } from "@/lib/chat/context";
 import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
+import { CHAT_COOLDOWN_MS } from "@/constants/chat";
 import { Message, SessionMessage } from "@/types/chat";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
@@ -42,6 +43,9 @@ export function useLLM(
     sections: {},
   });
 
+  // Unix timestamp (ms) after which sending is allowed again; 0 = no cooldown.
+  const [cooldownUntil, setCooldownUntil] = useState(0);
+
   /** Messages for a specific section, for display in that section's ChatBox. */
   const getMessages = (section: SectionKey): SessionMessage[] =>
     llmState.messages.filter((m) => m.section === section);
@@ -60,6 +64,9 @@ export function useLLM(
     snapshot?: SectionSnapshotData,
   ): Promise<void> => {
     if (!problem || !problemDetails) return;
+    if (Date.now() < cooldownUntil) return;
+
+    setCooldownUntil(Date.now() + CHAT_COOLDOWN_MS);
 
     const userMsg: SessionMessage = {
       role: "user",
@@ -166,9 +173,16 @@ export function useLLM(
     }
   };
 
+  const reset = useCallback(() => {
+    setLlmState({ messages: [], sections: {} });
+    setCooldownUntil(0);
+  }, []);
+
   return {
     sendMessage,
     getMessages,
     llmState,
+    cooldownUntil,
+    reset,
   };
 }

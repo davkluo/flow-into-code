@@ -97,6 +97,7 @@ export function PracticeSession() {
       selectedProblem: Problem,
       selectedProblemDetails: ProblemDetails,
     ) => {
+      llm.reset();
       setProblem(selectedProblem);
       setProblemDetails(selectedProblemDetails);
       setIsPreparingSession(true);
@@ -127,7 +128,7 @@ export function PracticeSession() {
         setIsPreparingSession(false);
       }
     },
-    [pollForPractice, generatePractice],
+    [llm.reset, pollForPractice, generatePractice],
   );
 
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
@@ -175,6 +176,7 @@ export function PracticeSession() {
                 onSend={(content, snapshot) =>
                   llm.sendMessage("problem_understanding", content, snapshot)
                 }
+                cooldownUntil={llm.cooldownUntil}
               />
             </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { InfoIcon } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ interface ChatBoxProps {
   location: SectionKey;
   messages: SessionMessage[];
   onSend: (message: string) => Promise<void>;
+  cooldownUntil?: number;
   layoutMode?: "grow" | "fixed";
   title?: string;
   titleTooltip?: React.ReactNode;
@@ -30,14 +31,17 @@ export function ChatBox({
   location,
   messages,
   onSend,
+  cooldownUntil = 0,
   layoutMode = "grow",
   title,
   titleTooltip,
-  placeholder = "Type your message. Press ⌘+Enter to send.",
+  placeholder = "Type your message.",
   inputDescription = "",
   emptyStateMessage = "Your conversation with the mock interview assistant will appear here.",
 }: ChatBoxProps) {
   const [input, setInput] = useState("");
+  const [isMac, setIsMac] = useState(false);
+  const [secondsLeft, setSecondsLeft] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -45,13 +49,13 @@ export function ChatBox({
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
         e.preventDefault();
-        if (input.trim() !== "") {
+        if (input.trim() !== "" && secondsLeft === 0) {
           onSend(input.trim());
           setInput("");
         }
       }
     },
-    [input, onSend],
+    [input, onSend, secondsLeft],
   );
 
   const handleSend = async () => {
@@ -60,6 +64,29 @@ export function ChatBox({
     setInput("");
     await onSend(message);
   };
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
+  }, []);
+
+  useEffect(() => {
+    const remaining = Math.ceil((cooldownUntil - Date.now()) / 1000);
+    if (remaining <= 0) {
+      setSecondsLeft(0);
+      return;
+    }
+    setSecondsLeft(remaining);
+    const id = setInterval(() => {
+      const r = Math.ceil((cooldownUntil - Date.now()) / 1000);
+      if (r <= 0) {
+        setSecondsLeft(0);
+        clearInterval(id);
+      } else {
+        setSecondsLeft(r);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldownUntil]);
 
   useEffect(() => {
     scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -95,7 +122,10 @@ export function ChatBox({
                     <InfoIcon className="text-muted-foreground size-3.5" />
                   </span>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="w-[22rem] [text-wrap:wrap]">
+                <TooltipContent
+                  side="bottom"
+                  className="w-[22rem] [text-wrap:wrap]"
+                >
                   {titleTooltip}
                 </TooltipContent>
               </Tooltip>
@@ -109,37 +139,37 @@ export function ChatBox({
           )}
         >
           <div className="mt-4 flex flex-col gap-2 px-3">
-          {messagesLength === 0 ? (
-            <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
-              {emptyStateMessage}
-            </div>
-          ) : (
-            <>
-              {messages.map(
-                (msg, i) =>
-                  msg.content !== "" && (
-                    <div
-                      key={`${location}-${i}`}
-                      className={cn(
-                        "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
-                        msg.role === "user" &&
-                          "bg-primary text-primary-foreground ml-auto",
-                        msg.role === "assistant" &&
-                          "bg-muted-foreground/10 mr-auto",
-                      )}
-                    >
-                      {msg.content}
-                    </div>
-                  ),
-              )}
-              {showLoadingBubble && (
-                <div className="bg-muted-foreground/10 w-fit rounded-xl px-3 py-2 text-sm font-bold">
-                  <span className="animate-pulse">...</span>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+            {messagesLength === 0 ? (
+              <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
+                {emptyStateMessage}
+              </div>
+            ) : (
+              <>
+                {messages.map(
+                  (msg, i) =>
+                    msg.content !== "" && (
+                      <div
+                        key={`${location}-${i}`}
+                        className={cn(
+                          "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
+                          msg.role === "user" &&
+                            "bg-primary text-primary-foreground ml-auto",
+                          msg.role === "assistant" &&
+                            "bg-muted-foreground/10 mr-auto",
+                        )}
+                      >
+                        {msg.content}
+                      </div>
+                    ),
+                )}
+                {showLoadingBubble && (
+                  <div className="bg-muted-foreground/10 w-fit rounded-xl px-3 py-2 text-sm font-bold">
+                    <span className="animate-pulse">...</span>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
 
           <div ref={scrollAreaRef} />
         </ScrollArea>
@@ -164,20 +194,26 @@ export function ChatBox({
           </div>
 
           <Button
-            disabled={!input.trim()}
+            disabled={!input.trim() || secondsLeft > 0}
             size="sm"
             onClick={handleSend}
-            className="cursor-auto justify-self-end"
+            className="cursor-auto justify-self-end rounded-full"
           >
-            Send
-            <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
-              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
-                ⌘
-              </kbd>
-              <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
-                ↵
-              </kbd>
-            </span>
+            {secondsLeft > 0 ? (
+              <>Wait {secondsLeft}s</>
+            ) : (
+              <>
+                Send
+                <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
+                  <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
+                    {isMac ? "⌘" : "⌃"}
+                  </kbd>
+                  <kbd className="bg-muted aspect-square w-4 rounded border px-1 font-mono text-xs">
+                    ↵
+                  </kbd>
+                </span>
+              </>
+            )}
           </Button>
         </div>
       </div>
