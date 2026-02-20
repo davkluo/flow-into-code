@@ -1,20 +1,23 @@
 "use client";
 
 import { MoveLeft, MoveRight } from "lucide-react";
+import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { getProblemDataApiPath } from "@/constants/api";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
-import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
+import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
+import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
+import { ImplementationSection } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionHeader } from "./SectionHeader";
 import { SectionSummarySheet } from "./SectionSummarySheet";
@@ -183,7 +186,7 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 max-w-5xl px-3.5 pb-48">
+          <div className="mx-auto mt-6 max-w-5xl px-3.5 pb-32">
             <div className={cn(currentSectionIndex !== 0 && "hidden")}>
               <UnderstandingSection
                 messages={llmGetMessages("problem_understanding")}
@@ -194,10 +197,40 @@ export function PracticeSession() {
               />
             </div>
 
-            {SECTION_ORDER.slice(1).map((sectionKey, i) => (
+            <div className={cn(currentSectionIndex !== 1 && "hidden")}>
+              <ApproachAndReasoningSection
+                messages={llmGetMessages("approach_and_reasoning")}
+                onSend={(content, snapshot) =>
+                  llmSendMessage("approach_and_reasoning", content, snapshot)
+                }
+                cooldownUntil={llmCooldownUntil}
+              />
+            </div>
+
+            <div className={cn(currentSectionIndex !== 2 && "hidden")}>
+              <AlgorithmDesignSection
+                messages={llmGetMessages("algorithm_design")}
+                onSend={(content, snapshot) =>
+                  llmSendMessage("algorithm_design", content, snapshot)
+                }
+                cooldownUntil={llmCooldownUntil}
+              />
+            </div>
+
+            <div className={cn(currentSectionIndex !== 3 && "hidden")}>
+              <ImplementationSection
+                messages={llmGetMessages("implementation")}
+                onSend={(content, snapshot) =>
+                  llmSendMessage("implementation", content, snapshot)
+                }
+                cooldownUntil={llmCooldownUntil}
+              />
+            </div>
+
+            {SECTION_ORDER.slice(4).map((sectionKey, i) => (
               <div
                 key={sectionKey}
-                className={cn(currentSectionIndex !== i + 1 && "hidden")}
+                className={cn(currentSectionIndex !== i + 4 && "hidden")}
               >
                 <div className="flex h-[calc(100vh-12rem)] flex-col gap-8">
                   <SectionHeader sectionKey={sectionKey} />
@@ -264,241 +297,6 @@ export function PracticeSession() {
           />
         </>
       )}
-
-      {/* <Accordion
-        type="multiple"
-        className="w-full"
-        value={openSections}
-        onValueChange={(value) => setOpenSections(value as SectionKey[])}
-      >
-            {currentSectionIndex >= 2 && (
-              <AccordionItem value={PRACTICE_SECTIONS[2]}>
-                <AccordionTrigger disabled={currentSectionIndex < 2}>
-                  <SectionLabel
-                    label="Explain Thought Process"
-                    isCurrentStep={currentSectionIndex === 2}
-                  />
-                </AccordionTrigger>
-                <ThoughtProcessSection
-                  messages={llm.getMessages("thought_process")}
-                  onSend={(content) => {
-                    if (currentSectionIndex > 2) {
-                      llm.generateDistilledSummary("thought_process");
-                    }
-                    return llm.sendMessage("thought_process", content);
-                  }}
-                />
-              </AccordionItem>
-            )}
-            {currentSectionIndex >= 3 && (
-              <AccordionItem value={PRACTICE_SECTIONS[3]}>
-                <AccordionTrigger disabled={currentSectionIndex < 3}>
-                  <SectionLabel
-                    label="Develop Pseudocode"
-                    isCurrentStep={currentSectionIndex === 3}
-                  />
-                </AccordionTrigger>
-                <PseudocodeSection
-                  messages={llm.getMessages("pseudocode")}
-                  onSend={(content) => {
-                    if (currentSectionIndex > 3) {
-                      llm.generateDistilledSummary("pseudocode");
-                    }
-                    return llm.sendMessage("pseudocode", content);
-                  }}
-                  onPseudocodeArtifactChange={(content) =>
-                    llm.setArtifact("pseudocode", {
-                      kind: "pseudocode",
-                      content,
-                    })
-                  }
-                />
-              </AccordionItem>
-            )}
-            {currentSectionIndex >= 4 && (
-              <AccordionItem value={PRACTICE_SECTIONS[4]}>
-                <AccordionTrigger disabled={currentSectionIndex < 4}>
-                  <SectionLabel
-                    label="Implement Code"
-                    isCurrentStep={currentSectionIndex === 4}
-                  />
-                </AccordionTrigger>
-                <ImplementationSection
-                  messages={llm.getMessages("implementation")}
-                  onSend={(content) => {
-                    if (currentSectionIndex > 4) {
-                      llm.generateDistilledSummary("implementation");
-                    }
-                    return llm.sendMessage("implementation", content);
-                  }}
-                  onCodeArtifactChange={(content, language: LanguageKey) =>
-                    llm.setArtifact("implementation", {
-                      kind: "code",
-                      content,
-                      language,
-                    })
-                  }
-                />
-              </AccordionItem>
-            )}
-            {currentSectionIndex >= 5 && (
-              <AccordionItem value={PRACTICE_SECTIONS[5]}>
-                <AccordionTrigger disabled={currentSectionIndex < 5}>
-                  <SectionLabel
-                    label="Analyze Complexity"
-                    isCurrentStep={currentSectionIndex === 5}
-                  />
-                </AccordionTrigger>
-                <ComplexityAnalysisSection
-                  messages={llm.getMessages("complexity_analysis")}
-                  onSend={(content) =>
-                    llm.sendMessage("complexity_analysis", content)
-                  }
-                />
-              </AccordionItem>
-            )}
-          </>
-        )}
-      </Accordion> */}
-
-      {/* {currentSectionIndex === 0 && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="default"
-              size="lg"
-              disabled={!problem || isLoadingProblem}
-              className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
-            >
-              {isLoadingProblem ? (
-                <>
-                  Generating Metadata
-                  <Loader2Icon className="animate-spin" />
-                </>
-              ) : (
-                <>
-                  Begin Problem
-                  <MoveRight className="h-4 w-4 pt-0.5" />
-                </>
-              )}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you ready to begin?</AlertDialogTitle>
-              <AlertDialogDescription>
-                You have selected{" "} */}
-      {/* {problem && "title" in problem?.problem
-                  ? `the LeetCode problem: ${problem?.problem.title}`
-                  : "a custom problem"}
-                <br />
-                <br />
-                The timer is currently set to {setpoint / 60} minutes. You will
-                receive a notification when the time is up. You can adjust the
-                timer in the settings. */}
-      {/* </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={async () => {
-                  await handleProblemStart();
-                  proceedNextSection();
-                  startTimer();
-                }}
-                autoFocus
-              >
-                Begin
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
-      {currentSectionIndex > 0 &&
-        currentSectionIndex < PRACTICE_SECTIONS.length - 1 && (
-          <Button
-            variant="default"
-            size="lg"
-            className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
-            onClick={proceedNextSection}
-          >
-            Next: {SECTIONS_TO_NAME[PRACTICE_SECTIONS[currentSectionIndex + 1]]}
-            <MoveRight className="h-4 w-4 pt-0.5" />
-          </Button>
-        )}
-
-      {currentSectionIndex === PRACTICE_SECTIONS.length - 1 && (
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="default"
-              size="lg"
-              className="fixed right-8 bottom-20 rounded-full backdrop-blur-sm"
-              disabled={isGeneratingFeedback}
-            >
-              {isGeneratingFeedback ? (
-                <>
-                  Generating Feedback
-                  <Loader2Icon className="animate-spin" />
-                </>
-              ) : (
-                <>
-                  Finish Practice
-                  <MoveRight className="h-4 w-4 pt-0.5" />
-                </>
-              )}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>All finished?</AlertDialogTitle>
-              <AlertDialogDescription>
-                You will be redirected to a new page where you will receive
-                personalized feedback based on your practice session. Note that
-                you will no longer be able to edit your session code and chats.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={async () => {
-                  pauseTimer();
-                  await llm.generateDistilledSummary("complexity_analysis");
-                  await handleSessionFinish();
-                }}
-                autoFocus
-              >
-                Get Feedback
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      )}
-
-      {currentSectionIndex > 0 && (
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="fixed bottom-20 left-8 rounded-full backdrop-blur-sm"
-              disabled={!llm.hasDistilledSummaries()}
-            >
-              {llm.hasDistilledSummaries() ? (
-                <>
-                  <span className="sr-only">View AI Summary</span>
-                  <Sparkles className="h-4 w-4" />
-                </>
-              ) : (
-                <Loader2Icon className="animate-spin" />
-              )}
-            </Button>
-          </DialogTrigger>
-
-          <AISummaryDialog summaries={llm.getAllDistilledSummaries()} />
-        </Dialog>
-      )} */}
     </div>
   );
 }
