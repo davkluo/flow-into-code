@@ -23,13 +23,15 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { LanguageKey } from "@/lib/codeMirror";
+import { languageOptions } from "@/lib/codeMirror";
 import { SessionMessage } from "@/types/chat";
+import { LangSlug } from "@/types/problem";
+import { SUPPORTED_LANGS } from "@/constants/languages";
 import { CodeEditor } from "./CodeEditor";
 
 export type ImplementationSnapshot = {
   code: string;
-  language: LanguageKey;
+  language: LangSlug;
 };
 
 interface ImplementationSectionProps {
@@ -37,11 +39,6 @@ interface ImplementationSectionProps {
   onSend: (content: string, snapshot: ImplementationSnapshot) => Promise<void>;
   cooldownUntil?: number;
 }
-
-// Extend this list as backend support for more languages is added.
-const SUPPORTED_LANGUAGES: { key: LanguageKey; label: string }[] = [
-  { key: "python", label: "Python 3" },
-];
 
 const CODE_THRESHOLD = 50;
 
@@ -51,7 +48,7 @@ export function ImplementationSection({
   cooldownUntil,
 }: ImplementationSectionProps) {
   const [code, setCode] = useState("");
-  const [language, setLanguage] = useState<LanguageKey>("python");
+  const [language, setLanguage] = useState<LangSlug>(LangSlug.PYTHON3);
   const [outputVisible, setOutputVisible] = useState(false);
 
   return (
@@ -102,15 +99,15 @@ export function ImplementationSection({
               <div className="absolute inset-x-3 top-2 z-10 flex items-center justify-center gap-2">
                 <Select
                   value={language}
-                  onValueChange={(v) => setLanguage(v as LanguageKey)}
+                  onValueChange={(v) => setLanguage(v as LangSlug)}
                 >
                   <SelectTrigger className="!h-6 w-fit gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 py-0 text-xs shadow-none backdrop-blur-sm hover:to-white/80 focus:ring-0 focus-visible:ring-0 dark:border-white/15 dark:bg-transparent dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {SUPPORTED_LANGUAGES.map(({ key, label }) => (
-                      <SelectItem key={key} value={key} className="text-xs">
-                        {label}
+                    {SUPPORTED_LANGS.map((slug) => (
+                      <SelectItem key={slug} value={slug} className="text-xs">
+                        {languageOptions[slug]}
                       </SelectItem>
                     ))}
                   </SelectContent>

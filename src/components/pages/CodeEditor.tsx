@@ -3,12 +3,13 @@
 import { autocompletion } from "@codemirror/autocomplete";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { LanguageKey, languages, codeMirrorTheme } from "@/lib/codeMirror";
+import { languages, codeMirrorTheme } from "@/lib/codeMirror";
+import { LangSlug } from "@/types/problem";
 
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
-  language: LanguageKey;
+  language: LangSlug;
 }
 
 export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
