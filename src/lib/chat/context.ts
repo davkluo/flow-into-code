@@ -34,7 +34,8 @@ const FIELD_LABELS: Record<string, string> = {
   edgeCases: "Edge Cases",
 
   // approach_and_reasoning
-  approach: "Thought Process Notes",
+  approach: "Approach",
+  reasoning: "Reasoning",
 
   // algorithm_design
   pseudocode: "Pseudocode",
