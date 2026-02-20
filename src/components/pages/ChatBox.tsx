@@ -89,7 +89,10 @@ export function ChatBox({
   }, [cooldownUntil]);
 
   useEffect(() => {
-    scrollAreaRef.current?.scrollIntoView({ behavior: "smooth" });
+    const viewport = scrollAreaRef.current?.querySelector<HTMLElement>(
+      "[data-radix-scroll-area-viewport]",
+    );
+    if (viewport) viewport.scrollTop = viewport.scrollHeight;
   }, [messages]);
 
   const messagesLength = messages.length;
@@ -113,7 +116,7 @@ export function ChatBox({
         )}
       >
         {title && (
-          <div className="border-input flex items-center gap-2 border-b px-3 py-2">
+          <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
             <span className="text-sm font-medium">{title}</span>
             {titleTooltip && (
               <Tooltip>
@@ -133,6 +136,7 @@ export function ChatBox({
           </div>
         )}
         <ScrollArea
+          ref={scrollAreaRef}
           className={cn(
             "overflow-auto",
             layoutMode === "fixed" ? "min-h-0 flex-1" : "max-h-[40vh]",
@@ -170,8 +174,6 @@ export function ChatBox({
               </>
             )}
           </div>
-
-          <div ref={scrollAreaRef} />
         </ScrollArea>
       </div>
 

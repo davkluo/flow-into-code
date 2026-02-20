@@ -61,7 +61,7 @@ export function Timer() {
   }, [timeLeft]);
 
   return (
-    <div className="flex w-44 flex-col gap-2 rounded-xl border border-white/15 bg-white/5 px-2.5 pt-2 pb-2.5 shadow-2xl backdrop-blur-2xl">
+    <div className="flex w-44 flex-col gap-2 rounded-xl border border-black/10 bg-gradient-to-t from-transparent via-transparent via-[75%] to-white/15 px-2.5 pt-2 pb-2.5 shadow-2xl shadow-black/20 backdrop-blur-2xl dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:shadow-black/50">
       <div className="flex w-full items-center justify-between px-2">
         {/* Time */}
         <span

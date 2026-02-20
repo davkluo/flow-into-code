@@ -13,7 +13,7 @@ const ROTATING_MESSAGES = [
   "Almost ready",
 ];
 
-const MESSAGE_INTERVAL_MS = 2500;
+const MESSAGE_INTERVAL_MS = 5000;
 
 export function SessionLoadingScreen() {
   const [messageIndex, setMessageIndex] = useState(0);
@@ -35,9 +35,7 @@ export function SessionLoadingScreen() {
           {SECTION_ORDER.map((key, i) => (
             <div key={key} className="flex items-center gap-2.5">
               <Skeleton className="h-6 w-20 rounded-md" />
-              {i < SECTION_ORDER.length - 1 && (
-                <Skeleton className="h-4 w-2" />
-              )}
+              {i < SECTION_ORDER.length - 1 && <Skeleton className="h-4 w-2" />}
             </div>
           ))}
         </div>
