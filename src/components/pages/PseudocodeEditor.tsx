@@ -2,7 +2,7 @@
 
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { useTheme } from "next-themes";
+import { codeMirrorTheme } from "@/lib/codeMirror";
 
 interface PseudocodeEditorProps {
   value: string;
@@ -10,18 +10,16 @@ interface PseudocodeEditorProps {
 }
 
 export function PseudocodeEditor({ value, onChange }: PseudocodeEditorProps) {
-  const { resolvedTheme } = useTheme();
-
   return (
     <CodeMirror
       value={value}
       height="100%"
       className="h-full"
-      theme={resolvedTheme === "dark" ? "dark" : "light"}
+      theme="none"
       basicSetup={{
         tabSize: 2,
       }}
-      extensions={[EditorView.lineWrapping]}
+      extensions={[EditorView.lineWrapping, codeMirrorTheme]}
       onChange={onChange}
     />
   );
