@@ -352,7 +352,7 @@ export function ProblemSelectSection({
 
   return (
     <div className="flex flex-col gap-4 px-3.5">
-      <Card className="mx-auto mt-12 overflow-hidden py-0 lg:max-w-3xl">
+      <Card className="mx-auto mt-6 overflow-hidden py-0 lg:max-w-3xl">
         <div
           className={cn(
             "flex w-[200%] transition-transform duration-300 ease-in-out",
