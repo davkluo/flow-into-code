@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { SectionKey } from "@/types/practice";
 import {
   Breadcrumb,

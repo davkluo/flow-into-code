@@ -3,7 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SECTION_ORDER } from "@/lib/practice";
+import { SECTION_ORDER } from "@/constants/practice";
 
 const ROTATING_MESSAGES = [
   "Preparing your practice session",

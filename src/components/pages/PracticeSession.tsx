@@ -10,7 +10,7 @@ import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
-import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";

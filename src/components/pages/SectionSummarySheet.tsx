@@ -6,7 +6,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS } from "@/constants/practice";
 import { SectionKey } from "@/types/practice";
 
 interface SectionSummarySheetProps {

@@ -149,7 +149,7 @@ export function UnderstandingSection({
     <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="problem_understanding" />
 
-      <div className="grid grid-cols-2 items-start gap-6">
+      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
         <div className="border-input overflow-hidden rounded-md border">
           <Accordion type="single" collapsible defaultValue="restatement">
             {FIELDS.map((field) => (

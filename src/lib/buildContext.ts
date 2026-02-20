@@ -1,6 +1,6 @@
 import { LLMState } from "@/hooks/useLLM";
 import { capitalize } from "@/lib/formatting";
-import { PRACTICE_SECTIONS } from "@/lib/practice";
+import { PRACTICE_SECTIONS } from "@/constants/practice";
 import { PracticeProblem } from "@/types/practice";
 
 export const getProblemContext = (problem: PracticeProblem): string => {

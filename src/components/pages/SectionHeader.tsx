@@ -3,7 +3,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { SECTION_KEY_TO_DETAILS } from "@/lib/practice";
+import { SECTION_KEY_TO_DETAILS } from "@/constants/practice";
 import { SectionKey } from "@/types/practice";
 
 interface SectionHeaderProps {
