@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -16,10 +17,8 @@ import {
   NavigationMenu,
   NavigationMenuContent,
   NavigationMenuItem,
-  NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import {
   Sheet,
@@ -30,6 +29,7 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { oAuthProviderNames } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
@@ -49,6 +49,7 @@ interface MenuItem {
 
 const Navbar = () => {
   const { user, status, signOutUser } = useAuth();
+  const pathname = usePathname();
 
   const [mounted, setMounted] = useState(false);
   const { resolvedTheme } = useTheme();
@@ -62,16 +63,12 @@ const Navbar = () => {
   ];
   const authenticatedMenu: MenuItem[] = [
     {
-      label: "Dashboard",
-      url: "/dashboard",
+      label: "Practice",
+      url: "/practice",
     },
     {
       label: "History",
       url: "/history",
-    },
-    {
-      label: "Practice",
-      url: "/practice",
     },
   ];
 
@@ -131,7 +128,9 @@ const Navbar = () => {
                       collapsible
                       className="flex w-full flex-col gap-4"
                     >
-                      {navbarMenu.map((item) => renderMobileMenuItem(item))}
+                      {navbarMenu.map((item) =>
+                        renderMobileMenuItem(item, pathname),
+                      )}
                     </Accordion>
 
                     <Separator />
@@ -220,7 +219,7 @@ const Navbar = () => {
               </Link>
               <NavigationMenu viewport={false}>
                 <NavigationMenuList>
-                  {navbarMenu.map((item) => renderMenuItem(item))}
+                  {navbarMenu.map((item) => renderMenuItem(item, pathname))}
                 </NavigationMenuList>
               </NavigationMenu>
             </div>
@@ -291,7 +290,9 @@ const Navbar = () => {
 };
 
 // Desktop Menu
-const renderMenuItem = (item: MenuItem) => {
+const renderMenuItem = (item: MenuItem, pathname: string) => {
+  const isActive = pathname.startsWith(item.url);
+
   if (item.items) {
     return (
       <NavigationMenuItem key={item.label}>
@@ -311,19 +312,34 @@ const renderMenuItem = (item: MenuItem) => {
 
   return (
     <NavigationMenuItem key={item.label}>
-      <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-        <Link href={item.url}>{item.label}</Link>
-      </NavigationMenuLink>
+      <Link
+        href={item.url}
+        className={cn(
+          "inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors focus:outline-none",
+          "underline-offset-6 hover:underline",
+          isActive && "underline",
+        )}
+      >
+        {item.label}
+      </Link>
     </NavigationMenuItem>
   );
 };
 
 // Mobile Menu
-const renderMobileMenuItem = (item: MenuItem) => {
+const renderMobileMenuItem = (item: MenuItem, pathname: string) => {
+  const isActive = pathname.startsWith(item.url);
+
   if (item.items) {
     return (
       <AccordionItem key={item.label} value={item.label} className="border-b-0">
-        <AccordionTrigger className="text-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground cursor-pointer rounded-md p-3 leading-none font-semibold transition-colors hover:no-underline">
+        <AccordionTrigger
+          className={cn(
+            "text-md cursor-pointer rounded-md p-3 leading-none font-semibold transition-colors",
+            "underline-offset-6 hover:underline",
+            isActive && "underline",
+          )}
+        >
           {item.label}
         </AccordionTrigger>
         <AccordionContent className="mt-2">
@@ -339,7 +355,11 @@ const renderMobileMenuItem = (item: MenuItem) => {
     <Link
       key={item.label}
       href={item.url}
-      className="text-md hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus-visible:border-ring focus-visible:ring-ring/50 block rounded-md p-3 leading-none font-semibold no-underline transition-colors outline-none focus-visible:ring-[3px] focus-visible:outline-none"
+      className={cn(
+        "text-md focus-visible:border-ring focus-visible:ring-ring/50 block rounded-md p-3 leading-none font-semibold transition-colors outline-none focus-visible:ring-[3px] focus-visible:outline-none",
+        "underline-offset-4 hover:underline",
+        isActive && "underline",
+      )}
     >
       {item.label}
     </Link>
