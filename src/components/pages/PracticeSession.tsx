@@ -17,9 +17,9 @@ import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
+import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
-import { SectionHeader } from "./SectionHeader";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
@@ -227,19 +227,15 @@ export function PracticeSession() {
               />
             </div>
 
-            {SECTION_ORDER.slice(4).map((sectionKey, i) => (
-              <div
-                key={sectionKey}
-                className={cn(currentSectionIndex !== i + 4 && "hidden")}
-              >
-                <div className="flex h-[calc(100vh-12rem)] flex-col gap-8">
-                  <SectionHeader sectionKey={sectionKey} />
-                  <div className="text-muted-foreground flex flex-1 items-center justify-center text-sm">
-                    Section content coming soon.
-                  </div>
-                </div>
-              </div>
-            ))}
+            <div className={cn(currentSectionIndex !== 4 && "hidden")}>
+              <ComplexityAnalysisSection
+                messages={llmGetMessages("complexity_analysis")}
+                onSend={(content, snapshot) =>
+                  llmSendMessage("complexity_analysis", content, snapshot)
+                }
+                cooldownUntil={llmCooldownUntil}
+              />
+            </div>
           </div>
 
           {/* Fixed bottom bar: back | timer | next */}
