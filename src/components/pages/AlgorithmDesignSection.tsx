@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
+import { SectionField } from "@/types/practice";
 import { PseudocodeEditor } from "./PseudocodeEditor";
 
 export type AlgorithmSnapshot = {
@@ -22,7 +23,14 @@ interface AlgorithmDesignSectionProps {
   cooldownUntil?: number;
 }
 
-const PSEUDOCODE_THRESHOLD = 50;
+const FIELD: SectionField<AlgorithmSnapshot> = {
+  key: "pseudocode",
+  label: "Pseudocode",
+  threshold: 50,
+  tooltip:
+    "Write your algorithm in plain English — no syntax required. Focus on the logic and order of operations, not on a specific language. Use indentation to show structure.",
+  placeholder: "",
+};
 
 export function AlgorithmDesignSection({
   messages,
@@ -39,7 +47,7 @@ export function AlgorithmDesignSection({
         <div className="flex h-[26rem] flex-col">
           <div className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
-              <span className="text-sm font-medium">Pseudocode</span>
+              <span className="text-sm font-medium">{FIELD.label}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex">
@@ -47,14 +55,10 @@ export function AlgorithmDesignSection({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="w-[22rem]">
-                  <p>
-                    Write your algorithm in plain English — no syntax required.
-                    Focus on the logic and order of operations, not on a
-                    specific language. Use indentation to show structure.
-                  </p>
+                  <p>{FIELD.tooltip}</p>
                 </TooltipContent>
               </Tooltip>
-              {pseudocode.length >= PSEUDOCODE_THRESHOLD && (
+              {pseudocode.length >= FIELD.threshold && (
                 <CheckIcon className="ml-auto size-4 text-lime-400" />
               )}
             </div>

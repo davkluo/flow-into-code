@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
+import { SectionField } from "@/types/practice";
 
 export type ComplexitySnapshot = {
   timeComplexity: string;
@@ -23,17 +24,7 @@ interface ComplexityAnalysisSectionProps {
   cooldownUntil?: number;
 }
 
-type FieldKey = keyof ComplexitySnapshot;
-
-interface Field {
-  key: FieldKey;
-  label: string;
-  threshold: number;
-  tooltip: string;
-  placeholder: string;
-}
-
-const FIELDS: Field[] = [
+const FIELDS: SectionField<ComplexitySnapshot>[] = [
   {
     key: "timeComplexity",
     label: "Time Complexity",
@@ -64,11 +55,11 @@ export function ComplexityAnalysisSection({
     spaceComplexity: "",
   });
 
-  const updateField = (key: FieldKey, value: string) => {
+  const updateField = (key: keyof ComplexitySnapshot, value: string) => {
     setFields((prev) => ({ ...prev, [key]: value }));
   };
 
-  const isFieldFilled = (key: FieldKey): boolean => {
+  const isFieldFilled = (key: keyof ComplexitySnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
   };

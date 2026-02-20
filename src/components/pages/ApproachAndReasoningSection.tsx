@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
+import { SectionField } from "@/types/practice";
 
 export type ApproachSnapshot = {
   approach: string;
@@ -23,17 +24,7 @@ interface ApproachAndReasoningSectionProps {
   cooldownUntil?: number;
 }
 
-type FieldKey = keyof ApproachSnapshot;
-
-interface Field {
-  key: FieldKey;
-  label: string;
-  threshold: number;
-  tooltip: string;
-  placeholder: string;
-}
-
-const FIELDS: Field[] = [
+const FIELDS: SectionField<ApproachSnapshot>[] = [
   {
     key: "approach",
     label: "Approach",
@@ -63,11 +54,11 @@ export function ApproachAndReasoningSection({
     reasoning: "",
   });
 
-  const updateField = (key: FieldKey, value: string) => {
+  const updateField = (key: keyof ApproachSnapshot, value: string) => {
     setFields((prev) => ({ ...prev, [key]: value }));
   };
 
-  const isFieldFilled = (key: FieldKey): boolean => {
+  const isFieldFilled = (key: keyof ApproachSnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
   };

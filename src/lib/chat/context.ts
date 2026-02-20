@@ -43,6 +43,7 @@ const FIELD_LABELS: Record<string, string> = {
   // implementation
   language: "Language",
   code: "Code",
+  output: "Execution Output",
 
   // complexity_analysis
   timeComplexity: "Time Complexity",

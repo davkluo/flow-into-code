@@ -17,6 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
+import { SectionField } from "@/types/practice";
 
 export type UnderstandingSnapshot = {
   restatement: string;
@@ -31,18 +32,7 @@ interface UnderstandingSectionProps {
   cooldownUntil?: number;
 }
 
-type FieldKey = "restatement" | "inputsOutputs" | "constraints" | "edgeCases";
-
-interface Field {
-  key: FieldKey;
-  label: string;
-  threshold: number;
-  tooltip: string;
-  formatHint: React.ReactNode;
-  placeholder: string;
-}
-
-const FIELDS: Field[] = [
+const FIELDS: SectionField<UnderstandingSnapshot>[] = [
   {
     key: "restatement",
     label: "Restate Problem",
@@ -129,18 +119,18 @@ export function UnderstandingSection({
   onSend,
   cooldownUntil,
 }: UnderstandingSectionProps) {
-  const [fields, setFields] = useState<Record<FieldKey, string>>({
+  const [fields, setFields] = useState<UnderstandingSnapshot>({
     restatement: "",
     inputsOutputs: "",
     constraints: "",
     edgeCases: "",
   });
 
-  const updateField = (key: FieldKey, value: string) => {
+  const updateField = (key: keyof UnderstandingSnapshot, value: string) => {
     setFields((prev) => ({ ...prev, [key]: value }));
   };
 
-  const isFieldFilled = (key: FieldKey): boolean => {
+  const isFieldFilled = (key: keyof UnderstandingSnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
   };

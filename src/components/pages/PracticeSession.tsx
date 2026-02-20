@@ -1,6 +1,5 @@
 "use client";
 
-import { MoveLeft, MoveRight } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -245,10 +244,9 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={goBackSection}
-                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer text-xs whitespace-normal underline underline-offset-2"
+                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer rounded-xl bg-background/90 px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
                 >
-                  <MoveLeft className="mr-1 h-4 w-4 shrink-0" />
-                  Back:{" "}
+                  ← Back:{" "}
                   {
                     SECTION_KEY_TO_DETAILS[
                       SECTION_ORDER[currentSectionIndex - 1]
@@ -265,15 +263,15 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={proceedNextSection}
-                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer text-xs whitespace-normal underline underline-offset-2"
+                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer rounded-xl bg-background/90 px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
                 >
                   Next:{" "}
                   {
                     SECTION_KEY_TO_DETAILS[
                       SECTION_ORDER[currentSectionIndex + 1]
                     ].title
-                  }
-                  <MoveRight className="ml-1 h-4 w-4 shrink-0" />
+                  }{" "}
+                  →
                 </Button>
               )}
             </div>

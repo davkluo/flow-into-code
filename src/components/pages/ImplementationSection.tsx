@@ -23,15 +23,17 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SUPPORTED_LANGS } from "@/constants/languages";
 import { languageOptions } from "@/lib/codeMirror";
 import { SessionMessage } from "@/types/chat";
+import { SectionField } from "@/types/practice";
 import { LangSlug } from "@/types/problem";
-import { SUPPORTED_LANGS } from "@/constants/languages";
 import { CodeEditor } from "./CodeEditor";
 
 export type ImplementationSnapshot = {
   code: string;
   language: LangSlug;
+  output?: string;
 };
 
 interface ImplementationSectionProps {
@@ -40,7 +42,20 @@ interface ImplementationSectionProps {
   cooldownUntil?: number;
 }
 
-const CODE_THRESHOLD = 50;
+const FIELD: SectionField<{ code: string }> = {
+  key: "code",
+  label: "Code",
+  threshold: 50,
+  tooltip:
+    "Translate your pseudocode into working code. Focus on correctness and readability — use clear variable names and handle the edge cases you identified earlier.",
+  placeholder: "",
+  formatHint: (
+    <p className="mt-1.5">
+      Write your own test cases to verify your solution against the examples and
+      edge cases you identified.
+    </p>
+  ),
+};
 
 export function ImplementationSection({
   messages,
@@ -49,6 +64,7 @@ export function ImplementationSection({
 }: ImplementationSectionProps) {
   const [code, setCode] = useState("");
   const [language, setLanguage] = useState<LangSlug>(LangSlug.PYTHON3);
+  const [output, setOutput] = useState<string | undefined>(undefined);
   const [outputVisible, setOutputVisible] = useState(false);
 
   return (
@@ -62,7 +78,7 @@ export function ImplementationSection({
         <div className="flex h-[26rem] flex-col sm:col-start-1 sm:row-start-1">
           <div className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
-              <span className="text-sm font-medium">Code</span>
+              <span className="text-sm font-medium">{FIELD.label}</span>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex">
@@ -70,20 +86,11 @@ export function ImplementationSection({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="w-[22rem]">
-                  <div className="space-y-1.5">
-                    <p>
-                      Translate your pseudocode into working code. Focus on
-                      correctness and readability — use clear variable names and
-                      handle the edge cases you identified earlier.
-                    </p>
-                    <p>
-                      Write your own test cases to verify your solution against
-                      the examples and edge cases you identified.
-                    </p>
-                  </div>
+                  <p>{FIELD.tooltip}</p>
+                  {FIELD.formatHint}
                 </TooltipContent>
               </Tooltip>
-              {code.length >= CODE_THRESHOLD && (
+              {code.length >= FIELD.threshold && (
                 <CheckIcon className="ml-auto size-4 text-lime-400" />
               )}
             </div>
@@ -95,7 +102,7 @@ export function ImplementationSection({
                   language={language}
                 />
               </div>
-              {/* Floating controls — individually glassy, no shared container */}
+              {/* Floating controls */}
               <div className="absolute inset-x-3 top-2 z-10 flex items-center justify-center gap-2">
                 <Select
                   value={language}
@@ -149,7 +156,7 @@ export function ImplementationSection({
               <span className="text-sm font-medium">Output</span>
             </div>
             <div className="text-muted-foreground p-3 font-mono text-sm">
-              Code execution coming soon.
+              {output ?? "Code execution coming soon."}
             </div>
           </div>
         )}
@@ -159,7 +166,7 @@ export function ImplementationSection({
           <ChatBox
             location="implementation"
             messages={messages}
-            onSend={(content) => onSend(content, { code, language })}
+            onSend={(content) => onSend(content, { code, language, output })}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Walk Through Your Code"
