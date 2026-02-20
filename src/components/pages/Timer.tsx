@@ -4,14 +4,15 @@ import { Pause, Play, Settings2, TimerReset } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
-import { Slider } from "@/components/ui/slider";
 import { useTimer } from "@/context/TimerContext";
 import { formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
@@ -19,8 +20,10 @@ import { cn } from "@/lib/utils";
 export function Timer() {
   const { timeLeft, isRunning, start, pause, reset, setpoint, setSetpoint } =
     useTimer();
-  const [sliderMinutes, setSliderMinutes] = useState(Math.round(setpoint / 60));
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [inputMinutes, setInputMinutes] = useState<string>(
+    String(Math.round(setpoint / 60)),
+  );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const toastShownRef = useRef(false);
 
   const progress =
@@ -28,19 +31,25 @@ export function Timer() {
       ? Math.min(Math.abs(timeLeft) / setpoint, 1) * 100 // 0 -> 100 overtime
       : (timeLeft / setpoint) * 100; // 100 -> 0
 
-  const handleSettingsSave = () => {
-    const newSetpoint = sliderMinutes * 60;
+  const handleResetAndApply = () => {
+    const parsed = parseInt(inputMinutes);
+    if (!parsed) {
+      toast.error("Invalid duration", {
+        description: "Please enter a duration of at least 1 minute.",
+      });
+      return;
+    }
+    const newSetpoint = Math.min(120, parsed) * 60;
     setSetpoint(newSetpoint);
     reset(newSetpoint);
-    setIsPopoverOpen(false);
+    setIsDialogOpen(false);
   };
 
-  const handlePopoverChange = (isOpen: boolean) => {
-    if (!isOpen && isPopoverOpen) {
-      // Popover closed by clicking outside
-      setSliderMinutes(Math.round(setpoint / 60));
+  const handleDialogChange = (isOpen: boolean) => {
+    if (isOpen) {
+      setInputMinutes(String(Math.round(setpoint / 60)));
     }
-    setIsPopoverOpen(isOpen);
+    setIsDialogOpen(isOpen);
   };
 
   useEffect(() => {
@@ -52,83 +61,97 @@ export function Timer() {
   }, [timeLeft]);
 
   return (
-    <div className="group text-muted-foreground hover:text-foreground border-border hover:bg-muted/60 fixed bottom-0 left-0 z-50 h-16 w-full border-t px-8 py-2 backdrop-blur-sm">
-      <div className="flex h-full items-center justify-between">
+    <div className="flex w-44 flex-col gap-2 rounded-xl border border-white/15 bg-white/5 px-2.5 pt-2 pb-2.5 shadow-2xl backdrop-blur-2xl">
+      <div className="flex w-full items-center justify-between px-2">
+        {/* Time */}
         <span
           className={cn(
-            "text-2xl font-semibold tracking-widest",
-            timeLeft < 0 && "text-rose-500/60 group-hover:text-rose-500",
+            "text-foreground/80 text-center text-xl font-semibold tracking-widest",
+            timeLeft < 0 && "text-rose-500/70",
           )}
         >
           {formatTime(Math.abs(timeLeft))}
         </span>
-        <div className="w-full px-5">
-          <Progress
-            value={progress}
-            className={cn(
-              "group [&>div]:bg-muted-foreground [&>div]:group-hover:bg-foreground h-1",
-              timeLeft < 0 &&
-                "opacity-50 [&>div]:bg-rose-500/60 [&>div]:group-hover:bg-rose-500",
-            )}
-          />
-        </div>
-        <div className="flex items-center gap-2">
+
+        {/* Controls */}
+        <div className="flex w-full justify-end gap-2.5">
           {isRunning ? (
             // NOTE: !important used as workaround for not being able to resize lucide icons within shadcn Button
-            <Button onClick={pause} size="icon" variant="ghost">
-              <Pause className="!size-5" />
+            <Button
+              onClick={pause}
+              size="icon"
+              variant="link"
+              className="text-muted-foreground hover:text-foreground w-min"
+            >
+              <Pause className="!size-4" />
             </Button>
           ) : (
-            <Button onClick={() => start()} size="icon" variant="ghost">
-              <Play className="!size-5" />
+            <Button
+              onClick={() => start()}
+              size="icon"
+              variant="link"
+              className="text-muted-foreground hover:text-foreground w-min"
+            >
+              <Play className="!size-4" />
             </Button>
           )}
-          <Button onClick={() => reset()} size="icon" variant="ghost">
-            <TimerReset className="!size-5" />
-          </Button>
-          <Popover open={isPopoverOpen} onOpenChange={handlePopoverChange}>
-            <PopoverTrigger asChild>
+
+          <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
+            <DialogTrigger asChild>
               <Button
-                onClick={() => {}}
                 size="icon"
-                variant="ghost"
-                className="flex items-center justify-center"
+                variant="link"
+                className="text-muted-foreground hover:text-foreground w-min"
               >
-                <Settings2 className="!size-5" />
+                <Settings2 className="!size-4" />
               </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72" align="end">
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="timer">Timer Duration</Label>
-                  <span className="text-muted-foreground text-sm tabular-nums">
-                    {sliderMinutes} min
-                  </span>
-                </div>
-                <Slider
-                  id="timer"
-                  min={5}
-                  max={120}
-                  step={5}
-                  value={[sliderMinutes]}
-                  onValueChange={([newMinutes]) => setSliderMinutes(newMinutes)}
-                  className="w-full"
-                />
-                <div className="flex justify-center">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={handleSettingsSave}
-                    className="text-xs"
+            </DialogTrigger>
+            <DialogContent className="w-72">
+              <DialogHeader>
+                <DialogTitle>Timer Settings</DialogTitle>
+              </DialogHeader>
+              <div className="flex flex-col gap-4 pt-2">
+                <div className="flex justify-center gap-3">
+                  <input
+                    id="timer-duration"
+                    type="text"
+                    inputMode="numeric"
+                    className="border-border focus:border-primary h-14 w-24 border-b-2 bg-transparent px-0 text-center text-4xl font-semibold outline-none"
+                    value={inputMinutes}
+                    onChange={(e) => {
+                      const digits = e.target.value.replace(/[^0-9]/g, "");
+                      if (digits === "" || parseInt(digits) <= 120) {
+                        setInputMinutes(digits);
+                      } else {
+                        setInputMinutes("120");
+                      }
+                    }}
+                  />
+                  <Label
+                    htmlFor="timer-duration"
+                    className="self-end pb-2 text-lg"
                   >
-                    Apply
-                  </Button>
+                    min.
+                  </Label>
                 </div>
+                <Button onClick={handleResetAndApply} className="w-full gap-2">
+                  <TimerReset className="!size-4" />
+                  Reset Timer
+                </Button>
               </div>
-            </PopoverContent>
-          </Popover>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
+
+      {/* Progress bar */}
+      <Progress
+        value={progress}
+        className={cn(
+          "[&>div]:bg-muted-foreground h-1",
+          timeLeft < 0 && "opacity-50 [&>div]:bg-rose-500",
+        )}
+      />
     </div>
   );
 }

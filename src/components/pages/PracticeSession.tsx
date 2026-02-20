@@ -3,8 +3,10 @@
 import { MoveLeft, MoveRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { getProblemDataApiPath } from "@/constants/api";
+import { useTimer } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
@@ -18,6 +20,7 @@ import { SectionHeader } from "./SectionHeader";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
+import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
 
 export function PracticeSession() {
@@ -36,6 +39,7 @@ export function PracticeSession() {
     SECTION_ORDER[0],
   );
 
+  const { start: startTimer, reset: resetTimer } = useTimer();
   const { status } = useAuth();
   const {
     sendMessage: llmSendMessage,
@@ -127,13 +131,18 @@ export function PracticeSession() {
         setIsPracticeStarted(true);
         setCurrentSectionIndex(0);
         setHighestVisitedIndex(0);
+        resetTimer();
+        startTimer();
+        toast("Session started", {
+          description: "Good luck! The timer is now running.",
+        });
       } catch (err) {
         console.error("Failed to start practice session:", err);
       } finally {
         setIsPreparingSession(false);
       }
     },
-    [llmReset, pollForPractice, generatePractice],
+    [llmReset, pollForPractice, generatePractice, resetTimer, startTimer],
   );
 
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
@@ -174,7 +183,7 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 max-w-5xl px-3.5">
+          <div className="mx-auto mt-6 max-w-5xl px-3.5 pb-48">
             <div className={cn(currentSectionIndex !== 0 && "hidden")}>
               <UnderstandingSection
                 messages={llmGetMessages("problem_understanding")}
@@ -200,37 +209,46 @@ export function PracticeSession() {
             ))}
           </div>
 
-          {currentSectionIndex > 0 && (
-            <Button
-              variant="outline"
-              size="lg"
-              className="fixed bottom-24 left-8 rounded-full"
-              onClick={goBackSection}
-            >
-              <MoveLeft className="h-4 w-4" />
-              Back:{" "}
-              {
-                SECTION_KEY_TO_DETAILS[SECTION_ORDER[currentSectionIndex - 1]]
-                  .title
-              }
-            </Button>
-          )}
+          {/* Fixed bottom bar: back | timer | next */}
+          <div className="fixed bottom-8 left-0 z-40 flex w-full items-end gap-5 px-6">
+            <div className="mb-1 flex min-w-0 flex-1 justify-end">
+              {currentSectionIndex > 0 && (
+                <Button
+                  variant="link"
+                  onClick={goBackSection}
+                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer text-xs whitespace-normal underline underline-offset-2"
+                >
+                  <MoveLeft className="mr-1 h-4 w-4 shrink-0" />
+                  Back:{" "}
+                  {
+                    SECTION_KEY_TO_DETAILS[
+                      SECTION_ORDER[currentSectionIndex - 1]
+                    ].title
+                  }
+                </Button>
+              )}
+            </div>
 
-          {!isLastSection && (
-            <Button
-              variant="default"
-              size="lg"
-              className="fixed right-8 bottom-24 rounded-full"
-              onClick={proceedNextSection}
-            >
-              Next:{" "}
-              {
-                SECTION_KEY_TO_DETAILS[SECTION_ORDER[currentSectionIndex + 1]]
-                  .title
-              }
-              <MoveRight className="h-4 w-4" />
-            </Button>
-          )}
+            <Timer />
+
+            <div className="mb-1 flex min-w-0 flex-1 justify-start">
+              {!isLastSection && (
+                <Button
+                  variant="link"
+                  onClick={proceedNextSection}
+                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer text-xs whitespace-normal underline underline-offset-2"
+                >
+                  Next:{" "}
+                  {
+                    SECTION_KEY_TO_DETAILS[
+                      SECTION_ORDER[currentSectionIndex + 1]
+                    ].title
+                  }
+                  <MoveRight className="ml-1 h-4 w-4 shrink-0" />
+                </Button>
+              )}
+            </div>
+          </div>
 
           <ProblemReferenceSheet
             problem={problem}
