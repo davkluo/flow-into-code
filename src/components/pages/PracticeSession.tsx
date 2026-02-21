@@ -179,7 +179,10 @@ export function PracticeSession() {
             currentSectionIndex={currentSectionIndex}
             highestVisitedIndex={highestVisitedIndex}
             onProblemClick={() => setIsProblemSheetOpen(true)}
-            onSectionClick={(sectionKey) => {
+            onSectionNavigate={(sectionKey) =>
+              setCurrentSectionIndex(SECTION_ORDER.indexOf(sectionKey))
+            }
+            onSectionSummaryClick={(sectionKey) => {
               setSummarySectionKey(sectionKey);
               setIsSummarySheetOpen(true);
             }}
