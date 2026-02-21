@@ -1,7 +1,11 @@
 import { stripHtml } from "@/lib/formatting";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
-import { fetchLCProblemContent } from "@/services/leetcode/client";
+import {
+  fetchLCProblemCodeSnippets,
+  fetchLCProblemContent,
+} from "@/services/leetcode/client";
+import { SUPPORTED_LANGS } from "@/constants/languages";
 import { extractExamples } from "@/services/llm/extractExamples";
 import { generateFraming } from "@/services/llm/generateFraming";
 import { GENERATE_FRAMING_PROMPT_VERSION } from "@/services/llm/prompts/generateFraming";
@@ -61,8 +65,17 @@ export async function generatePreviewData(
 
   // claimed — proceed with generation
   const partial = await problemDetailsRepo.getBySlug(slug);
-  const rawContent =
-    partial?.source?.originalContent ?? (await fetchLCProblemContent(slug));
+  const existingSnippets = partial?.source?.codeSnippets ?? {};
+  const hasSnippets = SUPPORTED_LANGS.some((lang) => lang in existingSnippets);
+
+  const [rawContent, codeSnippets] = await Promise.all([
+    partial?.source?.originalContent
+      ? Promise.resolve(partial.source.originalContent)
+      : fetchLCProblemContent(slug),
+    hasSnippets
+      ? Promise.resolve(existingSnippets)
+      : fetchLCProblemCodeSnippets(slug),
+  ]);
   const originalContent = stripHtml(rawContent);
 
   const { data: examples } = await extractExamples({
@@ -84,7 +97,7 @@ export async function generatePreviewData(
   await problemDetailsRepo.updateSource(slug, {
     ...partial?.source,
     originalContent,
-    codeSnippets: partial?.source?.codeSnippets ?? {},
+    codeSnippets,
     examples,
   });
   await problemDetailsRepo.updateDerived(slug, { framing });
@@ -99,7 +112,7 @@ export async function generatePreviewData(
     titleSlug: slug,
     source: {
       originalContent,
-      codeSnippets: partial?.source?.codeSnippets ?? {},
+      codeSnippets,
       examples,
     },
     derived: { framing },

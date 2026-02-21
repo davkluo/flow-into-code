@@ -37,14 +37,6 @@ const PROBLEM_CONTENT_QUERY = `
   }
 `;
 
-const PROBLEM_TESTCASE_QUERY = `
-  query consolePanelConfig($titleSlug: String!) {
-    question(titleSlug: $titleSlug) {
-      exampleTestcaseList
-    }
-  }
-`;
-
 const PROBLEM_CODE_SNIPPET_QUERY = `
   query questionEditorData($titleSlug: String!) {
     question(titleSlug: $titleSlug) {
@@ -143,33 +135,6 @@ export async function fetchLCProblemContent(slug: string): Promise<string> {
   }
 
   return content;
-}
-
-/**
- * Fetch example test cases for a problem.
- */
-export async function fetchLCProblemTestCases(slug: string): Promise<string[]> {
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      query: PROBLEM_TESTCASE_QUERY,
-      variables: { titleSlug: slug },
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`LeetCode test case fetch failed: ${res.status}`);
-  }
-
-  const json = await res.json();
-  const testCases = json?.data?.question?.exampleTestcaseList;
-
-  if (!Array.isArray(testCases)) {
-    throw new Error("LeetCode returned invalid test cases");
-  }
-
-  return testCases;
 }
 
 /**
