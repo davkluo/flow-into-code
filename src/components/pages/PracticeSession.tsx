@@ -10,7 +10,6 @@ import { useTimerActions } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
-import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
@@ -188,56 +187,61 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 max-w-5xl px-3.5 pb-32">
-            <div className={cn(currentSectionIndex !== 0 && "hidden")}>
-              <UnderstandingSection
-                messages={llmGetMessages("problem_understanding")}
-                onSend={(content, snapshot) =>
-                  llmSendMessage("problem_understanding", content, snapshot)
-                }
-                cooldownUntil={llmCooldownUntil}
-              />
-            </div>
+          <div className="mx-auto mt-6 max-w-5xl overflow-hidden pb-32">
+            <div
+              className="flex transition-transform duration-300 ease-in-out"
+              style={{ transform: `translateX(-${currentSectionIndex * 100}%)` }}
+            >
+              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 0}>
+                <UnderstandingSection
+                  messages={llmGetMessages("problem_understanding")}
+                  onSend={(content, snapshot) =>
+                    llmSendMessage("problem_understanding", content, snapshot)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                />
+              </div>
 
-            <div className={cn(currentSectionIndex !== 1 && "hidden")}>
-              <ApproachAndReasoningSection
-                messages={llmGetMessages("approach_and_reasoning")}
-                onSend={(content, snapshot) =>
-                  llmSendMessage("approach_and_reasoning", content, snapshot)
-                }
-                cooldownUntil={llmCooldownUntil}
-              />
-            </div>
+              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 1}>
+                <ApproachAndReasoningSection
+                  messages={llmGetMessages("approach_and_reasoning")}
+                  onSend={(content, snapshot) =>
+                    llmSendMessage("approach_and_reasoning", content, snapshot)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                />
+              </div>
 
-            <div className={cn(currentSectionIndex !== 2 && "hidden")}>
-              <AlgorithmDesignSection
-                messages={llmGetMessages("algorithm_design")}
-                onSend={(content, snapshot) =>
-                  llmSendMessage("algorithm_design", content, snapshot)
-                }
-                cooldownUntil={llmCooldownUntil}
-              />
-            </div>
+              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 2}>
+                <AlgorithmDesignSection
+                  messages={llmGetMessages("algorithm_design")}
+                  onSend={(content, snapshot) =>
+                    llmSendMessage("algorithm_design", content, snapshot)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                />
+              </div>
 
-            <div className={cn(currentSectionIndex !== 3 && "hidden")}>
-              <ImplementationSection
-                messages={llmGetMessages("implementation")}
-                onSend={(content, snapshot) =>
-                  llmSendMessage("implementation", content, snapshot)
-                }
-                cooldownUntil={llmCooldownUntil}
-                codeSnippets={problemDetails.source.codeSnippets}
-              />
-            </div>
+              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 3}>
+                <ImplementationSection
+                  messages={llmGetMessages("implementation")}
+                  onSend={(content, snapshot) =>
+                    llmSendMessage("implementation", content, snapshot)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                  codeSnippets={problemDetails.source.codeSnippets}
+                />
+              </div>
 
-            <div className={cn(currentSectionIndex !== 4 && "hidden")}>
-              <ComplexityAnalysisSection
-                messages={llmGetMessages("complexity_analysis")}
-                onSend={(content, snapshot) =>
-                  llmSendMessage("complexity_analysis", content, snapshot)
-                }
-                cooldownUntil={llmCooldownUntil}
-              />
+              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 4}>
+                <ComplexityAnalysisSection
+                  messages={llmGetMessages("complexity_analysis")}
+                  onSend={(content, snapshot) =>
+                    llmSendMessage("complexity_analysis", content, snapshot)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                />
+              </div>
             </div>
           </div>
 
