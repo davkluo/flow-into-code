@@ -3,7 +3,8 @@
 import { autocompletion } from "@codemirror/autocomplete";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
-import { languages, codeMirrorTheme } from "@/lib/codeMirror";
+import { useTheme } from "next-themes";
+import { codeMirrorDarkSyntax, codeMirrorTheme, languages } from "@/lib/codeMirror";
 import { LangSlug } from "@/types/problem";
 
 interface CodeEditorProps {
@@ -13,6 +14,8 @@ interface CodeEditorProps {
 }
 
 export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
+  const { resolvedTheme } = useTheme();
+
   return (
     <CodeMirror
       value={value}
@@ -25,6 +28,7 @@ export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
         autocompletion(),
         languages[language],
         codeMirrorTheme,
+        ...(resolvedTheme === "dark" ? [codeMirrorDarkSyntax] : []),
       ]}
       onChange={onChange}
     />

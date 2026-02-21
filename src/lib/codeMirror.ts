@@ -1,5 +1,7 @@
 import type { Extension } from "@codemirror/state";
 import { python } from "@codemirror/lang-python";
+import { syntaxHighlighting } from "@codemirror/language";
+import { oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
 import { LangSlug } from "@/types/problem";
 
@@ -14,6 +16,8 @@ export const languageOptions: Record<LangSlug, string> = {
 // Structural theme using app CSS variables.
 // Adapts to light/dark automatically — no resolvedTheme check needed.
 // basicSetup includes syntaxHighlighting(defaultHighlightStyle), so code colors are preserved.
+export const codeMirrorDarkSyntax = syntaxHighlighting(oneDarkHighlightStyle);
+
 export const codeMirrorTheme = EditorView.theme({
   "&": {
     backgroundColor: "color-mix(in oklch, var(--input) 30%, transparent)",
