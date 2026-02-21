@@ -1,0 +1,58 @@
+import { LangSlug } from "@/types/problem";
+
+const MAIN_BLOCKS: Record<LangSlug, string> = {
+  [LangSlug.PYTHON3]: "\n\nif __name__ == \"__main__\":\n    # Write your test cases here\n    pass\n",
+};
+
+/**
+ * Uncomments contiguous blocks of commented-out class/struct definitions that
+ * LeetCode prepends to Python snippets (e.g. TreeNode, ListNode). A block is
+ * triggered by a line matching `# class ` or `# Definition for` and continues
+ * while lines start with `# `. Leading `# ` is stripped from each line in the
+ * block (preserving indentation).
+ */
+function uncommentPythonDefinitions(snippet: string): string {
+  const lines = snippet.split("\n");
+  const result: string[] = [];
+
+  let i = 0;
+  while (i < lines.length) {
+    const line = lines[i];
+
+    if (/^# (class |Definition for )/.test(line)) {
+      // Collect the contiguous commented block
+      const block: string[] = [];
+      while (i < lines.length && (lines[i].startsWith("# ") || lines[i].startsWith("#\t") || lines[i] === "#")) {
+        block.push(lines[i]);
+        i++;
+      }
+      // Strip leading `# ` (hash + single space) from each collected line
+      for (const blockLine of block) {
+        result.push(blockLine.replace(/^# ?/, ""));
+      }
+    } else {
+      result.push(line);
+      i++;
+    }
+  }
+
+  return result.join("\n");
+}
+
+/**
+ * Processes a raw LeetCode code snippet for use in the editor:
+ * 1. Uncomments leading class/struct definitions (TreeNode, ListNode, etc.)
+ * 2. Appends a language-appropriate main block for writing test cases
+ */
+export function processCodeSnippet(raw: string, lang: LangSlug): string {
+  if (!raw) return "";
+
+  switch (lang) {
+    case LangSlug.PYTHON3: {
+      const withDefinitions = uncommentPythonDefinitions(raw);
+      return withDefinitions + MAIN_BLOCKS[lang];
+    }
+    default:
+      return raw;
+  }
+}

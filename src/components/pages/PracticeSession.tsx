@@ -223,6 +223,7 @@ export function PracticeSession() {
                   llmSendMessage("implementation", content, snapshot)
                 }
                 cooldownUntil={llmCooldownUntil}
+                codeSnippets={problemDetails.source.codeSnippets}
               />
             </div>
 
@@ -244,7 +245,7 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={goBackSection}
-                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer rounded-xl bg-background/90 px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
                 >
                   ← Back:{" "}
                   {
@@ -263,7 +264,7 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={proceedNextSection}
-                  className="text-muted-foreground hover:text-foreground mt-2 w-fit cursor-pointer rounded-xl bg-background/90 px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
                 >
                   Next:{" "}
                   {

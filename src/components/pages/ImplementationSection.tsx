@@ -6,8 +6,9 @@ import {
   ExternalLinkIcon,
   InfoIcon,
   PlayIcon,
+  RotateCcwIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -23,8 +24,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { SUPPORTED_LANGS } from "@/constants/languages";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGS } from "@/constants/languages";
 import { languageOptions } from "@/lib/codeMirror";
+import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
 import { SectionField } from "@/types/practice";
 import { LangSlug } from "@/types/problem";
@@ -40,6 +42,7 @@ interface ImplementationSectionProps {
   messages: SessionMessage[];
   onSend: (content: string, snapshot: ImplementationSnapshot) => Promise<void>;
   cooldownUntil?: number;
+  codeSnippets: Partial<Record<LangSlug, string>>;
 }
 
 const FIELD: SectionField<{ code: string }> = {
@@ -61,11 +64,22 @@ export function ImplementationSection({
   messages,
   onSend,
   cooldownUntil,
+  codeSnippets,
 }: ImplementationSectionProps) {
-  const [code, setCode] = useState("");
-  const [language, setLanguage] = useState<LangSlug>(LangSlug.PYTHON3);
+  const getSnippet = (lang: LangSlug) =>
+    processCodeSnippet(codeSnippets[lang] ?? "", lang);
+
+  const [language, setLanguage] = useState<LangSlug>(DEFAULT_LANGUAGE);
+  const [code, setCode] = useState(() => getSnippet(DEFAULT_LANGUAGE));
   const [output, setOutput] = useState<string | undefined>(undefined);
+
   const [outputVisible, setOutputVisible] = useState(false);
+
+  useEffect(() => {
+    setCode(getSnippet(language));
+    // Intentionally depends only on codeSnippets identity — resets editor when a new problem is loaded
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codeSnippets]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -90,7 +104,7 @@ export function ImplementationSection({
                   {FIELD.formatHint}
                 </TooltipContent>
               </Tooltip>
-              {code.length >= FIELD.threshold && (
+              {code.length - getSnippet(language).length >= FIELD.threshold && (
                 <CheckIcon className="ml-auto size-4 text-lime-400" />
               )}
             </div>
@@ -106,7 +120,11 @@ export function ImplementationSection({
               <div className="absolute inset-x-3 top-2 z-10 flex items-center justify-center gap-2">
                 <Select
                   value={language}
-                  onValueChange={(v) => setLanguage(v as LangSlug)}
+                  onValueChange={(v) => {
+                    const newLang = v as LangSlug;
+                    setLanguage(newLang);
+                    setCode(getSnippet(newLang));
+                  }}
                 >
                   <SelectTrigger className="!h-6 w-fit gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 py-0 text-xs shadow-none backdrop-blur-sm hover:to-white/80 focus:ring-0 focus-visible:ring-0 dark:border-white/15 dark:bg-transparent dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]">
                     <SelectValue />
@@ -123,6 +141,16 @@ export function ImplementationSection({
                   variant="ghost"
                   size="sm"
                   className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                  onClick={() => setOutputVisible(true)}
+                >
+                  <PlayIcon className="size-3" />
+                  Run
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
                 >
                   <CopyIcon className="size-3" />
                   Copy
@@ -131,18 +159,18 @@ export function ImplementationSection({
                   variant="ghost"
                   size="sm"
                   className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                  onClick={() => setOutputVisible(true)}
                 >
-                  <PlayIcon className="size-3" />
-                  Run
+                  <ExternalLinkIcon className="size-3" />
+                  Submit
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                  onClick={() => setCode(getSnippet(language))}
                 >
-                  <ExternalLinkIcon className="size-3" />
-                  Submit
+                  <RotateCcwIcon className="size-3" />
+                  Reset
                 </Button>
               </div>
             </div>
