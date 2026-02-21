@@ -1,11 +1,10 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
-import { Button } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,7 +22,7 @@ interface SessionBreadcrumbProps {
 }
 
 const glassyTrigger =
-  "inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-black/10 bg-gradient-to-t from-transparent to-white/15 px-2.5 text-xs font-medium uppercase tracking-wide backdrop-blur-2xl transition-all hover:to-white/25 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]";
+  "inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-black/10 bg-gradient-to-t from-transparent via-transparent via-[75%] to-white/15 px-2.5 text-xs font-medium uppercase tracking-wide backdrop-blur-2xl transition-all hover:to-white/25 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]";
 
 function SectionDropdownItem({
   sectionKey,
@@ -57,7 +56,7 @@ function SectionDropdownItem({
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
         <button
-          className={glassyTrigger}
+          className={cn(glassyTrigger, "hover:text-foreground")}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -93,8 +92,25 @@ export function SessionBreadcrumb({
   const scrollRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const rafRef = useRef<number | null>(null);
+  const isExpandingRef = useRef(false);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const prevHighestRef = useRef(highestVisitedIndex);
+  const [newlyAddedIndex, setNewlyAddedIndex] = useState<number | null>(null);
+
+  // Detect when a new section is appended and animate it in
+  useEffect(() => {
+    const prev = prevHighestRef.current;
+    prevHighestRef.current = highestVisitedIndex;
+    if (highestVisitedIndex <= prev) return;
+    setNewlyAddedIndex(highestVisitedIndex);
+    isExpandingRef.current = true;
+    const t = setTimeout(() => {
+      setNewlyAddedIndex(null);
+      isExpandingRef.current = false;
+    }, 600);
+    return () => clearTimeout(t);
+  }, [highestVisitedIndex]);
 
   const updateShadows = useCallback(() => {
     const el = scrollRef.current;
@@ -103,14 +119,24 @@ export function SessionBreadcrumb({
     setCanScrollRight(el.scrollLeft + el.offsetWidth < el.scrollWidth - 1);
   }, []);
 
-  // Center active section when currentSectionIndex changes
+  // Center active section when currentSectionIndex changes.
+  // When a new section is expanding, delay the scroll so the layout has
+  // settled at full width before we calculate the scroll position.
   useEffect(() => {
-    const container = scrollRef.current;
-    const item = itemRefs.current[currentSectionIndex];
-    if (!container || !item) return;
-    const scrollLeft =
-      item.offsetLeft - (container.offsetWidth - item.offsetWidth) / 2;
-    container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+    const doScroll = () => {
+      const container = scrollRef.current;
+      const item = itemRefs.current[currentSectionIndex];
+      if (!container || !item) return;
+      const scrollLeft =
+        item.offsetLeft - (container.offsetWidth - item.offsetWidth) / 2;
+      container.scrollTo({ left: scrollLeft, behavior: "smooth" });
+    };
+
+    if (isExpandingRef.current) {
+      const t = setTimeout(doScroll, 510);
+      return () => clearTimeout(t);
+    }
+    doScroll();
   }, [currentSectionIndex]);
 
   // Initial shadow check + ResizeObserver
@@ -157,21 +183,19 @@ export function SessionBreadcrumb({
       className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-4 text-sm sm:px-10"
     >
       {/* Always-visible: problem title trigger */}
-      <Button
-        variant="outline"
-        size="sm"
+      <button
         onClick={onProblemClick}
-        className={glassyTrigger}
+        className={cn(glassyTrigger, "hover:text-foreground")}
       >
         {problemTitle}
-      </Button>
+      </button>
 
       <span role="presentation" aria-hidden="true" className="shrink-0">
         :
       </span>
 
       {/* Scrollable section list */}
-      <div className="relative min-w-0 flex-1">
+      <div className="relative min-w-0 shrink">
         {/* Left fade shadow */}
         <div
           className={`from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r to-transparent transition-opacity duration-200 ${
@@ -187,34 +211,55 @@ export function SessionBreadcrumb({
           onMouseLeave={handleMouseLeave}
         >
           {SECTION_ORDER.slice(0, highestVisitedIndex + 1).map(
-            (sectionKey, index) => (
-              <Fragment key={sectionKey}>
+            (sectionKey, index) => {
+              const button =
+                index === currentSectionIndex ? (
+                  <span
+                    className={cn(
+                      glassyTrigger,
+                      "border-lime-400/30 font-semibold text-lime-400 dark:border-lime-400/30",
+                      "pointer-events-none",
+                    )}
+                  >
+                    {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                  </span>
+                ) : (
+                  <SectionDropdownItem
+                    sectionKey={sectionKey}
+                    index={index}
+                    onSectionNavigate={onSectionNavigate}
+                    onSectionSummaryClick={onSectionSummaryClick}
+                  />
+                );
+
+              // First item: no chevron, no expand animation
+              if (index === 0) {
+                return (
+                  <span
+                    key={sectionKey}
+                    ref={(el) => {
+                      itemRefs.current[0] = el;
+                    }}
+                    className="inline-flex shrink-0 items-center"
+                  >
+                    {button}
+                  </span>
+                );
+              }
+
+              // Subsequent items: group chevron + button so they expand together,
+              // smoothly pushing existing items to the left.
+              return (
                 <span
+                  key={sectionKey}
                   ref={(el) => {
                     itemRefs.current[index] = el;
                   }}
-                  className="inline-flex shrink-0 items-center"
-                >
-                  {index === currentSectionIndex ? (
-                    <span
-                      className={cn(
-                        glassyTrigger,
-                        "border-lime-400/30 font-semibold text-lime-400 dark:border-lime-400/30",
-                        "pointer-events-none",
-                      )}
-                    >
-                      {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
-                    </span>
-                  ) : (
-                    <SectionDropdownItem
-                      sectionKey={sectionKey}
-                      index={index}
-                      onSectionNavigate={onSectionNavigate}
-                      onSectionSummaryClick={onSectionSummaryClick}
-                    />
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5",
+                    index === newlyAddedIndex && "animate-expand-crumb",
                   )}
-                </span>
-                {index < highestVisitedIndex && (
+                >
                   <span
                     role="presentation"
                     aria-hidden="true"
@@ -222,9 +267,10 @@ export function SessionBreadcrumb({
                   >
                     <ChevronRight className="size-3.5" />
                   </span>
-                )}
-              </Fragment>
-            ),
+                  {button}
+                </span>
+              );
+            },
           )}
         </div>
 
