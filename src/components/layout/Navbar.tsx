@@ -1,9 +1,6 @@
 "use client";
 
 import { Menu } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -33,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Separator } from "../ui/separator";
+import { Logo } from "./Logo";
 import { ModeSelect } from "./ModeSelect";
 
 interface SubMenuItem {
@@ -50,10 +48,6 @@ interface MenuItem {
 const Navbar = () => {
   const { user, status, signOutUser } = useAuth();
   const pathname = usePathname();
-
-  const [mounted, setMounted] = useState(false);
-  const { resolvedTheme } = useTheme();
-  const currentTheme = mounted ? resolvedTheme : "dark";
 
   const publicMenu: MenuItem[] = [
     {
@@ -77,11 +71,6 @@ const Navbar = () => {
       ? [...publicMenu, ...authenticatedMenu]
       : publicMenu;
 
-  useEffect(() => {
-    // Ensure the theme is mounted before rendering
-    setMounted(true);
-  }, []);
-
   return (
     <nav>
       <div className="mx-auto px-2 sm:px-6 lg:px-8">
@@ -89,25 +78,12 @@ const Navbar = () => {
           <div className="absolute inset-y-0 left-0 flex w-full items-center sm:hidden">
             {/* Mobile Menu */}
             <div className="flex w-full items-center justify-between">
-              <Link
-                href="/"
-                className="mt-2.5 flex h-auto w-32 shrink-0 items-center"
-              >
-                <Image
-                  src={
-                    currentTheme === "dark"
-                      ? "/logo-dark.png"
-                      : "/logo-light.png"
-                  }
-                  alt="FlowIntoCode Logo"
-                  width={120}
-                  height={32}
-                  priority
-                />
+              <Link href="/" className="shrink-0">
+                <Logo />
               </Link>{" "}
-              <Sheet>
-                <div className="flex items-center gap-2">
-                  <ModeSelect />
+              <div className="flex items-center gap-2">
+                <ModeSelect />
+                <Sheet>
                   <SheetTrigger asChild>
                     <Button
                       variant="outline"
@@ -117,8 +93,7 @@ const Navbar = () => {
                       <Menu className="size-4" />
                     </Button>
                   </SheetTrigger>
-                </div>
-                <SheetContent className="overflow-y-auto">
+                  <SheetContent className="overflow-y-auto">
                   <SheetHeader>
                     <SheetTitle>Flow Into Code</SheetTitle>
                   </SheetHeader>
@@ -193,7 +168,8 @@ const Navbar = () => {
                     </div>
                   </div>
                 </SheetContent>
-              </Sheet>
+                </Sheet>
+              </div>
             </div>
           </div>
 
@@ -201,21 +177,8 @@ const Navbar = () => {
           <nav className="hidden w-full items-center justify-between sm:flex">
             <div className="flex items-center gap-2">
               {/* Logo */}
-              <Link
-                href="/"
-                className="mt-2.5 flex h-auto w-32 shrink-0 items-center"
-              >
-                <Image
-                  src={
-                    currentTheme === "dark"
-                      ? "/logo-dark.png"
-                      : "/logo-light.png"
-                  }
-                  alt="FlowIntoCode Logo"
-                  width={120}
-                  height={32}
-                  priority
-                />
+              <Link href="/" className="shrink-0">
+                <Logo />
               </Link>
               <NavigationMenu viewport={false}>
                 <NavigationMenuList>

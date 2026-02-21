@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
+
+const nunito = Nunito({
+  subsets: ["latin"],
+  weight: ["900"],
+  variable: "--font-nunito",
+});
 
 const jetbrainsMono = localFont({
   src: "../fonts/JetBrainsMonoNerdFont-Regular.ttf",
@@ -24,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${jetbrainsMono.variable} antialiased`}
+        className={`${jetbrainsMono.variable} ${nunito.variable} antialiased`}
       >
         <AuthProvider>
           <ThemeProvider
