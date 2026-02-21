@@ -116,7 +116,10 @@ export function PracticeSession() {
         const slug = selectedProblem.titleSlug;
         let data: ProblemDetails | null = null;
 
-        const res = await authFetch(getProblemDataApiPath(slug, "practice"));
+        const [res] = await Promise.all([
+          authFetch(getProblemDataApiPath(slug, "practice")),
+          new Promise((r) => setTimeout(r, 1500)), // Minimum loading time for better UX
+        ]);
         if (res.status === 200) {
           data = (await res.json()) as ProblemDetails;
         } else if (res.status === 202) {
@@ -134,7 +137,7 @@ export function PracticeSession() {
         setHighestVisitedIndex(0);
         resetTimer();
         startTimer();
-        toast("Session started", {
+        toast.success("Session started", {
           description: "Good luck! The timer is now running.",
         });
       } catch (err) {
@@ -190,9 +193,14 @@ export function PracticeSession() {
           <div className="mx-auto mt-6 max-w-5xl overflow-hidden pb-32">
             <div
               className="flex transition-transform duration-300 ease-in-out"
-              style={{ transform: `translateX(-${currentSectionIndex * 100}%)` }}
+              style={{
+                transform: `translateX(-${currentSectionIndex * 100}%)`,
+              }}
             >
-              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 0}>
+              <div
+                className="w-full shrink-0 px-3.5"
+                inert={currentSectionIndex !== 0}
+              >
                 <UnderstandingSection
                   messages={llmGetMessages("problem_understanding")}
                   onSend={(content, snapshot) =>
@@ -202,7 +210,10 @@ export function PracticeSession() {
                 />
               </div>
 
-              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 1}>
+              <div
+                className="w-full shrink-0 px-3.5"
+                inert={currentSectionIndex !== 1}
+              >
                 <ApproachAndReasoningSection
                   messages={llmGetMessages("approach_and_reasoning")}
                   onSend={(content, snapshot) =>
@@ -212,7 +223,10 @@ export function PracticeSession() {
                 />
               </div>
 
-              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 2}>
+              <div
+                className="w-full shrink-0 px-3.5"
+                inert={currentSectionIndex !== 2}
+              >
                 <AlgorithmDesignSection
                   messages={llmGetMessages("algorithm_design")}
                   onSend={(content, snapshot) =>
@@ -222,7 +236,10 @@ export function PracticeSession() {
                 />
               </div>
 
-              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 3}>
+              <div
+                className="w-full shrink-0 px-3.5"
+                inert={currentSectionIndex !== 3}
+              >
                 <ImplementationSection
                   messages={llmGetMessages("implementation")}
                   onSend={(content, snapshot) =>
@@ -233,7 +250,10 @@ export function PracticeSession() {
                 />
               </div>
 
-              <div className="w-full shrink-0 px-3.5" inert={currentSectionIndex !== 4}>
+              <div
+                className="w-full shrink-0 px-3.5"
+                inert={currentSectionIndex !== 4}
+              >
                 <ComplexityAnalysisSection
                   messages={llmGetMessages("complexity_analysis")}
                   onSend={(content, snapshot) =>

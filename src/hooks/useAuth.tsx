@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setStatus("loading");
     try {
       await signInWithPopup(auth, googleProvider);
-      toast("Signed in successfully", {
+      toast.success("Signed in successfully", {
         description: "Welcome back!",
       });
     } catch (error) {
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOutUser = async () => {
     await signOut(auth);
-    toast("Signed out successfully", {
+    toast.success("Signed out successfully", {
       description: "See you again soon!",
     });
   };

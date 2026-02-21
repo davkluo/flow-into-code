@@ -35,7 +35,7 @@ export default function RootLayout({
           >
             <Navbar />
             <main>{children}</main>
-            <Toaster position="top-center" />
+            <Toaster position="bottom-left" />
           </ThemeProvider>
         </AuthProvider>
       </body>

@@ -271,7 +271,7 @@ export function ProblemSelectSection({
           setProblemDetails(data);
           return;
         }
-        toast("Generation is taking longer than expected", {
+        toast.warning("Generation is taking longer than expected", {
           description: "Please try again in a moment.",
         });
       } else {
