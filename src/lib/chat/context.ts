@@ -51,7 +51,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 /** Converts an unrecognized camelCase key to Title Case as a fallback. */
-const formatFieldKey = (key: string): string =>
+export const formatFieldKey = (key: string): string =>
   FIELD_LABELS[key] ??
   key.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
 

@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, InfoIcon } from "lucide-react";
-import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +18,8 @@ export type ApproachSnapshot = {
 };
 
 interface ApproachAndReasoningSectionProps {
+  fields: ApproachSnapshot;
+  onFieldChange: (key: keyof ApproachSnapshot, value: string) => void;
   messages: SessionMessage[];
   onSend: (content: string, snapshot: ApproachSnapshot) => Promise<void>;
   cooldownUntil?: number;
@@ -45,19 +46,12 @@ const FIELDS: SectionField<ApproachSnapshot>[] = [
 ];
 
 export function ApproachAndReasoningSection({
+  fields,
+  onFieldChange,
   messages,
   onSend,
   cooldownUntil,
 }: ApproachAndReasoningSectionProps) {
-  const [fields, setFields] = useState<ApproachSnapshot>({
-    approach: "",
-    reasoning: "",
-  });
-
-  const updateField = (key: keyof ApproachSnapshot, value: string) => {
-    setFields((prev) => ({ ...prev, [key]: value }));
-  };
-
   const isFieldFilled = (key: keyof ApproachSnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
@@ -92,7 +86,7 @@ export function ApproachAndReasoningSection({
               </div>
               <Textarea
                 value={fields[field.key]}
-                onChange={(e) => updateField(field.key, e.target.value)}
+                onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
                 className="min-h-0 flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
               />

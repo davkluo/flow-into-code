@@ -8,7 +8,7 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -24,7 +24,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGS } from "@/constants/languages";
+import { SUPPORTED_LANGS } from "@/constants/languages";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
@@ -39,6 +39,10 @@ export type ImplementationSnapshot = {
 };
 
 interface ImplementationSectionProps {
+  code: string;
+  onCodeChange: (code: string) => void;
+  language: LangSlug;
+  onLanguageChange: (lang: LangSlug) => void;
   messages: SessionMessage[];
   onSend: (content: string, snapshot: ImplementationSnapshot) => Promise<void>;
   cooldownUntil?: number;
@@ -61,6 +65,10 @@ const FIELD: SectionField<{ code: string }> = {
 };
 
 export function ImplementationSection({
+  code,
+  onCodeChange,
+  language,
+  onLanguageChange,
   messages,
   onSend,
   cooldownUntil,
@@ -69,17 +77,8 @@ export function ImplementationSection({
   const getSnippet = (lang: LangSlug) =>
     processCodeSnippet(codeSnippets[lang] ?? "", lang);
 
-  const [language, setLanguage] = useState<LangSlug>(DEFAULT_LANGUAGE);
-  const [code, setCode] = useState(() => getSnippet(DEFAULT_LANGUAGE));
   const [output, setOutput] = useState<string | undefined>(undefined);
-
   const [outputVisible, setOutputVisible] = useState(false);
-
-  useEffect(() => {
-    setCode(getSnippet(language));
-    // Intentionally depends only on codeSnippets identity — resets editor when a new problem is loaded
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [codeSnippets]);
 
   return (
     <div className="flex flex-col gap-8">
@@ -112,7 +111,7 @@ export function ImplementationSection({
               <div className="absolute inset-0">
                 <CodeEditor
                   value={code}
-                  onChange={setCode}
+                  onChange={onCodeChange}
                   language={language}
                 />
               </div>
@@ -122,8 +121,8 @@ export function ImplementationSection({
                   value={language}
                   onValueChange={(v) => {
                     const newLang = v as LangSlug;
-                    setLanguage(newLang);
-                    setCode(getSnippet(newLang));
+                    onLanguageChange(newLang);
+                    onCodeChange(getSnippet(newLang));
                   }}
                 >
                   <SelectTrigger className="!h-6 w-fit gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 py-0 text-xs shadow-none backdrop-blur-sm hover:to-white/80 focus:ring-0 focus-visible:ring-0 dark:border-white/15 dark:bg-transparent dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]">
@@ -167,7 +166,7 @@ export function ImplementationSection({
                   variant="ghost"
                   size="sm"
                   className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                  onClick={() => setCode(getSnippet(language))}
+                  onClick={() => onCodeChange(getSnippet(language))}
                 >
                   <RotateCcwIcon className="size-3" />
                   Reset

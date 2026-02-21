@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, InfoIcon } from "lucide-react";
-import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import {
@@ -27,6 +26,8 @@ export type UnderstandingSnapshot = {
 };
 
 interface UnderstandingSectionProps {
+  fields: UnderstandingSnapshot;
+  onFieldChange: (key: keyof UnderstandingSnapshot, value: string) => void;
   messages: SessionMessage[];
   onSend: (content: string, snapshot: UnderstandingSnapshot) => Promise<void>;
   cooldownUntil?: number;
@@ -115,21 +116,12 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
 ];
 
 export function UnderstandingSection({
+  fields,
+  onFieldChange,
   messages,
   onSend,
   cooldownUntil,
 }: UnderstandingSectionProps) {
-  const [fields, setFields] = useState<UnderstandingSnapshot>({
-    restatement: "",
-    inputsOutputs: "",
-    constraints: "",
-    edgeCases: "",
-  });
-
-  const updateField = (key: keyof UnderstandingSnapshot, value: string) => {
-    setFields((prev) => ({ ...prev, [key]: value }));
-  };
-
   const isFieldFilled = (key: keyof UnderstandingSnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
@@ -171,7 +163,7 @@ export function UnderstandingSection({
                 <AccordionContent className="px-3 pt-0 pb-3">
                   <Textarea
                     value={fields[field.key]}
-                    onChange={(e) => updateField(field.key, e.target.value)}
+                    onChange={(e) => onFieldChange(field.key, e.target.value)}
                     placeholder={field.placeholder}
                     className="min-h-48 resize-none"
                   />

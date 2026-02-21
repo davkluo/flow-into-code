@@ -1,15 +1,18 @@
 "use client";
 
 import { toast } from "sonner";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { getProblemDataApiPath } from "@/constants/api";
+import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimerActions } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
+import { SectionSnapshotData } from "@/lib/chat/context";
+import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
@@ -23,6 +26,10 @@ import { SessionBreadcrumb } from "./SessionBreadcrumb";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
+import type { UnderstandingSnapshot } from "./UnderstandingSection";
+import type { ApproachSnapshot } from "./ApproachAndReasoningSection";
+import type { ComplexitySnapshot } from "./ComplexityAnalysisSection";
+import type { LangSlug } from "@/types/problem";
 
 export function PracticeSession() {
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -39,6 +46,26 @@ export function PracticeSession() {
   const [summarySectionKey, setSummarySectionKey] = useState<SectionKey>(
     SECTION_ORDER[0],
   );
+
+  // Section field state — single source of truth for all section inputs
+  const [understandingFields, setUnderstandingFields] =
+    useState<UnderstandingSnapshot>({
+      restatement: "",
+      inputsOutputs: "",
+      constraints: "",
+      edgeCases: "",
+    });
+  const [approachFields, setApproachFields] = useState<ApproachSnapshot>({
+    approach: "",
+    reasoning: "",
+  });
+  const [pseudocode, setPseudocode] = useState("");
+  const [implCode, setImplCode] = useState("");
+  const [implLanguage, setImplLanguage] = useState<LangSlug>(DEFAULT_LANGUAGE);
+  const [complexityFields, setComplexityFields] = useState<ComplexitySnapshot>({
+    timeComplexity: "",
+    spaceComplexity: "",
+  });
 
   const { start: startTimer, reset: resetTimer } = useTimerActions();
   const { status } = useAuth();
@@ -132,6 +159,14 @@ export function PracticeSession() {
           setProblemDetails(data);
         }
 
+        // Reset all section fields for the new session
+        setUnderstandingFields({ restatement: "", inputsOutputs: "", constraints: "", edgeCases: "" });
+        setApproachFields({ approach: "", reasoning: "" });
+        setPseudocode("");
+        setImplCode(processCodeSnippet(data?.source.codeSnippets[DEFAULT_LANGUAGE] ?? "", DEFAULT_LANGUAGE));
+        setImplLanguage(DEFAULT_LANGUAGE);
+        setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
+
         setIsPracticeStarted(true);
         setCurrentSectionIndex(0);
         setHighestVisitedIndex(0);
@@ -148,6 +183,21 @@ export function PracticeSession() {
     },
     [llmReset, pollForPractice, generatePractice, resetTimer, startTimer],
   );
+
+  const summarySnapshot = useMemo((): SectionSnapshotData => {
+    switch (summarySectionKey) {
+      case "problem_understanding":
+        return understandingFields;
+      case "approach_and_reasoning":
+        return approachFields;
+      case "algorithm_design":
+        return { pseudocode };
+      case "implementation":
+        return { code: implCode, language: implLanguage };
+      case "complexity_analysis":
+        return complexityFields;
+    }
+  }, [summarySectionKey, understandingFields, approachFields, pseudocode, implCode, implLanguage, complexityFields]);
 
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
@@ -202,6 +252,10 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 0}
               >
                 <UnderstandingSection
+                  fields={understandingFields}
+                  onFieldChange={(key, value) =>
+                    setUnderstandingFields((prev) => ({ ...prev, [key]: value }))
+                  }
                   messages={llmGetMessages("problem_understanding")}
                   onSend={(content, snapshot) =>
                     llmSendMessage("problem_understanding", content, snapshot)
@@ -215,6 +269,10 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 1}
               >
                 <ApproachAndReasoningSection
+                  fields={approachFields}
+                  onFieldChange={(key, value) =>
+                    setApproachFields((prev) => ({ ...prev, [key]: value }))
+                  }
                   messages={llmGetMessages("approach_and_reasoning")}
                   onSend={(content, snapshot) =>
                     llmSendMessage("approach_and_reasoning", content, snapshot)
@@ -228,6 +286,8 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 2}
               >
                 <AlgorithmDesignSection
+                  pseudocode={pseudocode}
+                  onPseudocodeChange={setPseudocode}
                   messages={llmGetMessages("algorithm_design")}
                   onSend={(content, snapshot) =>
                     llmSendMessage("algorithm_design", content, snapshot)
@@ -241,6 +301,10 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 3}
               >
                 <ImplementationSection
+                  code={implCode}
+                  onCodeChange={setImplCode}
+                  language={implLanguage}
+                  onLanguageChange={setImplLanguage}
                   messages={llmGetMessages("implementation")}
                   onSend={(content, snapshot) =>
                     llmSendMessage("implementation", content, snapshot)
@@ -255,6 +319,10 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 4}
               >
                 <ComplexityAnalysisSection
+                  fields={complexityFields}
+                  onFieldChange={(key, value) =>
+                    setComplexityFields((prev) => ({ ...prev, [key]: value }))
+                  }
                   messages={llmGetMessages("complexity_analysis")}
                   onSend={(content, snapshot) =>
                     llmSendMessage("complexity_analysis", content, snapshot)
@@ -314,6 +382,7 @@ export function PracticeSession() {
 
           <SectionSummarySheet
             sectionKey={summarySectionKey}
+            snapshot={summarySnapshot}
             open={isSummarySheetOpen}
             onOpenChange={setIsSummarySheetOpen}
           />

@@ -1,7 +1,6 @@
 "use client";
 
 import { CheckIcon, InfoIcon } from "lucide-react";
-import { useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Textarea } from "@/components/ui/textarea";
@@ -19,6 +18,8 @@ export type ComplexitySnapshot = {
 };
 
 interface ComplexityAnalysisSectionProps {
+  fields: ComplexitySnapshot;
+  onFieldChange: (key: keyof ComplexitySnapshot, value: string) => void;
   messages: SessionMessage[];
   onSend: (content: string, snapshot: ComplexitySnapshot) => Promise<void>;
   cooldownUntil?: number;
@@ -46,19 +47,12 @@ const FIELDS: SectionField<ComplexitySnapshot>[] = [
 ];
 
 export function ComplexityAnalysisSection({
+  fields,
+  onFieldChange,
   messages,
   onSend,
   cooldownUntil,
 }: ComplexityAnalysisSectionProps) {
-  const [fields, setFields] = useState<ComplexitySnapshot>({
-    timeComplexity: "",
-    spaceComplexity: "",
-  });
-
-  const updateField = (key: keyof ComplexitySnapshot, value: string) => {
-    setFields((prev) => ({ ...prev, [key]: value }));
-  };
-
   const isFieldFilled = (key: keyof ComplexitySnapshot): boolean => {
     const field = FIELDS.find((f) => f.key === key)!;
     return fields[key].length >= field.threshold;
@@ -93,7 +87,7 @@ export function ComplexityAnalysisSection({
               </div>
               <Textarea
                 value={fields[field.key]}
-                onChange={(e) => updateField(field.key, e.target.value)}
+                onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
                 className="min-h-0 flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
               />
