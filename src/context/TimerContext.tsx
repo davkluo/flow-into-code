@@ -1,11 +1,19 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
-type TimerContextType = {
-  timeLeft: number;
+// --- Types ---
+
+type TimerActions = {
   setpoint: number;
-  isRunning: boolean;
   start: (initialTime?: number) => void;
   pause: () => void;
   reset: (overrideTime?: number) => void;
@@ -13,73 +21,107 @@ type TimerContextType = {
   setSetpoint: (seconds: number) => void;
 };
 
-const TimerContext = createContext<TimerContextType | null>(null);
+type TimerState = {
+  timeLeft: number;
+  isRunning: boolean;
+};
+
+// Convenience type kept for Timer.tsx which needs everything
+type TimerContextType = TimerActions & TimerState;
+
+// --- Contexts ---
+
+const TimerActionsContext = createContext<TimerActions | null>(null);
+const TimerStateContext = createContext<TimerState | null>(null);
+
+// --- Provider ---
 
 export const TimerProvider = ({
   children,
-  defaultTime = 1800, // 30 minutes by default
+  defaultTime = 1800,
 }: {
   children: React.ReactNode;
   defaultTime?: number;
 }) => {
-  const [setpoint, setSetpoint] = useState(defaultTime);
+  const [setpoint, setSetpointState] = useState(defaultTime);
   const [timeLeft, setTimeLeft] = useState(defaultTime);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const start = (initialTime?: number) => {
+  // Keep setpoint in a ref so reset() is fully stable (no dep on setpoint state)
+  const setpointRef = useRef(defaultTime);
+
+  const start = useCallback((initialTime?: number) => {
     if (initialTime !== undefined) {
-      setSetpoint(initialTime);
+      setpointRef.current = initialTime;
+      setSetpointState(initialTime);
       setTimeLeft(initialTime);
     }
     setIsRunning(true);
-  };
+  }, []);
 
-  const pause = () => {
+  const pause = useCallback(() => setIsRunning(false), []);
+
+  const reset = useCallback((overrideTime?: number) => {
     setIsRunning(false);
-  };
+    setTimeLeft(overrideTime ?? setpointRef.current);
+  }, []);
 
-  const reset = (overrideTime?: number) => {
-    setIsRunning(false);
-    setTimeLeft(overrideTime ?? setpoint);
-  };
+  const setTime = useCallback((seconds: number) => setTimeLeft(seconds), []);
 
-  const setTime = (seconds: number) => {
-    setTimeLeft(seconds);
-  };
+  const setSetpoint = useCallback((seconds: number) => {
+    setpointRef.current = seconds;
+    setSetpointState(seconds);
+  }, []);
 
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setTimeLeft((prev) => prev - 1); // allow negative
+        setTimeLeft((prev) => prev - 1);
       }, 1000);
     }
-
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isRunning]);
 
+  // Actions value is stable — only changes when setpoint changes (user adjusts timer)
+  const actionsValue = useMemo<TimerActions>(
+    () => ({ setpoint, start, pause, reset, setTime, setSetpoint }),
+    [setpoint, start, pause, reset, setTime, setSetpoint],
+  );
+
+  // State value changes every second — only Timer subscribes to this
+  const stateValue = useMemo<TimerState>(
+    () => ({ timeLeft, isRunning }),
+    [timeLeft, isRunning],
+  );
+
   return (
-    <TimerContext.Provider
-      value={{
-        timeLeft,
-        setpoint,
-        isRunning,
-        start,
-        pause,
-        reset,
-        setTime,
-        setSetpoint,
-      }}
-    >
-      {children}
-    </TimerContext.Provider>
+    <TimerActionsContext.Provider value={actionsValue}>
+      <TimerStateContext.Provider value={stateValue}>
+        {children}
+      </TimerStateContext.Provider>
+    </TimerActionsContext.Provider>
   );
 };
 
-export const useTimer = () => {
-  const ctx = useContext(TimerContext);
-  if (!ctx) throw new Error("useTimer must be used within a TimerProvider");
+// --- Hooks ---
+
+export const useTimerActions = (): TimerActions => {
+  const ctx = useContext(TimerActionsContext);
+  if (!ctx) throw new Error("useTimerActions must be used within a TimerProvider");
   return ctx;
 };
+
+export const useTimerState = (): TimerState => {
+  const ctx = useContext(TimerStateContext);
+  if (!ctx) throw new Error("useTimerState must be used within a TimerProvider");
+  return ctx;
+};
+
+// Convenience hook for components that need everything (i.e. Timer.tsx)
+export const useTimer = (): TimerContextType => ({
+  ...useTimerActions(),
+  ...useTimerState(),
+});

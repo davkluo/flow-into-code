@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
 import { getProblemDataApiPath } from "@/constants/api";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
-import { useTimer } from "@/context/TimerContext";
+import { useTimerActions } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
@@ -41,7 +41,7 @@ export function PracticeSession() {
     SECTION_ORDER[0],
   );
 
-  const { start: startTimer, reset: resetTimer } = useTimer();
+  const { start: startTimer, reset: resetTimer } = useTimerActions();
   const { status } = useAuth();
   const {
     sendMessage: llmSendMessage,
