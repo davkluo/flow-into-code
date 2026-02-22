@@ -199,6 +199,26 @@ export function PracticeSession() {
     }
   }, [summarySectionKey, understandingFields, approachFields, pseudocode, implCode, implLanguage, complexityFields]);
 
+  const handleEndSession = useCallback(() => {
+    llmReset();
+    resetTimer();
+    setProblem(null);
+    setProblemDetails(null);
+    setIsPracticeStarted(false);
+    setIsPreparingSession(false);
+    setCurrentSectionIndex(0);
+    setHighestVisitedIndex(0);
+    setIsProblemSheetOpen(false);
+    setIsSummarySheetOpen(false);
+    setSummarySectionKey(SECTION_ORDER[0]);
+    setUnderstandingFields({ restatement: "", inputsOutputs: "", constraints: "", edgeCases: "" });
+    setApproachFields({ approach: "", reasoning: "" });
+    setPseudocode("");
+    setImplCode("");
+    setImplLanguage(DEFAULT_LANGUAGE);
+    setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
+  }, [llmReset, resetTimer]);
+
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
   const proceedNextSection = () => {
@@ -378,6 +398,7 @@ export function PracticeSession() {
             problemDetails={problemDetails}
             open={isProblemSheetOpen}
             onOpenChange={setIsProblemSheetOpen}
+            onEndSession={handleEndSession}
           />
 
           <SectionSummarySheet
