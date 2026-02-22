@@ -3,7 +3,6 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { SECTION_ORDER } from "@/constants/practice";
 
 const ROTATING_MESSAGES = [
   "Preparing your practice session",
@@ -30,19 +29,14 @@ export function SessionLoadingScreen() {
       {/* Breadcrumb skeleton */}
       <div className="flex justify-center pt-4">
         <div className="flex items-center gap-2.5">
-          <Skeleton className="h-6 w-28 rounded-md" />
+          <Skeleton className="h-6 w-20 rounded-md" />
           <Skeleton className="h-4 w-2" />
-          {SECTION_ORDER.map((key, i) => (
-            <div key={key} className="flex items-center gap-2.5">
-              <Skeleton className="h-6 w-20 rounded-md" />
-              {i < SECTION_ORDER.length - 1 && <Skeleton className="h-4 w-2" />}
-            </div>
-          ))}
+          <Skeleton className="h-6 w-20 rounded-md" />
         </div>
       </div>
 
       {/* Section content skeleton */}
-      <div className="mx-auto mt-6 flex w-full max-w-5xl flex-1 flex-col gap-8">
+      <div className="mx-auto mt-6 flex w-full max-w-5xl flex-col gap-8">
         {/* Section header skeleton */}
         <div className="flex flex-col items-center justify-center gap-3 py-4">
           <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
@@ -55,16 +49,11 @@ export function SessionLoadingScreen() {
         </div>
 
         {/* Two-column layout skeleton */}
-        <div className="grid min-h-0 flex-1 grid-cols-2 gap-6">
-          {/* Left: field skeletons */}
-          <div className="flex flex-col gap-4">
-            <Skeleton className="flex-1 rounded-md" />
-            <Skeleton className="flex-1 rounded-md" />
-            <Skeleton className="flex-1 rounded-md" />
-            <Skeleton className="flex-1 rounded-md" />
-          </div>
+        <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
+          {/* Left: accordion skeleton */}
+          <Skeleton className="h-[26rem] rounded-md" />
           {/* Right: chat skeleton */}
-          <Skeleton className="rounded-md" />
+          <Skeleton className="h-[26rem] rounded-md" />
         </div>
       </div>
     </div>

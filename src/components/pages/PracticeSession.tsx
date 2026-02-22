@@ -245,7 +245,7 @@ export function PracticeSession() {
       {isPreparingSession && <SessionLoadingScreen />}
 
       {isPracticeStarted && problem && problemDetails && (
-        <>
+        <div className="animate-in fade-in duration-500">
           <SessionBreadcrumb
             problemTitle={problem.title}
             currentSectionIndex={currentSectionIndex}
@@ -407,7 +407,7 @@ export function PracticeSession() {
             open={isSummarySheetOpen}
             onOpenChange={setIsSummarySheetOpen}
           />
-        </>
+        </div>
       )}
     </div>
   );
