@@ -6,6 +6,16 @@ import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
 import { SectionKey } from "@/types/practice";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -16,13 +26,88 @@ interface SessionBreadcrumbProps {
   problemTitle: string;
   currentSectionIndex: number;
   highestVisitedIndex: number;
-  onProblemClick: () => void;
+  onViewProblem: () => void;
+  onEndSession: () => void;
   onSectionNavigate: (sectionKey: SectionKey) => void;
   onSectionSummaryClick?: (sectionKey: SectionKey) => void;
 }
 
 const glassyTrigger =
   "inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-black/10 bg-gradient-to-t from-transparent via-transparent via-[75%] to-white/15 px-2.5 text-xs font-medium uppercase tracking-wide backdrop-blur-2xl transition-all hover:to-white/25 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]";
+
+function ProblemDropdownItem({
+  problemTitle,
+  onViewProblem,
+  onEndSession,
+}: {
+  problemTitle: string;
+  onViewProblem: () => void;
+  onEndSession: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const isHoveringRef = useRef(false);
+
+  const handleMouseEnter = () => {
+    isHoveringRef.current = true;
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    isHoveringRef.current = false;
+    setTimeout(() => {
+      if (!isHoveringRef.current) setOpen(false);
+    }, 150);
+  };
+
+  return (
+    <>
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+        <DropdownMenuTrigger asChild>
+          <button
+            className={cn(glassyTrigger, "hover:text-foreground")}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            {problemTitle}
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="start"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        >
+          <DropdownMenuItem onClick={onViewProblem}>
+            View problem
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="text-destructive focus:text-destructive"
+            onClick={() => setAlertOpen(true)}
+          >
+            End session
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>End this session?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your progress will not be saved. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep going</AlertDialogCancel>
+            <AlertDialogAction onClick={onEndSession} variant="destructive">
+              End Session
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
 
 function SectionDropdownItem({
   sectionKey,
@@ -85,7 +170,8 @@ export function SessionBreadcrumb({
   problemTitle,
   currentSectionIndex,
   highestVisitedIndex,
-  onProblemClick,
+  onViewProblem,
+  onEndSession,
   onSectionNavigate,
   onSectionSummaryClick,
 }: SessionBreadcrumbProps) {
@@ -183,12 +269,11 @@ export function SessionBreadcrumb({
       className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-4 text-sm sm:px-10"
     >
       {/* Always-visible: problem title trigger */}
-      <button
-        onClick={onProblemClick}
-        className={cn(glassyTrigger, "hover:text-foreground")}
-      >
-        {problemTitle}
-      </button>
+      <ProblemDropdownItem
+        problemTitle={problemTitle}
+        onViewProblem={onViewProblem}
+        onEndSession={onEndSession}
+      />
 
       <span role="presentation" aria-hidden="true" className="shrink-0">
         :

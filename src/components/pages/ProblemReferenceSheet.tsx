@@ -18,27 +18,14 @@ import {
 import { Item, ItemContent } from "@/components/ui/item";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   Sheet,
   SheetContent,
   SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { Problem, ProblemDetails } from "@/types/problem";
-import { Button } from "../ui/button";
 import { ProblemDetailContent } from "./ProblemDetailContent";
 
 function SpoilerCard({
@@ -77,7 +64,6 @@ interface ProblemReferenceSheetProps {
   problemDetails: ProblemDetails;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEndSession: () => void;
 }
 
 export function ProblemReferenceSheet({
@@ -85,7 +71,6 @@ export function ProblemReferenceSheet({
   problemDetails,
   open,
   onOpenChange,
-  onEndSession,
 }: ProblemReferenceSheetProps) {
   const { derived } = problemDetails;
   const [revealed, setRevealed] = React.useState<Set<string>>(new Set());
@@ -329,30 +314,6 @@ export function ProblemReferenceSheet({
             )}
           </Accordion>
         </ScrollArea>
-        <SheetFooter className="flex items-center justify-center">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive">End Session</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>End this session?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Your progress will not be saved. This cannot be undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep going</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={onEndSession}
-                  variant="destructive"
-                >
-                  End Session
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </SheetFooter>
       </SheetContent>
     </Sheet>
   );

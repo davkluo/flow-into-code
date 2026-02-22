@@ -250,7 +250,8 @@ export function PracticeSession() {
             problemTitle={problem.title}
             currentSectionIndex={currentSectionIndex}
             highestVisitedIndex={highestVisitedIndex}
-            onProblemClick={() => setIsProblemSheetOpen(true)}
+            onViewProblem={() => setIsProblemSheetOpen(true)}
+            onEndSession={handleEndSession}
             onSectionNavigate={(sectionKey) =>
               setCurrentSectionIndex(SECTION_ORDER.indexOf(sectionKey))
             }
@@ -398,7 +399,6 @@ export function PracticeSession() {
             problemDetails={problemDetails}
             open={isProblemSheetOpen}
             onOpenChange={setIsProblemSheetOpen}
-            onEndSession={handleEndSession}
           />
 
           <SectionSummarySheet
