@@ -1,0 +1,23 @@
+services:
+  web:
+    build: . # Dockerfile in project root
+    ports:
+      - "3000:3000"
+    environment:
+      - EXECUTOR_URL=http://executor:8080
+    networks:
+      - app-network
+
+  executor:
+    build: ./executor # Dockerfile in executor directory
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # Docker daemon access
+      - /tmp/code-runs:/tmp/code-runs # For temporary code files
+    ports:
+      - "8080:8080" # NOTE: For development only, remove in production
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
