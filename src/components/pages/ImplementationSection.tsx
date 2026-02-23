@@ -5,10 +5,11 @@ import {
   CopyIcon,
   ExternalLinkIcon,
   InfoIcon,
+  Loader2Icon,
   PlayIcon,
   RotateCcwIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,9 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
+import { authFetch } from "@/lib/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
@@ -77,8 +80,51 @@ export function ImplementationSection({
   const getSnippet = (lang: LangSlug) =>
     processCodeSnippet(codeSnippets[lang] ?? "", lang);
 
-  const [output, setOutput] = useState<string | undefined>(undefined);
+  const [output, setOutput] = useState<string>("");
   const [outputVisible, setOutputVisible] = useState(false);
+  const [isRunning, setIsRunning] = useState(false);
+  const [executionCooldownUntil, setExecutionCooldownUntil] = useState(0);
+  const [runSecondsLeft, setRunSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    const remaining = Math.ceil((executionCooldownUntil - Date.now()) / 1000);
+    if (remaining <= 0) {
+      setRunSecondsLeft(0);
+      return;
+    }
+    setRunSecondsLeft(remaining);
+    const id = setInterval(() => {
+      const r = Math.ceil((executionCooldownUntil - Date.now()) / 1000);
+      if (r <= 0) {
+        setRunSecondsLeft(0);
+        clearInterval(id);
+      } else {
+        setRunSecondsLeft(r);
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [executionCooldownUntil]);
+
+  const handleRun = async () => {
+    setIsRunning(true);
+    setOutputVisible(true);
+    setOutput("");
+    try {
+      const res = await authFetch("/api/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language }),
+      });
+
+      const data = await res.json();
+      setOutput(data.stdout || data.stderr || "No output.");
+    } catch {
+      setOutput("Error executing code. Please try again.");
+    } finally {
+      setIsRunning(false);
+      setExecutionCooldownUntil(Date.now() + CODE_EXECUTION_COOLDOWN_MS);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -140,10 +186,19 @@ export function ImplementationSection({
                   variant="ghost"
                   size="sm"
                   className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                  onClick={() => setOutputVisible(true)}
+                  disabled={isRunning || runSecondsLeft > 0}
+                  onClick={handleRun}
                 >
-                  <PlayIcon className="size-3" />
-                  Run
+                  {isRunning ? (
+                    <Loader2Icon className="size-3 animate-spin" />
+                  ) : (
+                    <PlayIcon className="size-3" />
+                  )}
+                  {isRunning
+                    ? "Running"
+                    : runSecondsLeft > 0
+                      ? `Wait ${runSecondsLeft}s`
+                      : "Run"}
                 </Button>
 
                 <Button

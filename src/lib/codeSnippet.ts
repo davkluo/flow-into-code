@@ -1,7 +1,8 @@
 import { LangSlug } from "@/types/problem";
 
 const MAIN_BLOCKS: Record<LangSlug, string> = {
-  [LangSlug.PYTHON3]: "\n\nif __name__ == \"__main__\":\n    # Write your test cases here\n    pass\n",
+  [LangSlug.PYTHON3]:
+    '\n\nif __name__ == "__main__":\n    # Write your test cases here\n    pass\n',
 };
 
 /**
@@ -22,7 +23,12 @@ function uncommentPythonDefinitions(snippet: string): string {
     if (/^# (class |Definition for )/.test(line)) {
       // Collect the contiguous commented block
       const block: string[] = [];
-      while (i < lines.length && (lines[i].startsWith("# ") || lines[i].startsWith("#\t") || lines[i] === "#")) {
+      while (
+        i < lines.length &&
+        (lines[i].startsWith("# ") ||
+          lines[i].startsWith("#\t") ||
+          lines[i] === "#")
+      ) {
         block.push(lines[i]);
         i++;
       }
