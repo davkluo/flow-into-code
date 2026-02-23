@@ -18,3 +18,17 @@ export const chatRateLimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(4, "60 s"),
   prefix: "ratelimit:chat",
 });
+
+/**
+ * 10 requests per 60-second sliding window per user.
+ *
+ * This is the main rate limit for the "Run Code" button, which is more
+ * permissive than the chat rate limit to allow for iterative debugging. The UI
+ * enforces a 15s cooldown between runs, but this server-side limit gives some
+ * headroom for retries and failed requests.
+ */
+export const executeRateLimit = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(10, "60 s"),
+  prefix: "ratelimit:execute",
+});
