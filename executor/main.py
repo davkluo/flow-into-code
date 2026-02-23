@@ -4,6 +4,7 @@ import shutil
 import uuid
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
 app = FastAPI()
 
@@ -14,9 +15,26 @@ CPU_LIMIT = "0.25"
 EXECUTION_IMAGE = "python:3.12-alpine"
 SUPPORTED_LANGUAGES = { "python3" }
 
+PREAMBLES = {
+    "python3": (
+        "from typing import List, Optional, Dict, Tuple, Set\n" +
+        "from collections import defaultdict, Counter, deque\n" +
+        "from heapq import heappush, heappop, heapify\n" +
+        "import math\n"
+    )
+}
+
 class RunRequest(BaseModel):
     code: str
     language: str = "python3"
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    proc = await asyncio.create_subprocess_exec("docker", "pull", EXECUTION_IMAGE)
+    await proc.wait()
+    yield # app runs
+
+app = FastAPI(lifespan=lifespan)
 
 @app.post("/run")
 async def run_code(req: RunRequest):
@@ -31,8 +49,9 @@ async def run_code(req: RunRequest):
     os.makedirs(work_dir, exist_ok=True)
 
     try:
+        preamble = PREAMBLES.get(req.language, "")
         with open(os.path.join(work_dir, "solution.py"), "w") as f:
-            f.write(req.code)
+            f.write(preamble + req.code)
         
         cmd = [
             "docker", "run", 
