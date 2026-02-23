@@ -1,10 +1,15 @@
 "use client";
 
 import { autocompletion } from "@codemirror/autocomplete";
+import { indentUnit } from "@codemirror/language";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { useTheme } from "next-themes";
-import { codeMirrorDarkSyntax, codeMirrorTheme, languages } from "@/lib/codeMirror";
+import {
+  codeMirrorDarkSyntax,
+  codeMirrorTheme,
+  languages,
+} from "@/lib/codeMirror";
 import { LangSlug } from "@/types/problem";
 
 interface CodeEditorProps {
@@ -22,9 +27,10 @@ export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
       height="100%"
       className="h-full [&_.cm-content]:!pt-10"
       theme="none"
-      basicSetup={{ tabSize: 2 }}
+      basicSetup={{ tabSize: 4 }}
       extensions={[
         EditorView.lineWrapping,
+        indentUnit.of("    "), // 4 space indents
         autocompletion(),
         languages[language],
         codeMirrorTheme,
