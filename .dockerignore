@@ -25,6 +25,7 @@ build
 .env.*.local
 .env.development
 .env.test
+.env.production
 
 # IDE and editors
 .vscode
