@@ -7,15 +7,15 @@ const redis = new Redis({
 });
 
 /**
- * 4 requests per 60-second sliding window per user.
+ * 7 requests per 60-second sliding window per user.
  *
- * Slightly more permissive than the 20s client-side cooldown (~3/min) to give
+ * Slightly more permissive than the 10s client-side cooldown (~6/min) to give
  * one retry's worth of headroom for failed requests. This limit only activates
  * for API-level abuse bypassing the UI entirely.
  */
 export const chatRateLimit = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(4, "60 s"),
+  limiter: Ratelimit.slidingWindow(7, "60 s"),
   prefix: "ratelimit:chat",
 });
 
