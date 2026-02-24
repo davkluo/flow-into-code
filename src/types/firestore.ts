@@ -1,5 +1,5 @@
 import z from "zod";
-import { LanguageKey } from "@/lib/codeMirror";
+// import { LanguageKey } from "@/lib/codeMirror";
 import { SectionKey } from "@/types/practice";
 import { ProblemDetails } from "@/types/problem";
 import { ProblemMetadataSchema } from "./problems";
@@ -24,7 +24,7 @@ export type SessionDoc = {
   problemTitleSlug: string; // References problems/{titleSlug}
   distilledSummaries: Record<SectionKey, string>;
   implementation: string;
-  implementationLanguage: LanguageKey;
+  // implementationLanguage: LanguageKey;
   feedback: FeedbackData;
   ragMetadata: RagMetadata;
   totalTimeSec: number;

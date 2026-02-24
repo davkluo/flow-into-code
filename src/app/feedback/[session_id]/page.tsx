@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { languageOptions } from "@/lib/codeMirror";
+// import { languageOptions } from "@/lib/codeMirror";
 import { getSessionDocAdmin } from "@/lib/firestore/admin";
 import { SessionDoc } from "@/types/firestore";
 
@@ -129,13 +129,13 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
 
             <div className="flex flex-col gap-2 text-sm">
               <span className="font-semibold">Clarifications</span>
-              <p>{sessionDoc.distilledSummaries.clarification}</p>
+              {/* <p>{sessionDoc.distilledSummaries.clarification}</p> */}
             </div>
             <Separator className="my-6" />
 
             <div className="flex flex-col gap-2 text-sm">
               <span className="font-semibold">Thought Process</span>
-              <p>{sessionDoc.distilledSummaries.thought_process}</p>
+              {/* <p>{sessionDoc.distilledSummaries.thought_process}</p> */}
             </div>
             <Separator className="my-6" />
 
@@ -146,7 +146,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
                   <pre className="bg-muted rounded p-6 text-xs break-words whitespace-pre-wrap">
                     {sessionDoc.pseudocode}
                   </pre>
-                  <p>{sessionDoc.distilledSummaries.clarification}</p>
+                  {/* <p>{sessionDoc.distilledSummaries.clarification}</p> */}
                 </div>
                 <Separator className="my-6" />
               </>
@@ -155,7 +155,7 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
               <span className="font-semibold">Implementation</span>
               <pre className="bg-muted rounded p-6 text-xs break-words whitespace-pre-wrap">
                 <div className="text-muted-foreground mb-1 text-xs italic">
-                  Language: {languageOptions[sessionDoc.implementationLanguage]}
+                  {/* Language: {languageOptions[sessionDoc.implementationLanguage]} */}
                 </div>
                 {sessionDoc.implementation}
               </pre>
