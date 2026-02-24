@@ -15,14 +15,15 @@ import { SectionSnapshotData } from "@/lib/chat/context";
 import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
-import type { LangSlug } from "@/types/problem";
 import { Button } from "../ui/button";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
+import type { AlgorithmSnapshot } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
 import type { ApproachSnapshot } from "./ApproachAndReasoningSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import type { ComplexitySnapshot } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
+import type { ImplementationSnapshot } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
@@ -59,9 +60,14 @@ export function PracticeSession() {
     approach: "",
     reasoning: "",
   });
-  const [pseudocode, setPseudocode] = useState("");
-  const [implCode, setImplCode] = useState("");
-  const [implLanguage, setImplLanguage] = useState<LangSlug>(DEFAULT_LANGUAGE);
+  const [algorithmFields, setAlgorithmFields] = useState<AlgorithmSnapshot>({
+    pseudocode: "",
+  });
+  const [implFields, setImplFields] = useState<ImplementationSnapshot>({
+    code: "",
+    language: DEFAULT_LANGUAGE,
+    output: "",
+  });
   const [complexityFields, setComplexityFields] = useState<ComplexitySnapshot>({
     timeComplexity: "",
     spaceComplexity: "",
@@ -167,14 +173,15 @@ export function PracticeSession() {
           edgeCases: "",
         });
         setApproachFields({ approach: "", reasoning: "" });
-        setPseudocode("");
-        setImplCode(
-          processCodeSnippet(
+        setAlgorithmFields({ pseudocode: "" });
+        setImplFields({
+          code: processCodeSnippet(
             data?.source.codeSnippets[DEFAULT_LANGUAGE] ?? "",
             DEFAULT_LANGUAGE,
           ),
-        );
-        setImplLanguage(DEFAULT_LANGUAGE);
+          language: DEFAULT_LANGUAGE,
+          output: "",
+        });
         setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
 
         setIsPracticeStarted(true);
@@ -201,9 +208,9 @@ export function PracticeSession() {
       case "approach_and_reasoning":
         return approachFields;
       case "algorithm_design":
-        return { pseudocode };
+        return algorithmFields;
       case "implementation":
-        return { code: implCode, language: implLanguage };
+        return implFields;
       case "complexity_analysis":
         return complexityFields;
     }
@@ -211,11 +218,24 @@ export function PracticeSession() {
     summarySectionKey,
     understandingFields,
     approachFields,
-    pseudocode,
-    implCode,
-    implLanguage,
+    algorithmFields,
+    implFields,
     complexityFields,
   ]);
+
+  const handleSend = useCallback(
+    async (section: SectionKey, content: string): Promise<void> => {
+      const snapshots: Record<SectionKey, SectionSnapshotData> = {
+        problem_understanding: understandingFields,
+        approach_and_reasoning: approachFields,
+        algorithm_design: algorithmFields,
+        implementation: implFields,
+        complexity_analysis: complexityFields,
+      };
+      await llmSendMessage(section, content, snapshots[section]);
+    },
+    [llmSendMessage, understandingFields, approachFields, algorithmFields, implFields, complexityFields],
+  );
 
   const handleEndSession = useCallback(() => {
     llmReset();
@@ -236,9 +256,8 @@ export function PracticeSession() {
       edgeCases: "",
     });
     setApproachFields({ approach: "", reasoning: "" });
-    setPseudocode("");
-    setImplCode("");
-    setImplLanguage(DEFAULT_LANGUAGE);
+    setAlgorithmFields({ pseudocode: "" });
+    setImplFields({ code: "", language: DEFAULT_LANGUAGE, output: "" });
     setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
   }, [llmReset, resetTimer]);
 
@@ -304,9 +323,7 @@ export function PracticeSession() {
                     }))
                   }
                   messages={llmGetMessages("problem_understanding")}
-                  onSend={(content, snapshot) =>
-                    llmSendMessage("problem_understanding", content, snapshot)
-                  }
+                  onSend={(content) => handleSend("problem_understanding", content)}
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>
@@ -321,9 +338,7 @@ export function PracticeSession() {
                     setApproachFields((prev) => ({ ...prev, [key]: value }))
                   }
                   messages={llmGetMessages("approach_and_reasoning")}
-                  onSend={(content, snapshot) =>
-                    llmSendMessage("approach_and_reasoning", content, snapshot)
-                  }
+                  onSend={(content) => handleSend("approach_and_reasoning", content)}
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>
@@ -333,12 +348,12 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 2}
               >
                 <AlgorithmDesignSection
-                  pseudocode={pseudocode}
-                  onPseudocodeChange={setPseudocode}
-                  messages={llmGetMessages("algorithm_design")}
-                  onSend={(content, snapshot) =>
-                    llmSendMessage("algorithm_design", content, snapshot)
+                  fields={algorithmFields}
+                  onFieldChange={(key, value) =>
+                    setAlgorithmFields((prev) => ({ ...prev, [key]: value }))
                   }
+                  messages={llmGetMessages("algorithm_design")}
+                  onSend={(content) => handleSend("algorithm_design", content)}
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>
@@ -348,17 +363,23 @@ export function PracticeSession() {
                 inert={currentSectionIndex !== 3}
               >
                 <ImplementationSection
-                  code={implCode}
-                  onCodeChange={setImplCode}
-                  language={implLanguage}
-                  onLanguageChange={setImplLanguage}
-                  messages={llmGetMessages("implementation")}
-                  onSend={(content, snapshot) =>
-                    llmSendMessage("implementation", content, snapshot)
+                  code={implFields.code}
+                  onCodeChange={(code) =>
+                    setImplFields((prev) => ({ ...prev, code }))
                   }
+                  language={implFields.language}
+                  onLanguageChange={(language) =>
+                    setImplFields((prev) => ({ ...prev, language }))
+                  }
+                  messages={llmGetMessages("implementation")}
+                  onSend={(content) => handleSend("implementation", content)}
                   cooldownUntil={llmCooldownUntil}
                   codeSnippets={problemDetails.source.codeSnippets}
                   titleSlug={problemDetails.titleSlug}
+                  output={implFields.output}
+                  onOutputChange={(output) =>
+                    setImplFields((prev) => ({ ...prev, output }))
+                  }
                 />
               </div>
 
@@ -372,9 +393,7 @@ export function PracticeSession() {
                     setComplexityFields((prev) => ({ ...prev, [key]: value }))
                   }
                   messages={llmGetMessages("complexity_analysis")}
-                  onSend={(content, snapshot) =>
-                    llmSendMessage("complexity_analysis", content, snapshot)
-                  }
+                  onSend={(content) => handleSend("complexity_analysis", content)}
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>

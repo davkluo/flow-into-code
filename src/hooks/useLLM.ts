@@ -1,8 +1,12 @@
 import { useCallback, useState } from "react";
-import { authFetch } from "@/lib/authFetch";
-import { buildProblemContext, SectionSnapshotData } from "@/lib/chat/context";
-import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
 import { CHAT_COOLDOWN_MS } from "@/constants/chat";
+import { authFetch } from "@/lib/authFetch";
+import {
+  buildProblemContext,
+  buildSnapshotContext,
+  SectionSnapshotData,
+} from "@/lib/chat/context";
+import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
 import { Message, SessionMessage } from "@/types/chat";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
@@ -103,15 +107,19 @@ export function useLLM(
     });
 
     // Build payload — system messages + full session history
-    // TODO (Step 3): add buildSnapshotContext here
     const fullHistory = currentMessages.map(
       (m): Message => ({ role: m.role, content: m.content }),
     );
+
+    const snapshotContext = buildSnapshotContext(llmState.sections);
 
     const payload: Message[] = [
       { role: "system", content: GLOBAL_PROMPT.trim() },
       { role: "system", content: buildProblemContext(problem, problemDetails) },
       { role: "system", content: SECTION_PROMPTS[section].trim() },
+      ...(snapshotContext
+        ? [{ role: "system" as const, content: snapshotContext }]
+        : []),
       ...fullHistory,
     ];
 

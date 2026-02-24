@@ -21,7 +21,7 @@ interface ComplexityAnalysisSectionProps {
   fields: ComplexitySnapshot;
   onFieldChange: (key: keyof ComplexitySnapshot, value: string) => void;
   messages: SessionMessage[];
-  onSend: (content: string, snapshot: ComplexitySnapshot) => Promise<void>;
+  onSend: (content: string) => Promise<void>;
   cooldownUntil?: number;
 }
 
@@ -99,7 +99,7 @@ export function ComplexityAnalysisSection({
           <ChatBox
             location="complexity_analysis"
             messages={messages}
-            onSend={(content) => onSend(content, { ...fields })}
+            onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Justify Your Analysis"

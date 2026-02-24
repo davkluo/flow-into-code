@@ -29,7 +29,7 @@ interface UnderstandingSectionProps {
   fields: UnderstandingSnapshot;
   onFieldChange: (key: keyof UnderstandingSnapshot, value: string) => void;
   messages: SessionMessage[];
-  onSend: (content: string, snapshot: UnderstandingSnapshot) => Promise<void>;
+  onSend: (content: string) => Promise<void>;
   cooldownUntil?: number;
 }
 
@@ -176,7 +176,7 @@ export function UnderstandingSection({
           <ChatBox
             location="problem_understanding"
             messages={messages}
-            onSend={(content) => onSend(content, { ...fields })}
+            onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Ask Clarifying Questions"

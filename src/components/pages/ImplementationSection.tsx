@@ -40,7 +40,7 @@ import { CodeEditor } from "./CodeEditor";
 export type ImplementationSnapshot = {
   code: string;
   language: LangSlug;
-  output?: string;
+  output: string;
 };
 
 interface ImplementationSectionProps {
@@ -49,10 +49,12 @@ interface ImplementationSectionProps {
   language: LangSlug;
   onLanguageChange: (lang: LangSlug) => void;
   messages: SessionMessage[];
-  onSend: (content: string, snapshot: ImplementationSnapshot) => Promise<void>;
+  onSend: (content: string) => Promise<void>;
   cooldownUntil?: number;
   codeSnippets: Partial<Record<LangSlug, string>>;
   titleSlug: string;
+  output: string;
+  onOutputChange: (output: string) => void;
 }
 
 const FIELD: SectionField<{ code: string }> = {
@@ -80,11 +82,11 @@ export function ImplementationSection({
   cooldownUntil,
   codeSnippets,
   titleSlug,
+  output,
+  onOutputChange,
 }: ImplementationSectionProps) {
   const getSnippet = (lang: LangSlug) =>
     processCodeSnippet(codeSnippets[lang] ?? "", lang);
-
-  const [output, setOutput] = useState<string>("");
   const [outputVisible, setOutputVisible] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -125,7 +127,7 @@ export function ImplementationSection({
     setIsRunning(true);
     setIsError(false);
     setOutputVisible(true);
-    setOutput("");
+    onOutputChange("");
     try {
       const res = await authFetch("/api/execute", {
         method: "POST",
@@ -136,10 +138,10 @@ export function ImplementationSection({
       const data = await res.json();
       const hasError = !!data.stderr || !!data.timeout;
       setIsError(hasError);
-      setOutput(data.stdout || data.stderr || "No output.");
+      onOutputChange(data.stdout || data.stderr || "No output.");
     } catch {
       setIsError(true);
-      setOutput("Error executing code. Please try again.");
+      onOutputChange("Error executing code. Please try again.");
     } finally {
       setIsRunning(false);
       setExecutionCooldownUntil(Date.now() + CODE_EXECUTION_COOLDOWN_MS);
@@ -319,7 +321,7 @@ export function ImplementationSection({
           <ChatBox
             location="implementation"
             messages={messages}
-            onSend={(content) => onSend(content, { code, language, output })}
+            onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Walk Through Your Code"

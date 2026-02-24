@@ -17,10 +17,10 @@ export type AlgorithmSnapshot = {
 };
 
 interface AlgorithmDesignSectionProps {
-  pseudocode: string;
-  onPseudocodeChange: (value: string) => void;
+  fields: AlgorithmSnapshot;
+  onFieldChange: (key: keyof AlgorithmSnapshot, value: string) => void;
   messages: SessionMessage[];
-  onSend: (content: string, snapshot: AlgorithmSnapshot) => Promise<void>;
+  onSend: (content: string) => Promise<void>;
   cooldownUntil?: number;
 }
 
@@ -34,12 +34,13 @@ const FIELD: SectionField<AlgorithmSnapshot> = {
 };
 
 export function AlgorithmDesignSection({
-  pseudocode,
-  onPseudocodeChange,
+  fields,
+  onFieldChange,
   messages,
   onSend,
   cooldownUntil,
 }: AlgorithmDesignSectionProps) {
+  const { pseudocode } = fields;
   return (
     <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="algorithm_design" />
@@ -65,7 +66,10 @@ export function AlgorithmDesignSection({
             </div>
             <div className="relative flex-1 overflow-hidden">
               <div className="absolute inset-0">
-                <PseudocodeEditor value={pseudocode} onChange={onPseudocodeChange} />
+                <PseudocodeEditor
+                  value={pseudocode}
+                  onChange={(v) => onFieldChange("pseudocode", v)}
+                />
               </div>
             </div>
           </div>
@@ -75,7 +79,7 @@ export function AlgorithmDesignSection({
           <ChatBox
             location="algorithm_design"
             messages={messages}
-            onSend={(content) => onSend(content, { pseudocode })}
+            onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Walk Through Your Algorithm"

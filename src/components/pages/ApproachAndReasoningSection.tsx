@@ -21,7 +21,7 @@ interface ApproachAndReasoningSectionProps {
   fields: ApproachSnapshot;
   onFieldChange: (key: keyof ApproachSnapshot, value: string) => void;
   messages: SessionMessage[];
-  onSend: (content: string, snapshot: ApproachSnapshot) => Promise<void>;
+  onSend: (content: string) => Promise<void>;
   cooldownUntil?: number;
 }
 
@@ -98,7 +98,7 @@ export function ApproachAndReasoningSection({
           <ChatBox
             location="approach_and_reasoning"
             messages={messages}
-            onSend={(content) => onSend(content, { ...fields })}
+            onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
             title="AI Interviewer &mdash; Think Out Loud"
