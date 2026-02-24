@@ -2,14 +2,6 @@ import { SectionKey } from "./practice";
 
 export const PROBLEM_SCHEMA_VERSION = 1;
 
-export const GRADING_CATEGORIES: Record<SectionKey, string> = {
-  problem_understanding: "Problem Understanding & Clarification",
-  approach_and_reasoning: "Approach & Reasoning",
-  algorithm_design: "Algorithm Design / Pseudocode",
-  implementation: "Implementation Correctness",
-  complexity_analysis: "Time & Space Complexity",
-} as const;
-
 export const LangSlug = {
   PYTHON3: "python3",
 } as const;
@@ -59,11 +51,19 @@ export interface Framing {
   systems?: string;
 }
 
+export interface ProblemSolution {
+  approach: string;
+  explanation: string;
+  algorithm: string;
+  tradeoffs: string;
+  timeComplexity: string;
+  spaceComplexity: string;
+}
+
 export interface GradingCriterion {
   category: SectionKey;
   description: string;
-  maxScore: number;
-  guidance?: string;
+  rubric: string;
 }
 
 export interface Problem {
@@ -100,13 +100,7 @@ export interface ProblemDetails {
     }[];
 
     // First creation upon submission evaluation
-    solutions?: {
-      approach: string;
-      explanation: string;
-      implementation?: Partial<Record<LangSlug, string>>;
-      timeComplexity?: string;
-      spaceComplexity?: string;
-    }[];
+    solutions?: ProblemSolution[];
     gradingCriteria?: GradingCriterion[];
   };
 
