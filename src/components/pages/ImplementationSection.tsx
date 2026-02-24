@@ -27,6 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { EXECUTE_API_PATH } from "@/constants/api";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
 import { authFetch } from "@/lib/authFetch";
@@ -125,7 +126,7 @@ export function ImplementationSection({
     setOutputVisible(true);
     onOutputChange("");
     try {
-      const res = await authFetch("/api/execute", {
+      const res = await authFetch(EXECUTE_API_PATH, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code, language }),

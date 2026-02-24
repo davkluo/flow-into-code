@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { CHAT_API_PATH } from "@/constants/api";
 import { CHAT_COOLDOWN_MS } from "@/constants/chat";
 import { authFetch } from "@/lib/authFetch";
 import { buildProblemContext, buildSnapshotContext } from "@/lib/chat/context";
@@ -119,7 +120,7 @@ export function useLLM(
       ...fullHistory,
     ];
 
-    const res = await authFetch("/api/chat", {
+    const res = await authFetch(CHAT_API_PATH, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ messages: payload }),
