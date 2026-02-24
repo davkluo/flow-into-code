@@ -5,6 +5,7 @@ import { indentUnit } from "@codemirror/language";
 import { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { useTheme } from "next-themes";
+import { useMemo } from "react";
 import {
   codeMirrorDarkSyntax,
   codeMirrorTheme,
@@ -21,6 +22,18 @@ interface CodeEditorProps {
 export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
   const { resolvedTheme } = useTheme();
 
+  const extensions = useMemo(
+    () => [
+      EditorView.lineWrapping,
+      indentUnit.of("    "), // 4 space indents
+      autocompletion(),
+      languages[language],
+      codeMirrorTheme,
+      ...(resolvedTheme === "dark" ? [codeMirrorDarkSyntax] : []),
+    ],
+    [language, resolvedTheme],
+  );
+
   return (
     <CodeMirror
       value={value}
@@ -28,14 +41,7 @@ export function CodeEditor({ value, onChange, language }: CodeEditorProps) {
       className="h-full [&_.cm-content]:!pt-10"
       theme="none"
       basicSetup={{ tabSize: 4 }}
-      extensions={[
-        EditorView.lineWrapping,
-        indentUnit.of("    "), // 4 space indents
-        autocompletion(),
-        languages[language],
-        codeMirrorTheme,
-        ...(resolvedTheme === "dark" ? [codeMirrorDarkSyntax] : []),
-      ]}
+      extensions={extensions}
       onChange={onChange}
     />
   );

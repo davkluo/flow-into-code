@@ -28,9 +28,10 @@ import {
 } from "@/components/ui/tooltip";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
+import { toast } from "sonner";
 import { authFetch } from "@/lib/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
-import { processCodeSnippet } from "@/lib/codeSnippet";
+import { processCodeSnippet, stripTestBlock } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
 import { SectionField } from "@/types/practice";
 import { LangSlug } from "@/types/problem";
@@ -51,6 +52,7 @@ interface ImplementationSectionProps {
   onSend: (content: string, snapshot: ImplementationSnapshot) => Promise<void>;
   cooldownUntil?: number;
   codeSnippets: Partial<Record<LangSlug, string>>;
+  titleSlug: string;
 }
 
 const FIELD: SectionField<{ code: string }> = {
@@ -77,6 +79,7 @@ export function ImplementationSection({
   onSend,
   cooldownUntil,
   codeSnippets,
+  titleSlug,
 }: ImplementationSectionProps) {
   const getSnippet = (lang: LangSlug) =>
     processCodeSnippet(codeSnippets[lang] ?? "", lang);
@@ -106,6 +109,17 @@ export function ImplementationSection({
     }, 1000);
     return () => clearInterval(id);
   }, [executionCooldownUntil]);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+    toast.success("Code copied to clipboard.");
+  };
+
+  const handleSubmit = async () => {
+    await navigator.clipboard.writeText(stripTestBlock(code, language));
+    toast.success("Solution copied to clipboard.");
+    window.open(`https://leetcode.com/problems/${titleSlug}/`, "_blank");
+  };
 
   const handleRun = async () => {
     setIsRunning(true);
@@ -215,12 +229,13 @@ export function ImplementationSection({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                        onClick={handleCopy}
                       >
                         <CopyIcon className="size-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="w-max">
-                      <p>Copy code to clipboard</p>
+                      <p>Copy full code to clipboard</p>
                     </TooltipContent>
                   </Tooltip>
 
@@ -230,12 +245,13 @@ export function ImplementationSection({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                        onClick={handleSubmit}
                       >
                         <ExternalLinkIcon className="size-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="w-max">
-                      <p>Submit code on LeetCode</p>
+                      <p>Copy solution (without local test cases) and open LeetCode</p>
                     </TooltipContent>
                   </Tooltip>
 

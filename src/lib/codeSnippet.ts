@@ -46,6 +46,17 @@ function uncommentPythonDefinitions(snippet: string): string {
 }
 
 /**
+ * Strips the test block appended by processCodeSnippet (e.g. `if __name__ == "__main__":`)
+ * so only the solution code is returned. For languages without a test block, returns the
+ * code unchanged.
+ */
+export function stripTestBlock(code: string, lang: LangSlug): string {
+  if (lang !== LangSlug.PYTHON3) return code;
+  const idx = code.indexOf("\nif __name__");
+  return idx !== -1 ? code.slice(0, idx) : code;
+}
+
+/**
  * Processes a raw LeetCode code snippet for use in the editor:
  * 1. Uncomments leading class/struct definitions (TreeNode, ListNode, etc.)
  * 2. Appends a language-appropriate main block for writing test cases

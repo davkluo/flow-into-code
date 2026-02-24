@@ -332,6 +332,7 @@ export function PracticeSession() {
                   }
                   cooldownUntil={llmCooldownUntil}
                   codeSnippets={problemDetails.source.codeSnippets}
+                  titleSlug={problemDetails.titleSlug}
                 />
               </div>
 
