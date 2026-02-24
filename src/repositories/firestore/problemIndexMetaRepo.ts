@@ -1,7 +1,8 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { META_COLLECTION, PROBLEM_INDEX_META_DOC_ID } from "@/constants/firestore";
 
-const COLLECTION = "meta";
-const DOC_ID = "problemIndex";
+const COLLECTION = META_COLLECTION;
+const DOC_ID = PROBLEM_INDEX_META_DOC_ID;
 
 let cachedMeta: ProblemIndexMeta | null = null;
 

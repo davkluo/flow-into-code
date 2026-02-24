@@ -1,8 +1,9 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { PROBLEMS_COLLECTION } from "@/constants/firestore";
 import { computeSearchTerms } from "@/lib/search/computeSearchTerms";
 import { Problem } from "@/types/problem";
 
-const COLLECTION = "problems";
+const COLLECTION = PROBLEMS_COLLECTION;
 const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end of list
 
 /**

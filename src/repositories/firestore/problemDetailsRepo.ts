@@ -1,11 +1,12 @@
 import { adminDb } from "@/lib/firebaseAdmin";
+import { PROBLEM_DETAILS_COLLECTION } from "@/constants/firestore";
 import {
   PROBLEM_SCHEMA_VERSION,
   ProblemDetails,
   ProcessingLayerMeta,
 } from "@/types/problem";
 
-const COLLECTION = "problemDetails";
+const COLLECTION = PROBLEM_DETAILS_COLLECTION;
 
 export const STALE_AFTER_MS = 2 * 60 * 1000; // 2 minutes
 
