@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -83,6 +84,7 @@ export function ImplementationSection({
   const [output, setOutput] = useState<string>("");
   const [outputVisible, setOutputVisible] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
+  const [isError, setIsError] = useState(false);
   const [executionCooldownUntil, setExecutionCooldownUntil] = useState(0);
   const [runSecondsLeft, setRunSecondsLeft] = useState(0);
 
@@ -107,6 +109,7 @@ export function ImplementationSection({
 
   const handleRun = async () => {
     setIsRunning(true);
+    setIsError(false);
     setOutputVisible(true);
     setOutput("");
     try {
@@ -117,8 +120,11 @@ export function ImplementationSection({
       });
 
       const data = await res.json();
+      const hasError = !!data.stderr || !!data.timeout;
+      setIsError(hasError);
       setOutput(data.stdout || data.stderr || "No output.");
     } catch {
+      setIsError(true);
       setOutput("Error executing code. Please try again.");
     } finally {
       setIsRunning(false);
@@ -162,7 +168,7 @@ export function ImplementationSection({
                 />
               </div>
               {/* Floating controls */}
-              <div className="absolute inset-x-3 top-2 z-10 flex items-center justify-center gap-2">
+              <div className="absolute inset-x-3 top-2 z-10 flex items-center justify-between">
                 <Select
                   value={language}
                   onValueChange={(v) => {
@@ -182,50 +188,73 @@ export function ImplementationSection({
                     ))}
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                  disabled={isRunning || runSecondsLeft > 0}
-                  onClick={handleRun}
-                >
-                  {isRunning ? (
-                    <Loader2Icon className="size-3 animate-spin" />
-                  ) : (
-                    <PlayIcon className="size-3" />
-                  )}
-                  {isRunning
-                    ? "Running"
-                    : runSecondsLeft > 0
-                      ? `Wait ${runSecondsLeft}s`
-                      : "Run"}
-                </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                >
-                  <CopyIcon className="size-3" />
-                  Copy
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                >
-                  <ExternalLinkIcon className="size-3" />
-                  Submit
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
-                  onClick={() => onCodeChange(getSnippet(language))}
-                >
-                  <RotateCcwIcon className="size-3" />
-                  Reset
-                </Button>
+                <div className="flex gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 gap-1 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                    disabled={isRunning || runSecondsLeft > 0}
+                    onClick={handleRun}
+                  >
+                    {isRunning ? (
+                      <Loader2Icon className="size-3 animate-spin" />
+                    ) : (
+                      <PlayIcon className="size-3" />
+                    )}
+                    {isRunning
+                      ? "Running"
+                      : runSecondsLeft > 0
+                        ? `Wait ${runSecondsLeft}s`
+                        : "Run"}
+                  </Button>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                      >
+                        <CopyIcon className="size-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="w-max">
+                      <p>Copy code to clipboard</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                      >
+                        <ExternalLinkIcon className="size-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="w-max">
+                      <p>Submit code on LeetCode</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 rounded-md border border-black/10 bg-gradient-to-b from-white/30 to-white/60 px-2 text-xs backdrop-blur-sm hover:to-white/80 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]"
+                        onClick={() => onCodeChange(getSnippet(language))}
+                      >
+                        <RotateCcwIcon className="size-3" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="w-max">
+                      <p>Reset code to default</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             </div>
           </div>
@@ -235,10 +264,36 @@ export function ImplementationSection({
         {outputVisible && (
           <div className="flex flex-col overflow-hidden rounded-md border sm:col-span-2 sm:row-start-2">
             <div className="border-input flex items-center border-b px-3 py-2.5">
-              <span className="text-sm font-medium">Output</span>
+              {isRunning ? (
+                <span className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
+                  <Loader2Icon className="size-3.5 animate-spin" />
+                  Loading output
+                </span>
+              ) : (
+                <>
+                  <span className="text-sm font-medium">Output &mdash;</span>
+                  <span
+                    className={`ml-1.5 text-sm ${isError ? "text-destructive" : "text-lime-400"}`}
+                  >
+                    {isError ? "Error" : "Run successful"}
+                  </span>
+                </>
+              )}
             </div>
-            <div className="text-muted-foreground p-3 font-mono text-sm">
-              {output ?? "Code execution coming soon."}
+            <div className="p-3">
+              {isRunning ? (
+                <div className="flex flex-col gap-2">
+                  <Skeleton className="h-3.5 w-1/2" />
+                  <Skeleton className="h-3.5 w-1/3" />
+                  <Skeleton className="h-3.5 w-2/5" />
+                </div>
+              ) : (
+                <span
+                  className={`font-mono text-sm ${isError ? "text-destructive" : "text-muted-foreground"}`}
+                >
+                  {output}
+                </span>
+              )}
             </div>
           </div>
         )}
