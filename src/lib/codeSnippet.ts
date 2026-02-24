@@ -46,6 +46,37 @@ function uncommentPythonDefinitions(snippet: string): string {
 }
 
 /**
+ * Inserts `pass` into any Python function whose body is empty (no indented content
+ * following the def line), making the snippet syntactically valid from the start.
+ * Handles both single-function and multi-function (design problem) snippets.
+ */
+function addPassToEmptyFunctions(snippet: string): string {
+  const lines = snippet.split("\n");
+  const result: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    result.push(lines[i]);
+
+    // Only match def lines whose signature is complete on this line (ends with ':')
+    const defMatch = lines[i].match(/^(\s*)def \w+.*:\s*$/);
+    if (!defMatch) continue;
+
+    const defIndent = defMatch[1].length;
+
+    // Find the next non-blank line
+    let j = i + 1;
+    while (j < lines.length && lines[j].trim() === "") j++;
+
+    // If no deeper-indented line follows, the body is empty
+    if (j >= lines.length || lines[j].length - lines[j].trimStart().length <= defIndent) {
+      result.push(" ".repeat(defIndent + 4) + "pass");
+    }
+  }
+
+  return result.join("\n");
+}
+
+/**
  * Strips the test block appended by processCodeSnippet (e.g. `if __name__ == "__main__":`)
  * so only the solution code is returned. For languages without a test block, returns the
  * code unchanged.
@@ -67,7 +98,8 @@ export function processCodeSnippet(raw: string, lang: LangSlug): string {
   switch (lang) {
     case LangSlug.PYTHON3: {
       const withDefinitions = uncommentPythonDefinitions(raw);
-      return withDefinitions + MAIN_BLOCKS[lang];
+      const withPass = addPassToEmptyFunctions(withDefinitions);
+      return withPass + MAIN_BLOCKS[lang];
     }
     default:
       return raw;

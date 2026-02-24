@@ -15,10 +15,13 @@ import { SectionSnapshotData } from "@/lib/chat/context";
 import { processCodeSnippet } from "@/lib/codeSnippet";
 import { SectionKey } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
+import type { LangSlug } from "@/types/problem";
 import { Button } from "../ui/button";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
+import type { ApproachSnapshot } from "./ApproachAndReasoningSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
+import type { ComplexitySnapshot } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionSummarySheet } from "./SectionSummarySheet";
@@ -27,9 +30,6 @@ import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
 import type { UnderstandingSnapshot } from "./UnderstandingSection";
-import type { ApproachSnapshot } from "./ApproachAndReasoningSection";
-import type { ComplexitySnapshot } from "./ComplexityAnalysisSection";
-import type { LangSlug } from "@/types/problem";
 
 export function PracticeSession() {
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -145,7 +145,7 @@ export function PracticeSession() {
 
         const [res] = await Promise.all([
           authFetch(getProblemDataApiPath(slug, "practice")),
-          new Promise((r) => setTimeout(r, 1500)), // Minimum loading time for better UX
+          new Promise((r) => setTimeout(r, 500)), // Minimum loading time for better UX
         ]);
         if (res.status === 200) {
           data = (await res.json()) as ProblemDetails;
@@ -160,10 +160,20 @@ export function PracticeSession() {
         }
 
         // Reset all section fields for the new session
-        setUnderstandingFields({ restatement: "", inputsOutputs: "", constraints: "", edgeCases: "" });
+        setUnderstandingFields({
+          restatement: "",
+          inputsOutputs: "",
+          constraints: "",
+          edgeCases: "",
+        });
         setApproachFields({ approach: "", reasoning: "" });
         setPseudocode("");
-        setImplCode(processCodeSnippet(data?.source.codeSnippets[DEFAULT_LANGUAGE] ?? "", DEFAULT_LANGUAGE));
+        setImplCode(
+          processCodeSnippet(
+            data?.source.codeSnippets[DEFAULT_LANGUAGE] ?? "",
+            DEFAULT_LANGUAGE,
+          ),
+        );
         setImplLanguage(DEFAULT_LANGUAGE);
         setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
 
@@ -197,7 +207,15 @@ export function PracticeSession() {
       case "complexity_analysis":
         return complexityFields;
     }
-  }, [summarySectionKey, understandingFields, approachFields, pseudocode, implCode, implLanguage, complexityFields]);
+  }, [
+    summarySectionKey,
+    understandingFields,
+    approachFields,
+    pseudocode,
+    implCode,
+    implLanguage,
+    complexityFields,
+  ]);
 
   const handleEndSession = useCallback(() => {
     llmReset();
@@ -211,7 +229,12 @@ export function PracticeSession() {
     setIsProblemSheetOpen(false);
     setIsSummarySheetOpen(false);
     setSummarySectionKey(SECTION_ORDER[0]);
-    setUnderstandingFields({ restatement: "", inputsOutputs: "", constraints: "", edgeCases: "" });
+    setUnderstandingFields({
+      restatement: "",
+      inputsOutputs: "",
+      constraints: "",
+      edgeCases: "",
+    });
     setApproachFields({ approach: "", reasoning: "" });
     setPseudocode("");
     setImplCode("");
@@ -275,7 +298,10 @@ export function PracticeSession() {
                 <UnderstandingSection
                   fields={understandingFields}
                   onFieldChange={(key, value) =>
-                    setUnderstandingFields((prev) => ({ ...prev, [key]: value }))
+                    setUnderstandingFields((prev) => ({
+                      ...prev,
+                      [key]: value,
+                    }))
                   }
                   messages={llmGetMessages("problem_understanding")}
                   onSend={(content, snapshot) =>
