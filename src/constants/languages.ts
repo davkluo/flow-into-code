@@ -1,4 +1,4 @@
-import { LangSlug } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
 
 export const SUPPORTED_LANGS: LangSlug[] = [LangSlug.PYTHON3];
 

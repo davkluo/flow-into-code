@@ -16,14 +16,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
-import { SectionField } from "@/types/practice";
-
-export type UnderstandingSnapshot = {
-  restatement: string;
-  inputsOutputs: string;
-  constraints: string;
-  edgeCases: string;
-};
+import { SectionField, UnderstandingSnapshot } from "@/types/practice";
 
 interface UnderstandingSectionProps {
   fields: UnderstandingSnapshot;

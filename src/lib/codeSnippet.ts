@@ -1,4 +1,4 @@
-import { LangSlug } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
 
 const MAIN_BLOCKS: Record<LangSlug, string> = {
   [LangSlug.PYTHON3]:

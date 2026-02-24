@@ -1,14 +1,9 @@
+import { LangSlug } from "./languages";
 import { SectionKey } from "./practice";
 
 export const PROBLEM_SCHEMA_VERSION = 1;
 
-export const LangSlug = {
-  PYTHON3: "python3",
-} as const;
-
 export type ProblemDifficulty = "Easy" | "Medium" | "Hard";
-
-export type LangSlug = (typeof LangSlug)[keyof typeof LangSlug];
 
 export type ProcessingStatus = "complete" | "processing";
 

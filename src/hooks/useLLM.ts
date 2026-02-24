@@ -1,14 +1,10 @@
 import { useCallback, useState } from "react";
 import { CHAT_COOLDOWN_MS } from "@/constants/chat";
 import { authFetch } from "@/lib/authFetch";
-import {
-  buildProblemContext,
-  buildSnapshotContext,
-  SectionSnapshotData,
-} from "@/lib/chat/context";
+import { buildProblemContext, buildSnapshotContext } from "@/lib/chat/context";
 import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
 import { Message, SessionMessage } from "@/types/chat";
-import { SectionKey } from "@/types/practice";
+import { SectionKey, SectionSnapshotData } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 
 // ---------------------------------------------------------------------------

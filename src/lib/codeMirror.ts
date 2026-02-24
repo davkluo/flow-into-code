@@ -3,7 +3,7 @@ import { python } from "@codemirror/lang-python";
 import { syntaxHighlighting } from "@codemirror/language";
 import { oneDarkHighlightStyle } from "@codemirror/theme-one-dark";
 import { EditorView } from "@codemirror/view";
-import { LangSlug } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
 
 export const languages: Record<LangSlug, Extension> = {
   python3: python(),

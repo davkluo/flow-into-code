@@ -9,12 +9,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
-import { SectionField } from "@/types/practice";
+import { AlgorithmSnapshot, SectionField } from "@/types/practice";
 import { PseudocodeEditor } from "./PseudocodeEditor";
-
-export type AlgorithmSnapshot = {
-  pseudocode: string;
-};
 
 interface AlgorithmDesignSectionProps {
   fields: AlgorithmSnapshot;

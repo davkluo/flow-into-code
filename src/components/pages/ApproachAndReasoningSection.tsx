@@ -10,12 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
-import { SectionField } from "@/types/practice";
-
-export type ApproachSnapshot = {
-  approach: string;
-  reasoning: string;
-};
+import { ApproachSnapshot, SectionField } from "@/types/practice";
 
 interface ApproachAndReasoningSectionProps {
   fields: ApproachSnapshot;
@@ -105,14 +100,12 @@ export function ApproachAndReasoningSection({
             titleTooltip={
               <div className="space-y-1.5">
                 <p>
-                  Talk through your approach with an AI interviewer. They&apos;ll
-                  ask probing questions and push back on your reasoning — if
-                  there are flaws or weak trade-off decisions, expect to be
-                  questioned rather than told.
+                  Talk through your approach with an AI interviewer.
+                  They&apos;ll ask probing questions and push back on your
+                  reasoning — if there are flaws or weak trade-off decisions,
+                  expect to be questioned rather than told.
                 </p>
-                <p>
-                  Think out loud the way you would with a real interviewer.
-                </p>
+                <p>Think out loud the way you would with a real interviewer.</p>
               </div>
             }
             emptyStateMessage="No messages yet."

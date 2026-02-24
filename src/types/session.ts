@@ -1,5 +1,5 @@
 import { SessionMessage } from "./chat";
-import { SectionKey } from "./practice";
+import { SectionKey, SectionSnapshots } from "./practice";
 
 interface CategoryFeedback {
   score: number;
@@ -20,5 +20,5 @@ export interface Session {
   problemTitleSlug: string;
   chatLog: SessionMessage[];
   feedback: SessionFeedback;
-  // TODO: Add field for field snapshots
+  fields: Partial<SectionSnapshots>; // User-entered fields for each section
 }

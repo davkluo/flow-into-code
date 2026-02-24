@@ -11,26 +11,28 @@ import { useTimerActions } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
 import { authFetch } from "@/lib/authFetch";
-import { SectionSnapshotData } from "@/lib/chat/context";
 import { processCodeSnippet } from "@/lib/codeSnippet";
-import { SectionKey } from "@/types/practice";
+import {
+  AlgorithmSnapshot,
+  ApproachSnapshot,
+  ComplexitySnapshot,
+  ImplementationSnapshot,
+  SectionKey,
+  SectionSnapshotData,
+  UnderstandingSnapshot,
+} from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
-import type { AlgorithmSnapshot } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
-import type { ApproachSnapshot } from "./ApproachAndReasoningSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
-import type { ComplexitySnapshot } from "./ComplexityAnalysisSection";
 import { ImplementationSection } from "./ImplementationSection";
-import type { ImplementationSnapshot } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
-import type { UnderstandingSnapshot } from "./UnderstandingSection";
 
 export function PracticeSession() {
   const [problem, setProblem] = useState<Problem | null>(null);
@@ -234,7 +236,14 @@ export function PracticeSession() {
       };
       await llmSendMessage(section, content, snapshots[section]);
     },
-    [llmSendMessage, understandingFields, approachFields, algorithmFields, implFields, complexityFields],
+    [
+      llmSendMessage,
+      understandingFields,
+      approachFields,
+      algorithmFields,
+      implFields,
+      complexityFields,
+    ],
   );
 
   const handleEndSession = useCallback(() => {
@@ -323,7 +332,9 @@ export function PracticeSession() {
                     }))
                   }
                   messages={llmGetMessages("problem_understanding")}
-                  onSend={(content) => handleSend("problem_understanding", content)}
+                  onSend={(content) =>
+                    handleSend("problem_understanding", content)
+                  }
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>
@@ -338,7 +349,9 @@ export function PracticeSession() {
                     setApproachFields((prev) => ({ ...prev, [key]: value }))
                   }
                   messages={llmGetMessages("approach_and_reasoning")}
-                  onSend={(content) => handleSend("approach_and_reasoning", content)}
+                  onSend={(content) =>
+                    handleSend("approach_and_reasoning", content)
+                  }
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>
@@ -393,7 +406,9 @@ export function PracticeSession() {
                     setComplexityFields((prev) => ({ ...prev, [key]: value }))
                   }
                   messages={llmGetMessages("complexity_analysis")}
-                  onSend={(content) => handleSend("complexity_analysis", content)}
+                  onSend={(content) =>
+                    handleSend("complexity_analysis", content)
+                  }
                   cooldownUntil={llmCooldownUntil}
                 />
               </div>

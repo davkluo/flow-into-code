@@ -9,6 +9,7 @@ import {
   PlayIcon,
   RotateCcwIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
@@ -28,21 +29,16 @@ import {
 } from "@/components/ui/tooltip";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
-import { toast } from "sonner";
 import { authFetch } from "@/lib/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet, stripTestBlock } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
 import { SectionField } from "@/types/practice";
-import { LangSlug } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
 import { CodeEditor } from "./CodeEditor";
 
-export type ImplementationSnapshot = {
-  code: string;
-  language: LangSlug;
-  output: string;
-};
-
+// Note implementation section fields are separated out of snapshot type for
+// efficiency in updating code editor and output states
 interface ImplementationSectionProps {
   code: string;
   onCodeChange: (code: string) => void;
@@ -253,7 +249,10 @@ export function ImplementationSection({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" className="w-max">
-                      <p>Copy solution (without local test cases) and open LeetCode</p>
+                      <p>
+                        Copy solution (without local test cases) and open
+                        LeetCode
+                      </p>
                     </TooltipContent>
                   </Tooltip>
 

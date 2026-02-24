@@ -1,5 +1,6 @@
 import { SUPPORTED_LANGS } from "@/constants/languages";
-import { LangSlug, Problem } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
+import { Problem } from "@/types/problem";
 
 const ENDPOINT = "https://leetcode.com/graphql";
 const PAGE_SIZE = 100;

@@ -11,7 +11,7 @@ import {
   codeMirrorTheme,
   languages,
 } from "@/lib/codeMirror";
-import { LangSlug } from "@/types/problem";
+import { LangSlug } from "@/types/languages";
 
 interface CodeEditorProps {
   value: string;

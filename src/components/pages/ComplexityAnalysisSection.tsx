@@ -10,12 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { SessionMessage } from "@/types/chat";
-import { SectionField } from "@/types/practice";
-
-export type ComplexitySnapshot = {
-  timeComplexity: string;
-  spaceComplexity: string;
-};
+import { ComplexitySnapshot, SectionField } from "@/types/practice";
 
 interface ComplexityAnalysisSectionProps {
   fields: ComplexitySnapshot;

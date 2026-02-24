@@ -7,8 +7,8 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SECTION_KEY_TO_DETAILS } from "@/constants/practice";
-import { formatFieldKey, SectionSnapshotData } from "@/lib/chat/context";
-import { SectionKey } from "@/types/practice";
+import { formatFieldKey } from "@/lib/chat/context";
+import { SectionKey, SectionSnapshotData } from "@/types/practice";
 
 interface SectionSummarySheetProps {
   sectionKey: SectionKey;
@@ -47,7 +47,7 @@ export function SectionSummarySheet({
             <div className="space-y-5">
               {entries.map(([key, value]) => (
                 <div key={key} className="space-y-1">
-                  <p className="text-muted-foreground text-xs font-medium uppercase tracking-wide">
+                  <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
                     {formatFieldKey(key)}
                   </p>
                   <p className="text-sm whitespace-pre-wrap">{value}</p>

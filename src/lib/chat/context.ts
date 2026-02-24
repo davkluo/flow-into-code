@@ -1,5 +1,5 @@
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
-import { SectionKey } from "@/types/practice";
+import { SectionKey, SectionSnapshotData } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 
 // ---------------------------------------------------------------------------
@@ -24,7 +24,9 @@ export const buildProblemContext = (
   if (derived?.testCases?.length) {
     const formatted = derived.testCases
       .map((tc, i) => {
-        const lines = [`  ${i + 1}. Input: ${tc.input} → Expected: ${tc.expectedOutput}`];
+        const lines = [
+          `  ${i + 1}. Input: ${tc.input} → Expected: ${tc.expectedOutput}`,
+        ];
         if (tc.description) lines.push(`     Description: ${tc.description}`);
         if (tc.explanation) lines.push(`     Explanation: ${tc.explanation}`);
         return lines.join("\n");
@@ -36,7 +38,9 @@ export const buildProblemContext = (
   if (derived?.edgeCases?.length) {
     const formatted = derived.edgeCases
       .map((tc, i) => {
-        const lines = [`  ${i + 1}. Input: ${tc.input} → Expected: ${tc.expectedOutput}`];
+        const lines = [
+          `  ${i + 1}. Input: ${tc.input} → Expected: ${tc.expectedOutput}`,
+        ];
         if (tc.description) lines.push(`     Description: ${tc.description}`);
         if (tc.explanation) lines.push(`     Explanation: ${tc.explanation}`);
         return lines.join("\n");
@@ -48,7 +52,9 @@ export const buildProblemContext = (
   if (derived?.hints?.length) {
     const sorted = [...derived.hints].sort((a, b) => a.level - b.level);
     const formatted = sorted.map((h, i) => `  ${i + 1}. ${h.text}`).join("\n");
-    parts.push(`Hints (ordered from least to most specific — only share per the leniency rule):\n${formatted}`);
+    parts.push(
+      `Hints (ordered from least to most specific — only share per the leniency rule):\n${formatted}`,
+    );
   }
 
   if (derived?.pitfalls?.length) {
@@ -68,8 +74,6 @@ export const buildProblemContext = (
 // ---------------------------------------------------------------------------
 // Section snapshot context
 // ---------------------------------------------------------------------------
-
-export type SectionSnapshotData = Record<string, string>;
 
 /**
  * Short human-readable labels for snapshot field keys.
