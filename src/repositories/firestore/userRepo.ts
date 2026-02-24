@@ -1,18 +1,24 @@
 import { adminDb } from "@/lib/firebaseAdmin";
-import { FieldValue } from "firebase-admin/firestore";
+import { FieldValue, Transaction } from "firebase-admin/firestore";
 import { User } from "@/types/user";
 
 import { USERS_COLLECTION } from "@/constants/firestore";
 
 const COLLECTION = USERS_COLLECTION;
 
-export async function create(uid: string): Promise<void> {
+export async function create(uid: string, tx?: Transaction): Promise<void> {
   const newUser: User = {
     completedProblems: [],
     preferences: {},
     savedProblems: [],
+    role: "user",
   };
-  await adminDb.collection(COLLECTION).doc(uid).set(newUser);
+  const ref = adminDb.collection(COLLECTION).doc(uid);
+  if (tx) {
+    tx.set(ref, newUser);
+  } else {
+    await ref.set(newUser);
+  }
 }
 
 export async function getById(uid: string): Promise<User | null> {

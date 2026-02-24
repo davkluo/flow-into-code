@@ -1,28 +1,32 @@
 "use client";
 
 import {
+  AuthProvider as FirebaseAuthProvider,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
-  User,
+  User as FirebaseUser,
 } from "firebase/auth";
 import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, googleProvider } from "@/lib/firebase";
+import { auth, githubProvider, googleProvider } from "@/lib/firebase";
+import { authFetch } from "@/lib/authFetch";
+import { USER_INIT_API_PATH } from "@/constants/api";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
 interface AuthContextValue {
-  user: User | null;
+  user: FirebaseUser | null;
   status: AuthStatus;
   signInWithGoogle: () => Promise<void>;
+  signInWithGitHub: () => Promise<void>;
   signOutUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   useEffect(() => {
@@ -33,17 +37,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithProvider = async (provider: FirebaseAuthProvider) => {
     setStatus("loading");
     try {
-      await signInWithPopup(auth, googleProvider);
+      const credential = await signInWithPopup(auth, provider);
+      const token = await credential.user.getIdToken();
+      await authFetch(USER_INIT_API_PATH, { method: "POST" }, token);
       toast.success("Signed in successfully", {
         description: "Welcome back!",
       });
-    } catch (error) {
-      console.error("Google sign-in error:", error);
+    } catch (error: unknown) {
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "code" in error &&
+        error.code === "auth/account-exists-with-different-credential"
+      ) {
+        toast.error("Account already exists", {
+          description:
+            "An account already exists with this email. Please sign in with the provider you used originally.",
+        });
+      } else {
+        console.error("Sign-in error:", error);
+      }
+      setStatus("unauthenticated");
     }
   };
+
+  const signInWithGoogle = () => signInWithProvider(googleProvider);
+  const signInWithGitHub = () => signInWithProvider(githubProvider);
 
   const signOutUser = async () => {
     await signOut(auth);
@@ -54,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, status, signInWithGoogle, signOutUser }}
+      value={{ user, status, signInWithGoogle, signInWithGitHub, signOutUser }}
     >
       {children}
     </AuthContext.Provider>
