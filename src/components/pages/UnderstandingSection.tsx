@@ -75,14 +75,14 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
     label: "Constraints",
     threshold: 10,
     tooltip:
-      "Constraints often hint at expected time complexity. n ≤ 10⁵ usually means O(n log n); n ≤ 10⁹ usually requires O(log n).",
+      "Constraints reveal what you can safely assume about the inputs. Identifying key ones — like guaranteed uniqueness or bounded sizes — can directly simplify your algorithm and code structure.",
     formatHint: (
       <div className="mt-2 space-y-1">
         <p className="font-medium underline">Example</p>
         <ul className="ml-3 list-disc space-y-0.5">
-          <li>1 ≤ n ≤ 10⁵</li>
-          <li>Values fit within a 32-bit integer</li>
-          <li>Input is not guaranteed to be sorted</li>
+          <li>1 ≤ n ≤ 10⁵ → input is never empty</li>
+          <li>Exactly one valid answer → can return as soon as found</li>
+          <li>Values fit in a 32-bit integer → no overflow to handle</li>
         </ul>
       </div>
     ),
