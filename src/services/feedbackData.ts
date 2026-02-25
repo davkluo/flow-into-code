@@ -1,11 +1,14 @@
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import { FeedbackLayer } from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
-import { generateFeedbackData } from "@/services/llm/generateFeedbackData";
-import { GENERATE_FEEDBACK_DATA_PROMPT_VERSION } from "@/services/llm/prompts/generateFeedbackData";
+import { generateGradingCriteria } from "@/services/llm/generateGradingCriteria";
+import { generateSolutions } from "@/services/llm/generateSolutions";
+import { GENERATE_GRADING_CRITERIA_PROMPT_VERSION } from "@/services/llm/prompts/generateGradingCriteria";
+import { GENERATE_SOLUTIONS_PROMPT_VERSION } from "@/services/llm/prompts/generateSolutions";
 import {
   PROBLEM_SCHEMA_VERSION,
   ProblemDetails,
+  ProblemSolution,
   ProcessingLayerMeta,
   ProcessingResult,
 } from "@/types/problem";
@@ -13,8 +16,8 @@ import {
 const FEEDBACK_LAYERS: FeedbackLayer[] = ["solutions", "gradingCriteria"];
 
 const PROMPT_VERSIONS: Record<FeedbackLayer, number> = {
-  solutions: GENERATE_FEEDBACK_DATA_PROMPT_VERSION,
-  gradingCriteria: GENERATE_FEEDBACK_DATA_PROMPT_VERSION,
+  solutions: GENERATE_SOLUTIONS_PROMPT_VERSION,
+  gradingCriteria: GENERATE_GRADING_CRITERIA_PROMPT_VERSION,
 };
 
 function isLayerUpToDate(
@@ -102,35 +105,52 @@ export async function generateFeedbackDataForProblem(
   }
 
   const claimed = new Set(claim.claimedLayers);
-
-  const { data, model, promptVersion } = await generateFeedbackData({
+  const baseInput = {
     title: problem.title,
     difficulty: problem.difficulty,
     originalContent,
     framing,
     testCases,
     edgeCases,
-  });
+  };
+
+  // Step 1: Generate solutions if claimed, otherwise load existing for use in step 2
+  let solutions: ProblemSolution[];
 
   if (claimed.has("solutions")) {
-    await problemDetailsRepo.updateDerived(slug, { solutions: data.solutions });
+    const result = await generateSolutions(baseInput);
+    solutions = result.data.solutions;
+
+    await problemDetailsRepo.updateDerived(slug, { solutions });
     await problemDetailsRepo.updateProcessingMeta(slug, "solutions", {
       status: "complete",
       updatedAt: Date.now(),
-      model,
-      promptVersion,
+      model: result.model,
+      promptVersion: result.promptVersion,
     });
+  } else {
+    // solutions layer is already up-to-date; load persisted data to inform criteria generation
+    const existing = details?.derived?.solutions;
+    if (!existing || existing.length === 0) {
+      throw new Error(
+        `gradingCriteria claimed but no existing solutions found for: ${slug}`,
+      );
+    }
+    solutions = existing;
   }
 
+  // Step 2: Generate grading criteria if claimed, using solutions as context
   if (claimed.has("gradingCriteria")) {
+    const result = await generateGradingCriteria({ ...baseInput, solutions });
+
     await problemDetailsRepo.updateDerived(slug, {
-      gradingCriteria: data.gradingCriteria,
+      gradingCriteria: result.data.gradingCriteria,
     });
     await problemDetailsRepo.updateProcessingMeta(slug, "gradingCriteria", {
       status: "complete",
       updatedAt: Date.now(),
-      model,
-      promptVersion,
+      model: result.model,
+      promptVersion: result.promptVersion,
     });
   }
 

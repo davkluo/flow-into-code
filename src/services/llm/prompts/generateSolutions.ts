@@ -1,8 +1,8 @@
 import { Framing, TestCase } from "@/types/problem";
 
-export const GENERATE_FEEDBACK_DATA_PROMPT_VERSION = 2;
+export const GENERATE_SOLUTIONS_PROMPT_VERSION = 3;
 
-export interface GenerateFeedbackDataPromptInput {
+export interface GenerateSolutionsPromptInput {
   title: string;
   difficulty: string;
   originalContent: string;
@@ -24,11 +24,11 @@ function formatTestCases(cases: TestCase[]): string {
     .join("\n");
 }
 
-export function buildGenerateFeedbackDataPrompt(
-  input: GenerateFeedbackDataPromptInput,
+export function buildGenerateSolutionsPrompt(
+  input: GenerateSolutionsPromptInput,
 ): string {
   return `
-You are generating reference solutions and grading criteria for a coding interview problem. This data will be used to evaluate candidates' performance after their session.
+You are generating reference solutions for a coding interview problem. This data will be used to evaluate candidates' performance after their session.
 
 Real-world framing of the problem:
 ${input.framing.canonical}
@@ -43,8 +43,6 @@ ${formatTestCases(input.edgeCases)}
 
 ---
 
-## Task 1: Reference Solutions
-
 Generate 2–3 solutions ordered from least to most optimal (e.g. brute force → optimal, or O(n²) → O(n)). For each solution:
 
 - **approach**: A short label (e.g. "Brute Force", "Hash Map", "Two Pointers")
@@ -53,23 +51,6 @@ Generate 2–3 solutions ordered from least to most optimal (e.g. brute force �
 - **tradeoffs**: Key tradeoffs vs. alternative approaches (readability, memory, edge case handling)
 - **timeComplexity**: Big-O time complexity with brief justification (e.g. "O(n) — single pass through the array")
 - **spaceComplexity**: Big-O space complexity with brief justification
-
-## Task 2: Grading Criteria
-
-Generate exactly 5 grading criteria — one per interview section. Each criterion must be specific to this problem, not a generic template. For each criterion:
-
-- **category**: The section key (must be one of the exact strings listed below)
-- **description**: What a strong candidate demonstrates in this section for this specific problem (2–3 sentences). Use the real-world framing's terminology.
-- **rubric**: Two parts:
-  1. Anchor scores: what earns 1 (poor), 3 (adequate), and 5 (excellent) for this specific problem. Reference the concrete data structures, insights, or steps relevant to this problem.
-  2. Adjustment rules: a list of problem-specific rules for common mistakes or standout moments that allow fractional scoring between anchors. Format each as a short label followed by a point delta (e.g. "Off-by-one in boundary check: −0.5", "Catches empty input edge case unprompted: +0.5", "Confuses time and space complexity: −1"). Aim for 3–6 rules that are genuinely likely to occur on this problem.
-
-The five section keys are (use these exact strings):
-- "problem_understanding" — Did the candidate ask the right clarifying questions? Did they correctly identify the input/output contract, constraints, and edge cases?
-- "approach_and_reasoning" — Did the candidate explain their strategy clearly? Did they consider multiple approaches and articulate tradeoffs?
-- "algorithm_design" — Did the candidate produce correct, complete pseudocode? Were edge cases handled?
-- "implementation" — Was the code correct and clean? Did the candidate handle errors and edge cases?
-- "complexity_analysis" — Did the candidate correctly derive (not just state) the time and space complexity?
 
 ---
 
@@ -83,13 +64,6 @@ Return valid JSON with this exact shape:
       "tradeoffs": string,
       "timeComplexity": string,
       "spaceComplexity": string
-    }
-  ],
-  "gradingCriteria": [
-    {
-      "category": string,
-      "description": string,
-      "rubric": string
     }
   ]
 }
