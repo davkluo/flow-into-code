@@ -3,6 +3,7 @@ import { CHAT_API_PATH } from "@/constants/api";
 import { CHAT_COOLDOWN_MS } from "@/constants/chat";
 import { authFetch } from "@/lib/authFetch";
 import { buildProblemContext, buildSnapshotContext } from "@/lib/chat/context";
+import { pruneSnapshots } from "@/lib/snapshots";
 import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
 import { Message, SessionMessage } from "@/types/chat";
 import { SectionKey, SectionSnapshotData } from "@/types/practice";
@@ -82,22 +83,16 @@ export function useLLM(
     // Persist user message + optional snapshot
     setLlmState((prev) => {
       const prevSnapshots = prev.sections[section]?.snapshots ?? [];
+      const incoming = snapshot
+        ? { data: snapshot, messageIndex: currentMessages.length - 1, timestamp: Date.now() }
+        : null;
       return {
         ...prev,
         messages: [...prev.messages, userMsg],
         sections: {
           ...prev.sections,
           [section]: {
-            snapshots: snapshot
-              ? [
-                  ...prevSnapshots,
-                  {
-                    data: snapshot,
-                    messageIndex: currentMessages.length - 1,
-                    timestamp: Date.now(),
-                  },
-                ]
-              : prevSnapshots,
+            snapshots: incoming ? pruneSnapshots(prevSnapshots, incoming) : prevSnapshots,
           },
         },
       };
