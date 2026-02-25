@@ -1,14 +1,14 @@
 import { SessionMessage } from "./chat";
 import { SectionKey, SectionSnapshots } from "./practice";
 
-interface CategoryFeedback {
-  score: number;
-  comments: string; // Justification of score
-  compliments: string; // Things done well
-  advice: string; // Suggestions for improvement
+export interface CategoryFeedback {
+  score: number | null; // null = section not submitted; UI should render "Not completed" rather than a score
+  comments: string; // Justification of score, or explanation of why it could not be graded
+  compliments: string; // Things done well; empty string if nothing genuine to say
+  advice: string; // Suggestions for improvement; empty string if section was not submitted
 }
 
-interface SessionFeedback {
+export interface SessionFeedback {
   sections: Record<SectionKey, CategoryFeedback>;
   interviewerCommunication: CategoryFeedback;
   summary: string;

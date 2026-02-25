@@ -338,13 +338,15 @@ export function PracticeSession() {
         implementation: implFields,
         complexity_analysis: complexityFields,
       });
-      await authFetch(SESSION_FEEDBACK_API_PATH, {
+      const feedbackRes = await authFetch(SESSION_FEEDBACK_API_PATH, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ problemSlug: slug, llmState: finalLlmState }),
       });
 
-      // TODO: Step 3: Redirect to /feedback/[sessionId] once the session doc exists
+      // Step 3: Redirect to /feedback/[sessionId]
+      const { sessionId } = await feedbackRes.json();
+      router.push(`/feedback/${sessionId}`);
     } catch (err) {
       console.error("Failed to generate feedback:", err);
       toast.error("Failed to generate feedback. Please try again.");
@@ -353,6 +355,7 @@ export function PracticeSession() {
     }
   }, [
     problem,
+    router,
     pollForFeedback,
     llmGetFinalState,
     understandingFields,

@@ -8,3 +8,4 @@ export const STATS_COLLECTION = "stats";
 export const GLOBAL_STATS_DOC_ID = "global";
 
 export const USERS_COLLECTION = "users";
+export const SESSIONS_COLLECTION = "sessions";

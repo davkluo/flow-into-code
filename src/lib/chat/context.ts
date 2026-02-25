@@ -79,7 +79,7 @@ export const buildProblemContext = (
  * Short human-readable labels for snapshot field keys.
  * Unrecognized keys fall back to camelCase → Title Case conversion.
  */
-const FIELD_LABELS: Record<string, string> = {
+export const FIELD_LABELS: Record<string, string> = {
   // problem_understanding
   restatement: "Problem Restatement",
   inputsOutputs: "Inputs & Outputs",
