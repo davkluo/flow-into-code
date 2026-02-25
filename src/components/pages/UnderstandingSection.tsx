@@ -125,7 +125,7 @@ export function UnderstandingSection({
       <SectionHeader sectionKey="problem_understanding" />
 
       <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
-        <div className="border-input overflow-hidden rounded-md border">
+        <div className="border-input overflow-hidden rounded-md border p-0.5">
           <Accordion type="single" collapsible defaultValue="restatement">
             {FIELDS.map((field) => (
               <AccordionItem key={field.key} value={field.key}>
