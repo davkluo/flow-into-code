@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
-import { getProblemDataApiPath } from "@/constants/api";
+import { getProblemDataApiPath, SESSION_FEEDBACK_API_PATH } from "@/constants/api";
 import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimerActions } from "@/context/TimerContext";
@@ -39,6 +39,7 @@ import { ImplementationSection } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
+import { FeedbackLoadingScreen } from "./FeedbackLoadingScreen";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
@@ -92,6 +93,7 @@ export function PracticeSession() {
   const {
     sendMessage: llmSendMessage,
     getMessages: llmGetMessages,
+    getFinalState: llmGetFinalState,
     cooldownUntil: llmCooldownUntil,
     reset: llmReset,
   } = useLLM(problem, problemDetails);
@@ -327,8 +329,21 @@ export function PracticeSession() {
         await pollForFeedback(slug);
       }
 
-      // TODO: Step 2: Trigger session feedback generation, update sessionCounts
-      //   stat, and add to user's completed problems list
+      // Step 2: POST session context (messages + snapshots) for session feedback generation.
+      // Capture final field values now — picks up any edits made after the last sendMessage.
+      const finalLlmState = llmGetFinalState({
+        problem_understanding: understandingFields,
+        approach_and_reasoning: approachFields,
+        algorithm_design: algorithmFields,
+        implementation: implFields,
+        complexity_analysis: complexityFields,
+      });
+      await authFetch(SESSION_FEEDBACK_API_PATH, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemSlug: slug, llmState: finalLlmState }),
+      });
+
       // TODO: Step 3: Redirect to /feedback/[sessionId] once the session doc exists
     } catch (err) {
       console.error("Failed to generate feedback:", err);
@@ -336,7 +351,16 @@ export function PracticeSession() {
     } finally {
       setIsFetchingFeedback(false);
     }
-  }, [problem, pollForFeedback]);
+  }, [
+    problem,
+    pollForFeedback,
+    llmGetFinalState,
+    understandingFields,
+    approachFields,
+    algorithmFields,
+    implFields,
+    complexityFields,
+  ]);
 
   const isFeedbackBlocked = useMemo(() => {
     if (!implFields.code.trim()) return true;
@@ -433,6 +457,7 @@ export function PracticeSession() {
       )}
 
       {isPreparingSession && <SessionLoadingScreen />}
+      {isFetchingFeedback && <FeedbackLoadingScreen />}
 
       {isPracticeStarted && problem && problemDetails && (
         <div className="animate-in fade-in duration-500">

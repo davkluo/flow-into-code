@@ -173,6 +173,31 @@ export function useLLM(
     }
   };
 
+  /**
+   * Returns a copy of llmState with current field values merged in as a final
+   * snapshot for each section. Use this before submitting for feedback to capture
+   * any edits made after the last sendMessage call. Pruning is applied so
+   * unchanged fields don't add redundant snapshots.
+   */
+  const getFinalState = (
+    currentFields: Partial<Record<SectionKey, SectionSnapshotData>>,
+  ): LLMState => {
+    const finalSections = { ...llmState.sections };
+    for (const [key, data] of Object.entries(currentFields) as [
+      SectionKey,
+      SectionSnapshotData,
+    ][]) {
+      const existing = finalSections[key]?.snapshots ?? [];
+      const incoming: Snapshot = {
+        data,
+        messageIndex: llmState.messages.length,
+        timestamp: Date.now(),
+      };
+      finalSections[key] = { snapshots: pruneSnapshots(existing, incoming) };
+    }
+    return { ...llmState, sections: finalSections };
+  };
+
   const reset = useCallback(() => {
     setLlmState({ messages: [], sections: {} });
     setCooldownUntil(0);
@@ -181,7 +206,7 @@ export function useLLM(
   return {
     sendMessage,
     getMessages,
-    llmState,
+    getFinalState,
     cooldownUntil,
     reset,
   };
