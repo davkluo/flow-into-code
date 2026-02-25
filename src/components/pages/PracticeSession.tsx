@@ -23,6 +23,15 @@ import {
 } from "@/types/practice";
 import { Problem, ProblemDetails } from "@/types/problem";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
@@ -76,6 +85,7 @@ export function PracticeSession() {
   });
 
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
+  const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(false);
 
   const { start: startTimer, reset: resetTimer } = useTimerActions();
   const { status } = useAuth();
@@ -89,11 +99,17 @@ export function PracticeSession() {
   const pollAbortRef = useRef<AbortController | null>(null);
   const feedbackPollRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/signin");
-    }
-  }, [router, status]);
+  const proceedNextSection = () => {
+    if (isLastSection) return;
+    const nextIndex = currentSectionIndex + 1;
+    setCurrentSectionIndex(nextIndex);
+    setHighestVisitedIndex((prev) => Math.max(prev, nextIndex));
+  };
+
+  const goBackSection = () => {
+    if (currentSectionIndex <= 0) return;
+    setCurrentSectionIndex((prev) => prev - 1);
+  };
 
   const pollForPractice = useCallback(
     async (slug: string): Promise<ProblemDetails | null> => {
@@ -273,31 +289,28 @@ export function PracticeSession() {
     setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
   }, [llmReset, resetTimer]);
 
-  const pollForFeedback = useCallback(
-    async (slug: string): Promise<void> => {
-      feedbackPollRef.current?.abort();
-      const controller = new AbortController();
-      feedbackPollRef.current = controller;
+  const pollForFeedback = useCallback(async (slug: string): Promise<void> => {
+    feedbackPollRef.current?.abort();
+    const controller = new AbortController();
+    feedbackPollRef.current = controller;
 
-      const delays = [2000, 4000, 8000, 8000, 8000, 8000];
-      for (const delay of delays) {
-        if (controller.signal.aborted) return;
-        await new Promise((r) => setTimeout(r, delay));
-        if (controller.signal.aborted) return;
+    const delays = [2000, 4000, 8000, 8000, 8000, 8000];
+    for (const delay of delays) {
+      if (controller.signal.aborted) return;
+      await new Promise((r) => setTimeout(r, delay));
+      if (controller.signal.aborted) return;
 
-        try {
-          const res = await authFetch(getProblemDataApiPath(slug, "feedback"), {
-            signal: controller.signal,
-          });
-          if (res.ok) return;
-          if (res.status !== 202) return;
-        } catch {
-          if (controller.signal.aborted) return;
-        }
+      try {
+        const res = await authFetch(getProblemDataApiPath(slug, "feedback"), {
+          signal: controller.signal,
+        });
+        if (res.ok) return;
+        if (res.status !== 202) return;
+      } catch {
+        if (controller.signal.aborted) return;
       }
-    },
-    [],
-  );
+    }
+  }, []);
 
   const handleGetFeedback = useCallback(async () => {
     if (!problem) return;
@@ -325,19 +338,90 @@ export function PracticeSession() {
     }
   }, [problem, pollForFeedback]);
 
+  const isFeedbackBlocked = useMemo(() => {
+    if (!implFields.code.trim()) return true;
+    const boilerplate = processCodeSnippet(
+      problemDetails?.source.codeSnippets[implFields.language] ?? "",
+      implFields.language,
+    );
+    return implFields.code.trim() === boilerplate.trim();
+  }, [implFields, problemDetails]);
+
+  const warningSections = useMemo((): {
+    key: SectionKey;
+    emptyFields: string[];
+  }[] => {
+    const result: { key: SectionKey; emptyFields: string[] }[] = [];
+
+    const understandingEmpty = (
+      [
+        [understandingFields.restatement, "Restate Problem"],
+        [understandingFields.inputsOutputs, "Inputs & Outputs"],
+        [understandingFields.constraints, "Constraints"],
+        [understandingFields.edgeCases, "Edge cases"],
+      ] as [string, string][]
+    )
+      .filter(([v]) => !v.trim())
+      .map(([, label]) => label);
+    if (understandingEmpty.length)
+      result.push({
+        key: "problem_understanding",
+        emptyFields: understandingEmpty,
+      });
+
+    const approachEmpty = (
+      [
+        [approachFields.approach, "Approach"],
+        [approachFields.reasoning, "Reasoning"],
+      ] as [string, string][]
+    )
+      .filter(([v]) => !v.trim())
+      .map(([, label]) => label);
+    if (approachEmpty.length)
+      result.push({
+        key: "approach_and_reasoning",
+        emptyFields: approachEmpty,
+      });
+
+    if (!algorithmFields.pseudocode.trim())
+      result.push({ key: "algorithm_design", emptyFields: ["Pseudocode"] });
+
+    const complexityEmpty = (
+      [
+        [complexityFields.timeComplexity, "Time Complexity"],
+        [complexityFields.spaceComplexity, "Space Complexity"],
+      ] as [string, string][]
+    )
+      .filter(([v]) => !v.trim())
+      .map(([, label]) => label);
+    if (complexityEmpty.length)
+      result.push({ key: "complexity_analysis", emptyFields: complexityEmpty });
+
+    return result;
+  }, [understandingFields, approachFields, algorithmFields, complexityFields]);
+
+  const completedSections = useMemo((): Set<SectionKey> => {
+    const warnedKeys = new Set(warningSections.map((w) => w.key));
+    const result = new Set<SectionKey>();
+    for (const key of [
+      "problem_understanding",
+      "approach_and_reasoning",
+      "algorithm_design",
+      "complexity_analysis",
+    ] as const) {
+      if (!warnedKeys.has(key)) result.add(key);
+    }
+    if (!isFeedbackBlocked) result.add("implementation");
+    return result;
+  }, [warningSections, isFeedbackBlocked]);
+
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
-  const proceedNextSection = () => {
-    if (isLastSection) return;
-    const nextIndex = currentSectionIndex + 1;
-    setCurrentSectionIndex(nextIndex);
-    setHighestVisitedIndex((prev) => Math.max(prev, nextIndex));
-  };
-
-  const goBackSection = () => {
-    if (currentSectionIndex <= 0) return;
-    setCurrentSectionIndex((prev) => prev - 1);
-  };
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/signin");
+    }
+  }, [router, status]);
 
   return (
     <div className="relative w-full">
@@ -356,6 +440,7 @@ export function PracticeSession() {
             problemTitle={problem.title}
             currentSectionIndex={currentSectionIndex}
             highestVisitedIndex={highestVisitedIndex}
+            completedSections={completedSections}
             onViewProblem={() => setIsProblemSheetOpen(true)}
             onEndSession={handleEndSession}
             onSectionNavigate={(sectionKey) =>
@@ -493,14 +578,80 @@ export function PracticeSession() {
 
             <div className="mb-1 flex min-w-0 flex-1 justify-start">
               {isLastSection ? (
-                <Button
-                  variant="link"
-                  onClick={handleGetFeedback}
-                  disabled={isFetchingFeedback}
-                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
-                >
-                  {isFetchingFeedback ? "Generating feedback..." : "Get Feedback →"}
-                </Button>
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span>
+                        <Button
+                          variant="link"
+                          onClick={() => {
+                            if (warningSections.length > 0) {
+                              setIsWarningDialogOpen(true);
+                            } else {
+                              handleGetFeedback();
+                            }
+                          }}
+                          disabled={isFeedbackBlocked || isFetchingFeedback}
+                          className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                        >
+                          {isFetchingFeedback
+                            ? "Generating feedback..."
+                            : "Finish: Get Feedback →"}
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    {isFeedbackBlocked && (
+                      <TooltipContent>
+                        Add your implementation code to get feedback
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+
+                  <Dialog
+                    open={isWarningDialogOpen}
+                    onOpenChange={setIsWarningDialogOpen}
+                  >
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Some sections look empty</DialogTitle>
+                        <DialogDescription>
+                          Feedback may be limited for the following sections.
+                          Continue anyway?
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-3 py-2">
+                        {warningSections.map(({ key, emptyFields }) => (
+                          <div key={key}>
+                            <p className="text-sm font-medium">
+                              {SECTION_KEY_TO_DETAILS[key].title}
+                            </p>
+                            <ul className="text-muted-foreground mt-1 list-disc pl-4 text-sm">
+                              {emptyFields.map((field) => (
+                                <li key={field}>{field}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          variant="outline"
+                          onClick={() => setIsWarningDialogOpen(false)}
+                        >
+                          Go back
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setIsWarningDialogOpen(false);
+                            handleGetFeedback();
+                          }}
+                        >
+                          Get feedback anyway
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
               ) : (
                 <Button
                   variant="link"

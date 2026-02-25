@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,7 @@ interface SessionBreadcrumbProps {
   problemTitle: string;
   currentSectionIndex: number;
   highestVisitedIndex: number;
+  completedSections: Set<SectionKey>;
   onViewProblem: () => void;
   onEndSession: () => void;
   onSectionNavigate: (sectionKey: SectionKey) => void;
@@ -112,11 +113,13 @@ function ProblemDropdownItem({
 function SectionDropdownItem({
   sectionKey,
   index,
+  isComplete,
   onSectionNavigate,
   onSectionSummaryClick,
 }: {
   sectionKey: SectionKey;
   index: number;
+  isComplete: boolean;
   onSectionNavigate: (sectionKey: SectionKey) => void;
   onSectionSummaryClick?: (sectionKey: SectionKey) => void;
 }) {
@@ -135,8 +138,6 @@ function SectionDropdownItem({
     }, 150);
   };
 
-  const label = `${index + 1}. ${SECTION_KEY_TO_DETAILS[sectionKey].title}`;
-
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
       <DropdownMenuTrigger asChild>
@@ -145,7 +146,8 @@ function SectionDropdownItem({
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          {label}
+          {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
+          {isComplete && <Check className="ml-1 inline-block size-3" />}
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -170,6 +172,7 @@ export function SessionBreadcrumb({
   problemTitle,
   currentSectionIndex,
   highestVisitedIndex,
+  completedSections,
   onViewProblem,
   onEndSession,
   onSectionNavigate,
@@ -297,6 +300,7 @@ export function SessionBreadcrumb({
         >
           {SECTION_ORDER.slice(0, highestVisitedIndex + 1).map(
             (sectionKey, index) => {
+              const isComplete = completedSections.has(sectionKey);
               const button =
                 index === currentSectionIndex ? (
                   <span
@@ -307,11 +311,13 @@ export function SessionBreadcrumb({
                     )}
                   >
                     {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
+                    {isComplete && <Check className="ml-1 inline-block size-3" />}
                   </span>
                 ) : (
                   <SectionDropdownItem
                     sectionKey={sectionKey}
                     index={index}
+                    isComplete={isComplete}
                     onSectionNavigate={onSectionNavigate}
                     onSectionSummaryClick={onSectionSummaryClick}
                   />
