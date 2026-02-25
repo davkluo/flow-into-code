@@ -16,6 +16,13 @@ type ProcessingLayer = keyof NonNullable<
 
 export type PracticeLayer = "testCases" | "edgeCases" | "hints" | "pitfalls";
 
+export type FeedbackLayer = "solutions" | "gradingCriteria";
+
+export type ClaimFeedbackLayersResult =
+  | { status: "claimed"; claimedLayers: FeedbackLayer[] }
+  | { status: "already_complete" }
+  | { status: "already_processing" };
+
 export type ClaimFramingResult =
   | { status: "claimed" }
   | { status: "already_complete" }
@@ -197,6 +204,93 @@ export async function claimPracticeLayers(
     const schemaOutdated = storedSchemaVersion < PROBLEM_SCHEMA_VERSION;
 
     const needsGeneration: PracticeLayer[] = [];
+    let hasInFlight = false;
+
+    for (const layer of layers) {
+      const meta = data?.processingMeta?.layers?.[layer];
+
+      if (
+        meta?.status === "complete" &&
+        !schemaOutdated &&
+        meta.promptVersion >= layerPromptVersions[layer]
+      ) {
+        continue; // up-to-date
+      }
+
+      if (
+        meta?.status === "processing" &&
+        !schemaOutdated &&
+        Date.now() - meta.updatedAt < staleAfterMs
+      ) {
+        hasInFlight = true;
+        break;
+      }
+
+      needsGeneration.push(layer);
+    }
+
+    if (hasInFlight) {
+      return { status: "already_processing" } as const;
+    }
+
+    if (needsGeneration.length === 0) {
+      return { status: "already_complete" } as const;
+    }
+
+    const now = Date.now();
+    const updates: Record<string, unknown> = {};
+    for (const layer of needsGeneration) {
+      updates[`processingMeta.layers.${layer}`] = {
+        status: "processing",
+        updatedAt: now,
+      };
+    }
+
+    if (!doc.exists) {
+      const layersInit: Record<string, unknown> = {};
+      for (const layer of needsGeneration) {
+        layersInit[layer] = { status: "processing", updatedAt: now };
+      }
+      tx.set(ref, {
+        titleSlug: slug,
+        processingMeta: {
+          schemaVersion: PROBLEM_SCHEMA_VERSION,
+          layers: layersInit,
+        },
+      });
+    } else {
+      if (schemaOutdated) {
+        updates["processingMeta.schemaVersion"] = PROBLEM_SCHEMA_VERSION;
+      }
+      tx.update(ref, updates);
+    }
+
+    return { status: "claimed", claimedLayers: needsGeneration } as const;
+  });
+}
+
+/**
+ * Atomically claims generation slots for all outdated feedback layers.
+ * Uses all-or-nothing semantics: if any needed layer is currently being
+ * processed by another request (non-stale), returns "already_processing"
+ * rather than partially claiming.
+ */
+export async function claimFeedbackLayers(
+  slug: string,
+  layerPromptVersions: Record<FeedbackLayer, number>,
+  opts: { staleAfterMs: number },
+): Promise<ClaimFeedbackLayersResult> {
+  const { staleAfterMs } = opts;
+  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const layers: FeedbackLayer[] = ["solutions", "gradingCriteria"];
+
+  return adminDb.runTransaction(async (tx) => {
+    const doc = await tx.get(ref);
+    const data = doc.exists ? (doc.data() as ProblemDetails) : null;
+    const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
+    const schemaOutdated = storedSchemaVersion < PROBLEM_SCHEMA_VERSION;
+
+    const needsGeneration: FeedbackLayer[] = [];
     let hasInFlight = false;
 
     for (const layer of layers) {

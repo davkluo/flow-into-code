@@ -75,6 +75,8 @@ export function PracticeSession() {
     spaceComplexity: "",
   });
 
+  const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
+
   const { start: startTimer, reset: resetTimer } = useTimerActions();
   const { status } = useAuth();
   const {
@@ -85,6 +87,7 @@ export function PracticeSession() {
   } = useLLM(problem, problemDetails);
   const router = useRouter();
   const pollAbortRef = useRef<AbortController | null>(null);
+  const feedbackPollRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -270,6 +273,58 @@ export function PracticeSession() {
     setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
   }, [llmReset, resetTimer]);
 
+  const pollForFeedback = useCallback(
+    async (slug: string): Promise<void> => {
+      feedbackPollRef.current?.abort();
+      const controller = new AbortController();
+      feedbackPollRef.current = controller;
+
+      const delays = [2000, 4000, 8000, 8000, 8000, 8000];
+      for (const delay of delays) {
+        if (controller.signal.aborted) return;
+        await new Promise((r) => setTimeout(r, delay));
+        if (controller.signal.aborted) return;
+
+        try {
+          const res = await authFetch(getProblemDataApiPath(slug, "feedback"), {
+            signal: controller.signal,
+          });
+          if (res.ok) return;
+          if (res.status !== 202) return;
+        } catch {
+          if (controller.signal.aborted) return;
+        }
+      }
+    },
+    [],
+  );
+
+  const handleGetFeedback = useCallback(async () => {
+    if (!problem) return;
+    setIsFetchingFeedback(true);
+
+    try {
+      const slug = problem.titleSlug;
+
+      // Step 1: Trigger generation of feedback layer for problem details
+      const res = await authFetch(getProblemDataApiPath(slug, "feedback"), {
+        method: "POST",
+      });
+      if (res.status === 202) {
+        await pollForFeedback(slug);
+      }
+
+      // TODO: Step 2: Trigger session feedback generation, update sessionCounts
+      //   stat, and add to user's completed problems list
+      // TODO: Step 3: Redirect to /feedback/[sessionId] once the session doc exists
+    } catch (err) {
+      console.error("Failed to generate feedback:", err);
+      toast.error("Failed to generate feedback. Please try again.");
+    } finally {
+      setIsFetchingFeedback(false);
+    }
+  }, [problem, pollForFeedback]);
+
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
   const proceedNextSection = () => {
@@ -437,7 +492,16 @@ export function PracticeSession() {
             <Timer />
 
             <div className="mb-1 flex min-w-0 flex-1 justify-start">
-              {!isLastSection && (
+              {isLastSection ? (
+                <Button
+                  variant="link"
+                  onClick={handleGetFeedback}
+                  disabled={isFetchingFeedback}
+                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                >
+                  {isFetchingFeedback ? "Generating feedback..." : "Get Feedback →"}
+                </Button>
+              ) : (
                 <Button
                   variant="link"
                   onClick={proceedNextSection}
