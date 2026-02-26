@@ -3,19 +3,11 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import {
   Sheet,
@@ -33,16 +25,9 @@ import { Separator } from "../ui/separator";
 import { Logo } from "./Logo";
 import { ModeSelect } from "./ModeSelect";
 
-interface SubMenuItem {
-  label: string;
-  url: string;
-  description: string;
-}
-
 interface MenuItem {
   label: string;
   url: string;
-  items?: SubMenuItem[];
 }
 
 const Navbar = () => {
@@ -98,15 +83,11 @@ const Navbar = () => {
                       <SheetTitle>Flow Into Code</SheetTitle>
                     </SheetHeader>
                     <div className="flex flex-col gap-6 p-4">
-                      <Accordion
-                        type="single"
-                        collapsible
-                        className="flex w-full flex-col gap-4"
-                      >
+                      <div className="flex w-full flex-col gap-4">
                         {navbarMenu.map((item) =>
                           renderMobileMenuItem(item, pathname),
                         )}
-                      </Accordion>
+                      </div>
 
                       <Separator />
 
@@ -256,23 +237,6 @@ const Navbar = () => {
 const renderMenuItem = (item: MenuItem, pathname: string) => {
   const isActive = pathname.startsWith(item.url);
 
-  if (item.items) {
-    return (
-      <NavigationMenuItem key={item.label}>
-        <NavigationMenuTrigger>{item.label}</NavigationMenuTrigger>
-        <NavigationMenuContent>
-          <ul className="grid w-[300px]">
-            {item.items.map((subItem) => (
-              <li key={subItem.label}>
-                <SubMenuLink item={subItem} />{" "}
-              </li>
-            ))}
-          </ul>
-        </NavigationMenuContent>
-      </NavigationMenuItem>
-    );
-  }
-
   return (
     <NavigationMenuItem key={item.label}>
       <Link
@@ -293,27 +257,6 @@ const renderMenuItem = (item: MenuItem, pathname: string) => {
 const renderMobileMenuItem = (item: MenuItem, pathname: string) => {
   const isActive = pathname.startsWith(item.url);
 
-  if (item.items) {
-    return (
-      <AccordionItem key={item.label} value={item.label} className="border-b-0">
-        <AccordionTrigger
-          className={cn(
-            "text-md cursor-pointer rounded-md p-3 leading-none font-semibold transition-colors",
-            "underline-offset-6 hover:underline",
-            isActive && "underline",
-          )}
-        >
-          {item.label}
-        </AccordionTrigger>
-        <AccordionContent className="mt-2">
-          {item.items.map((subItem) => (
-            <SubMenuLink key={subItem.label} item={subItem} />
-          ))}
-        </AccordionContent>
-      </AccordionItem>
-    );
-  }
-
   return (
     <Link
       key={item.label}
@@ -325,23 +268,6 @@ const renderMobileMenuItem = (item: MenuItem, pathname: string) => {
       )}
     >
       {item.label}
-    </Link>
-  );
-};
-
-// SubMenuLink component for both desktop and mobile
-const SubMenuLink = ({ item }: { item: SubMenuItem }) => {
-  return (
-    <Link
-      href={item.url}
-      className="hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground block space-y-1 rounded-md p-3 leading-none no-underline transition-colors outline-none select-none"
-    >
-      <div className="text-sm leading-none font-medium">{item.label}</div>
-      {item.description && (
-        <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
-          {item.description}
-        </p>
-      )}
     </Link>
   );
 };
