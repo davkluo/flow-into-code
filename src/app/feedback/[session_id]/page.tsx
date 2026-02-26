@@ -1,20 +1,20 @@
-import { notFound } from "next/navigation";
-import { CalendarIcon } from "lucide-react";
 import { Timestamp } from "firebase-admin/firestore";
-import * as sessionRepo from "@/repositories/firestore/sessionRepo";
-import * as problemRepo from "@/repositories/firestore/problemRepo";
-import { SECTION_ORDER, SECTION_KEY_TO_DETAILS } from "@/constants/practice";
-import { CRITERION_MAX_SCORE } from "@/constants/grading";
-import { CategoryFeedback } from "@/types/session";
-import { Badge } from "@/components/ui/badge";
+import { notFound } from "next/navigation";
+import { CommunicationSection } from "@/components/pages/CommunicationSection";
+import { SectionFeedbackCard } from "@/components/pages/SectionFeedbackCard";
+import { SolutionsTabs } from "@/components/pages/SolutionsTabs";
+import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
+import { TagBadge } from "@/components/shared/TagBadge";
 import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { CRITERION_MAX_SCORE } from "@/constants/grading";
+import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
+import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
+import * as problemRepo from "@/repositories/firestore/problemRepo";
+import * as sessionRepo from "@/repositories/firestore/sessionRepo";
 
 interface FeedbackPageProps {
   params: Promise<{ session_id: string }>;
@@ -27,57 +27,11 @@ function scoreClass(score: number): string {
   return "text-green-400";
 }
 
-function ScoreBadge({ score }: { score: number | null }) {
-  if (score === null) {
-    return <Badge variant="secondary">Not completed</Badge>;
-  }
-  return (
-    <span className={`text-base font-semibold tabular-nums ${scoreClass(score)}`}>
-      {score}/{CRITERION_MAX_SCORE}
-    </span>
-  );
-}
-
-function FeedbackCard({
-  title,
-  feedback,
-}: {
-  title: string;
-  feedback: CategoryFeedback;
-}) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardAction>
-          <ScoreBadge score={feedback.score} />
-        </CardAction>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {feedback.comments && (
-          <p className="text-muted-foreground text-sm">{feedback.comments}</p>
-        )}
-        {feedback.compliments && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-lime-400">What went well</p>
-            <p className="text-muted-foreground text-sm">{feedback.compliments}</p>
-          </div>
-        )}
-        {feedback.advice && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-amber-400">To improve</p>
-            <p className="text-muted-foreground text-sm">{feedback.advice}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-
-function difficultyClass(difficulty: string): string {
-  if (difficulty === "Easy") return "text-lime-400 border-lime-400/30";
-  if (difficulty === "Hard") return "text-red-400 border-red-400/30";
-  return "text-amber-400 border-amber-400/30";
+function scoreBg(score: number): string {
+  if (score < 2) return "bg-red-400";
+  if (score < 3) return "bg-amber-400";
+  if (score < 5) return "bg-lime-400";
+  return "bg-green-400";
 }
 
 export default async function FeedbackPage({ params }: FeedbackPageProps) {
@@ -86,100 +40,166 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
   const session = await sessionRepo.getById(session_id);
   if (!session) notFound();
 
-  const problem = await problemRepo.getBySlug(session.problemTitleSlug);
+  const [problem, problemDetails] = await Promise.all([
+    problemRepo.getBySlug(session.problemTitleSlug),
+    problemDetailsRepo.getBySlug(session.problemTitleSlug),
+  ]);
 
   const { feedback } = session;
 
   // Firestore returns Timestamps, not JS Dates
   const rawCreatedAt = session.createdAt as Date | Timestamp;
   const createdAt =
-    rawCreatedAt instanceof Timestamp
-      ? rawCreatedAt.toDate()
-      : rawCreatedAt;
+    rawCreatedAt instanceof Timestamp ? rawCreatedAt.toDate() : rawCreatedAt;
+
+  const solutions = problemDetails?.derived?.solutions ?? [];
 
   return (
-    <div className="mx-auto max-w-3xl px-6 py-8 space-y-8">
+    <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold">
-          {problem?.title ?? session.problemTitleSlug}
-        </h1>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col items-center space-y-2">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <h1 className="flex items-center gap-2 text-4xl font-semibold">
+              {problem && (
+                <a
+                  href={`https://leetcode.com/problems/${problem.titleSlug}/description/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:underline"
+                >
+                  {problem?.title ?? session.problemTitleSlug}
+                </a>
+              )}
+            </h1>
+          </TooltipTrigger>
+          <TooltipContent>View on LeetCode</TooltipContent>
+        </Tooltip>
+        <div className="flex items-center gap-2">
           {problem && (
-            <Badge
-              variant="outline"
-              className={`text-xs ${difficultyClass(problem.difficulty)}`}
-            >
-              {problem.difficulty}
-            </Badge>
+            <DifficultyBadge
+              difficulty={problem.difficulty}
+              className="-mt-0.5"
+            />
           )}
-          <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
-            <CalendarIcon className="size-3.5" />
-            {createdAt.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </span>
+          <div className="flex gap-1">
+            {problem?.topicTags.map((tag) => (
+              <TagBadge key={tag.id} tagName={tag.name} />
+            ))}
+          </div>
         </div>
+        <span className="text-muted-foreground flex items-center gap-1.5 text-xs">
+          Solved:{" "}
+          {createdAt.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+        </span>
       </div>
 
-      {/* Score overview */}
-      <div className="grid grid-cols-5 gap-2">
-        {SECTION_ORDER.map((key) => {
-          const { title } = SECTION_KEY_TO_DETAILS[key];
-          return (
-            <div
-              key={key}
-              className="flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-center"
-            >
-              <span className="text-muted-foreground text-xs leading-tight">
-                {title}
-              </span>
-              <ScoreBadge score={feedback.sections[key].score} />
-            </div>
-          );
-        })}
-      </div>
+      {/* Score overview — 3×2 grid, all 6 categories */}
+      {(() => {
+        const items = [
+          ...SECTION_ORDER.map((key) => ({
+            href: `#section-${key}`,
+            title: SECTION_KEY_TO_DETAILS[key].title,
+            score: feedback.sections[key].score,
+          })),
+          {
+            href: "#section-communication",
+            title: "Communication",
+            score: feedback.interviewerCommunication.score,
+          },
+        ];
+        return (
+          <div className="grid grid-cols-2">
+            {items.map((item) => (
+              <a key={item.href} href={item.href} className="group px-3 py-2">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-muted-foreground group-hover:text-foreground text-xs transition-colors">
+                      {item.title}
+                    </span>
+                    {item.score !== null ? (
+                      <span
+                        className={`text-xs font-semibold tabular-nums transition-all group-hover:brightness-125 ${scoreClass(item.score)}`}
+                      >
+                        {item.score}/{CRITERION_MAX_SCORE}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground/50 group-hover:text-muted-foreground text-xs font-medium transition-colors">
+                        Ungraded
+                      </span>
+                    )}
+                  </div>
+                  <div className="bg-muted h-1.5 w-full rounded-full">
+                    {item.score !== null && (
+                      <div
+                        className={`h-1.5 rounded-full transition-all group-hover:brightness-125 ${scoreBg(item.score)}`}
+                        style={{
+                          width: `${(item.score / CRITERION_MAX_SCORE) * 100}%`,
+                        }}
+                      />
+                    )}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+        );
+      })()}
 
       {/* Summary */}
       {feedback.summary && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Session Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground text-sm">{feedback.summary}</p>
-          </CardContent>
-        </Card>
+        <div className="space-y-4">
+          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+            Session Summary
+          </p>
+          <div className="border-input overflow-hidden rounded-md border px-4 py-3">
+            <p className="text-sm">{feedback.summary}</p>
+          </div>
+        </div>
       )}
 
-      {/* Section feedback */}
+      {/* Section feedback — tabbed cards */}
       <div className="space-y-4">
-        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
           Section Feedback
         </p>
         <div className="space-y-4">
           {SECTION_ORDER.map((key) => (
-            <FeedbackCard
+            <SectionFeedbackCard
               key={key}
+              sectionKey={key}
               title={SECTION_KEY_TO_DETAILS[key].title}
               feedback={feedback.sections[key]}
+              fields={session.fields[key] as Record<string, string> | undefined}
             />
           ))}
         </div>
       </div>
 
-      {/* Communication */}
+      {/* Communication + Chat logs */}
       <div className="space-y-4">
-        <p className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+        <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
           Communication
         </p>
-        <FeedbackCard
-          title="Interviewer Communication"
+        <CommunicationSection
           feedback={feedback.interviewerCommunication}
+          messages={session.chatLog}
         />
       </div>
+
+      {/* Sample solutions */}
+      {solutions.length > 0 && (
+        <div className="space-y-4">
+          <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+            Sample Solutions
+          </p>
+          <SolutionsTabs solutions={solutions} />
+        </div>
+      )}
     </div>
   );
 }
