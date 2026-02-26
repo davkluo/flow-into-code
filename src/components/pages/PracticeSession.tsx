@@ -465,7 +465,7 @@ export function PracticeSession() {
       {isFetchingFeedback && <FeedbackLoadingScreen />}
 
       {isPracticeStarted && problem && problemDetails && (
-        <div className="animate-in fade-in flex h-[calc(100dvh-6rem)] flex-col duration-500">
+        <div className="animate-in fade-in flex flex-col duration-500">
           <SessionBreadcrumb
             problemTitle={problem.title}
             currentSectionIndex={currentSectionIndex}
@@ -482,15 +482,15 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 min-h-0 w-full max-w-5xl flex-1 overflow-hidden pb-28">
+          <div className="mx-auto mt-6 w-full max-w-5xl overflow-hidden pb-28">
             <div
-              className="flex h-full transition-transform duration-300 ease-in-out"
+              className="flex transition-transform duration-300 ease-in-out"
               style={{
                 transform: `translateX(-${currentSectionIndex * 100}%)`,
               }}
             >
               <div
-                className="h-full w-full shrink-0 px-3.5"
+                className="w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 0}
               >
                 <UnderstandingSection
@@ -510,7 +510,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="h-full w-full shrink-0 px-3.5"
+                className="w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 1}
               >
                 <ApproachAndReasoningSection
@@ -527,7 +527,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="h-full w-full shrink-0 px-3.5"
+                className="w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 2}
               >
                 <AlgorithmDesignSection
@@ -542,7 +542,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="h-full w-full shrink-0 px-3.5"
+                className="w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 3}
               >
                 <ImplementationSection
@@ -567,7 +567,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="h-full w-full shrink-0 px-3.5"
+                className="w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 4}
               >
                 <ComplexityAnalysisSection

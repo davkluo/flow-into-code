@@ -53,11 +53,11 @@ export function ApproachAndReasoningSection({
   };
 
   return (
-    <div className="flex h-full flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="approach_and_reasoning" />
 
-      <div className="grid flex-1 min-h-0 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
-        <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="flex h-[37rem] flex-col gap-4">
           {FIELDS.map((field) => (
             <div
               key={field.key}
@@ -83,13 +83,13 @@ export function ApproachAndReasoningSection({
                 value={fields[field.key]}
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
-                className="min-h-0 flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
+                className="flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
               />
             </div>
           ))}
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex h-full flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}

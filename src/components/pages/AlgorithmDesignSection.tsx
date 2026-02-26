@@ -38,12 +38,12 @@ export function AlgorithmDesignSection({
 }: AlgorithmDesignSectionProps) {
   const { pseudocode } = fields;
   return (
-    <div className="flex h-full flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="algorithm_design" />
 
-      <div className="grid flex-1 min-h-0 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
-        <div className="flex flex-col">
-          <div className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="flex h-[37rem] flex-col">
+          <div className="border-input flex h-full flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
               <span className="text-sm font-medium">{FIELD.label}</span>
               <Tooltip>
@@ -71,7 +71,7 @@ export function AlgorithmDesignSection({
           </div>
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex h-full flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}

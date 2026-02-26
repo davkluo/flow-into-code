@@ -36,7 +36,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         <p>There is always exactly one valid answer.</p>
       </div>
     ),
-    placeholder: "e.g. Given an array of integers and a target value, find ..."
+    placeholder: "e.g. Given an array of integers and a target value, find...",
   },
   {
     key: "inputsOutputs",
@@ -62,7 +62,8 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </div>
       </div>
     ),
-    placeholder: "e.g. Takes an array of integers and a target value, returns ..."
+    placeholder:
+      "e.g. Takes an array of integers and a target value, returns...",
   },
   {
     key: "constraints",
@@ -80,7 +81,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </ul>
       </div>
     ),
-    placeholder: "e.g. We may assume that the input ...",
+    placeholder: "e.g. We may assume that the input...",
   },
   {
     key: "edgeCases",
@@ -98,7 +99,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </ul>
       </div>
     ),
-    placeholder: "e.g. What if the array is empty? What if ..."
+    placeholder: "e.g. What if the array is empty? What if...",
   },
 ];
 
@@ -115,11 +116,11 @@ export function UnderstandingSection({
   };
 
   return (
-    <div className="flex h-full flex-col gap-8">
+    <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="problem_understanding" />
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
-        <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+        <div className="flex h-[37rem] flex-col gap-4">
           {FIELDS.map((field) => (
             <div
               key={field.key}
@@ -139,19 +140,19 @@ export function UnderstandingSection({
                   </TooltipContent>
                 </Tooltip>
                 {isFieldFilled(field.key) && (
-                  <CheckIcon className="ml-auto size-4 text-brand-secondary" />
+                  <CheckIcon className="text-brand-secondary ml-auto size-4" />
                 )}
               </div>
               <Textarea
                 value={fields[field.key]}
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
-                className="min-h-0 flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
+                className="flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
               />
             </div>
           ))}
         </div>
-        <div className="flex flex-col">
+        <div className="flex h-full flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}
