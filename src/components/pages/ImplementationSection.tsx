@@ -146,14 +146,14 @@ export function ImplementationSection({
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex h-full flex-col gap-8">
       <SectionHeader sectionKey="implementation" />
 
       {/* On mobile: code editor → output → chatbox (DOM order).
           On desktop: [code editor | chatbox] row, output full-width below. */}
-      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
+      <div className="grid flex-1 min-h-0 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
         {/* Code editor — col 1, row 1 on desktop */}
-        <div className="flex h-[26rem] flex-col sm:col-start-1 sm:row-start-1">
+        <div className="flex flex-col sm:col-start-1 sm:row-start-1">
           <div className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
               <span className="text-sm font-medium">{FIELD.label}</span>
@@ -317,7 +317,7 @@ export function ImplementationSection({
         )}
 
         {/* ChatBox — col 2, row 1 on desktop */}
-        <div className="flex h-[26rem] flex-col sm:col-start-2 sm:row-start-1">
+        <div className="flex flex-col sm:col-start-2 sm:row-start-1">
           <ChatBox
             messages={messages}
             onSend={onSend}

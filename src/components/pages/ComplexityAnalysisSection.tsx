@@ -54,11 +54,11 @@ export function ComplexityAnalysisSection({
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex h-full flex-col gap-8">
       <SectionHeader sectionKey="complexity_analysis" />
 
-      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
-        <div className="flex h-[26rem] flex-col gap-4">
+      <div className="grid flex-1 min-h-0 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
+        <div className="flex flex-col gap-4">
           {FIELDS.map((field) => (
             <div
               key={field.key}
@@ -90,7 +90,7 @@ export function ComplexityAnalysisSection({
           ))}
         </div>
 
-        <div className="flex h-[26rem] flex-col">
+        <div className="flex flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}

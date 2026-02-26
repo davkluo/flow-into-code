@@ -4,7 +4,10 @@ import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ProblemSelectSection } from "@/components/pages/ProblemSelectSection";
-import { getProblemDataApiPath, SESSION_FEEDBACK_API_PATH } from "@/constants/api";
+import {
+  getProblemDataApiPath,
+  SESSION_FEEDBACK_API_PATH,
+} from "@/constants/api";
 import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimerActions } from "@/context/TimerContext";
@@ -35,11 +38,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
+import { FeedbackLoadingScreen } from "./FeedbackLoadingScreen";
 import { ImplementationSection } from "./ImplementationSection";
 import { ProblemReferenceSheet } from "./ProblemReferenceSheet";
 import { SectionSummarySheet } from "./SectionSummarySheet";
 import { SessionBreadcrumb } from "./SessionBreadcrumb";
-import { FeedbackLoadingScreen } from "./FeedbackLoadingScreen";
 import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
@@ -462,7 +465,7 @@ export function PracticeSession() {
       {isFetchingFeedback && <FeedbackLoadingScreen />}
 
       {isPracticeStarted && problem && problemDetails && (
-        <div className="animate-in fade-in duration-500">
+        <div className="animate-in fade-in flex h-[calc(100dvh-6rem)] flex-col duration-500">
           <SessionBreadcrumb
             problemTitle={problem.title}
             currentSectionIndex={currentSectionIndex}
@@ -479,15 +482,15 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 max-w-5xl overflow-hidden pb-32">
+          <div className="mx-auto mt-6 min-h-0 w-full max-w-5xl flex-1 overflow-hidden pb-28">
             <div
-              className="flex transition-transform duration-300 ease-in-out"
+              className="flex h-full transition-transform duration-300 ease-in-out"
               style={{
                 transform: `translateX(-${currentSectionIndex * 100}%)`,
               }}
             >
               <div
-                className="w-full shrink-0 px-3.5"
+                className="h-full w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 0}
               >
                 <UnderstandingSection
@@ -507,7 +510,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="w-full shrink-0 px-3.5"
+                className="h-full w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 1}
               >
                 <ApproachAndReasoningSection
@@ -524,7 +527,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="w-full shrink-0 px-3.5"
+                className="h-full w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 2}
               >
                 <AlgorithmDesignSection
@@ -539,7 +542,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="w-full shrink-0 px-3.5"
+                className="h-full w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 3}
               >
                 <ImplementationSection
@@ -564,7 +567,7 @@ export function PracticeSession() {
               </div>
 
               <div
-                className="w-full shrink-0 px-3.5"
+                className="h-full w-full shrink-0 px-3.5"
                 inert={currentSectionIndex !== 4}
               >
                 <ComplexityAnalysisSection
@@ -584,12 +587,12 @@ export function PracticeSession() {
 
           {/* Fixed bottom bar: back | timer | next */}
           <div className="fixed bottom-8 left-0 z-40 flex w-full items-end gap-5 px-6">
-            <div className="mb-1 flex min-w-0 flex-1 justify-end">
+            <div className="mb-1 flex min-w-0 flex-1 justify-end pr-10">
               {currentSectionIndex > 0 && (
                 <Button
                   variant="link"
                   onClick={goBackSection}
-                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)]"
                 >
                   ← Back:{" "}
                   {
@@ -603,7 +606,7 @@ export function PracticeSession() {
 
             <Timer />
 
-            <div className="mb-1 flex min-w-0 flex-1 justify-start">
+            <div className="mb-1 flex min-w-0 flex-1 justify-start pl-2">
               {isLastSection ? (
                 <>
                   <Tooltip>
@@ -683,7 +686,7 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={proceedNextSection}
-                  className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)]"
                 >
                   Next:{" "}
                   {

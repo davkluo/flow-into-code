@@ -3,12 +3,6 @@
 import { CheckIcon, InfoIcon } from "lucide-react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
@@ -42,7 +36,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         <p>There is always exactly one valid answer.</p>
       </div>
     ),
-    placeholder: "Restate the problem in your own words.",
+    placeholder: "e.g. Given an array of integers and a target value, find ..."
   },
   {
     key: "inputsOutputs",
@@ -68,7 +62,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </div>
       </div>
     ),
-    placeholder: "Describe the inputs and outputs of the problem.",
+    placeholder: "e.g. Takes an array of integers and a target value, returns ..."
   },
   {
     key: "constraints",
@@ -86,7 +80,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </ul>
       </div>
     ),
-    placeholder: "List any notable constraints.",
+    placeholder: "e.g. We may assume that the input ...",
   },
   {
     key: "edgeCases",
@@ -104,7 +98,7 @@ const FIELDS: SectionField<UnderstandingSnapshot>[] = [
         </ul>
       </div>
     ),
-    placeholder: "Note any edge cases.",
+    placeholder: "e.g. What if the array is empty? What if ..."
   },
 ];
 
@@ -121,51 +115,43 @@ export function UnderstandingSection({
   };
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex h-full flex-col gap-8">
       <SectionHeader sectionKey="problem_understanding" />
 
-      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-2">
-        <div className="border-input overflow-hidden rounded-md border p-0.5">
-          <Accordion type="single" collapsible defaultValue="restatement">
-            {FIELDS.map((field) => (
-              <AccordionItem key={field.key} value={field.key}>
-                <AccordionTrigger className="px-3 hover:no-underline">
-                  <div className="flex flex-1 items-center justify-between pr-1">
-                    <div className="flex items-center gap-2">
-                      {field.label}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <span
-                            className="inline-flex"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <InfoIcon className="text-muted-foreground size-3.5" />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent side="right" className="w-[22rem]">
-                          <p>{field.tooltip}</p>
-                          {field.formatHint}
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    {isFieldFilled(field.key) && (
-                      <CheckIcon className="size-4 text-lime-400" />
-                    )}
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent className="px-3 pt-0 pb-3">
-                  <Textarea
-                    value={fields[field.key]}
-                    onChange={(e) => onFieldChange(field.key, e.target.value)}
-                    placeholder={field.placeholder}
-                    className="min-h-48 resize-none"
-                  />
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+      <div className="grid min-h-0 flex-1 grid-cols-1 items-stretch gap-6 sm:grid-cols-2">
+        <div className="flex flex-col gap-4">
+          {FIELDS.map((field) => (
+            <div
+              key={field.key}
+              className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border"
+            >
+              <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
+                <span className="text-sm font-medium">{field.label}</span>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="inline-flex">
+                      <InfoIcon className="text-muted-foreground size-3.5" />
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="w-[22rem]">
+                    <p>{field.tooltip}</p>
+                    {field.formatHint}
+                  </TooltipContent>
+                </Tooltip>
+                {isFieldFilled(field.key) && (
+                  <CheckIcon className="ml-auto size-4 text-lime-400" />
+                )}
+              </div>
+              <Textarea
+                value={fields[field.key]}
+                onChange={(e) => onFieldChange(field.key, e.target.value)}
+                placeholder={field.placeholder}
+                className="min-h-0 flex-1 resize-none rounded-none border-0 shadow-none focus-visible:ring-0"
+              />
+            </div>
+          ))}
         </div>
-        <div className="flex h-[26rem] flex-col">
+        <div className="flex flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}
