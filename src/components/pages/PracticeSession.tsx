@@ -350,7 +350,6 @@ export function PracticeSession() {
     } catch (err) {
       console.error("Failed to generate feedback:", err);
       toast.error("Failed to generate feedback. Please try again.");
-    } finally {
       setIsFetchingFeedback(false);
     }
   }, [
