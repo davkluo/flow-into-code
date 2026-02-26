@@ -1,10 +1,13 @@
-import { Timestamp } from "firebase-admin/firestore";
-import { notFound } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useParams, notFound } from "next/navigation";
 import { CommunicationSection } from "@/components/pages/CommunicationSection";
 import { SectionFeedbackCard } from "@/components/pages/SectionFeedbackCard";
 import { SolutionsTabs } from "@/components/pages/SolutionsTabs";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -12,13 +15,16 @@ import {
 } from "@/components/ui/tooltip";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
-import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
-import * as problemRepo from "@/repositories/firestore/problemRepo";
-import * as sessionRepo from "@/repositories/firestore/sessionRepo";
+import { getSessionApiPath } from "@/constants/api";
+import { authFetch } from "@/lib/authFetch";
+import { Problem, ProblemSolution } from "@/types/problem";
+import { Session } from "@/types/session";
 
-interface FeedbackPageProps {
-  params: Promise<{ session_id: string }>;
-}
+type FeedbackPageData = {
+  session: Session & { id: string; createdAt: string };
+  problem: Problem | null;
+  solutions: ProblemSolution[];
+};
 
 function scoreClass(score: number): string {
   if (score < 2) return "text-red-400";
@@ -34,25 +40,58 @@ function scoreBg(score: number): string {
   return "bg-green-400";
 }
 
-export default async function FeedbackPage({ params }: FeedbackPageProps) {
-  const { session_id } = await params;
+function FeedbackSkeleton() {
+  return (
+    <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
+      <div className="flex flex-col items-center space-y-2">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-4 w-28" />
+      </div>
+      <div className="grid grid-cols-2 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="px-3 py-2 space-y-2">
+            <div className="flex justify-between">
+              <Skeleton className="h-3 w-28" />
+              <Skeleton className="h-3 w-8" />
+            </div>
+            <Skeleton className="h-1.5 w-full" />
+          </div>
+        ))}
+      </div>
+      <div className="space-y-4">
+        <Skeleton className="h-3 w-32" />
+        <Skeleton className="h-20 w-full rounded-md" />
+      </div>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Skeleton key={i} className="h-32 w-full rounded-md" />
+      ))}
+    </div>
+  );
+}
 
-  const session = await sessionRepo.getById(session_id);
-  if (!session) notFound();
+export default function FeedbackPage() {
+  const { session_id } = useParams<{ session_id: string }>();
+  const [data, setData] = useState<FeedbackPageData | null>(null);
+  const [isNotFound, setIsNotFound] = useState(false);
 
-  const [problem, problemDetails] = await Promise.all([
-    problemRepo.getBySlug(session.problemTitleSlug),
-    problemDetailsRepo.getBySlug(session.problemTitleSlug),
-  ]);
+  useEffect(() => {
+    authFetch(getSessionApiPath(session_id)).then(async (res) => {
+      if (res.status === 404 || res.status === 401) {
+        setIsNotFound(true);
+        return;
+      }
+      const json = await res.json();
+      setData(json);
+    });
+  }, [session_id]);
 
+  if (isNotFound) notFound();
+  if (!data) return <FeedbackSkeleton />;
+
+  const { session, problem, solutions } = data;
   const { feedback } = session;
-
-  // Firestore returns Timestamps, not JS Dates
-  const rawCreatedAt = session.createdAt as Date | Timestamp;
-  const createdAt =
-    rawCreatedAt instanceof Timestamp ? rawCreatedAt.toDate() : rawCreatedAt;
-
-  const solutions = problemDetails?.derived?.solutions ?? [];
+  const createdAt = new Date(session.createdAt);
 
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
@@ -68,7 +107,10 @@ export default async function FeedbackPage({ params }: FeedbackPageProps) {
                   rel="noopener noreferrer"
                   className="hover:underline"
                 >
-                  {problem?.title ?? session.problemTitleSlug}
+                  {problem.id && (
+                    <span className="font-normal">{problem.id}.{" "}</span>
+                  )}
+                  {problem.title ?? session.problemTitleSlug}
                 </a>
               )}
             </h1>
