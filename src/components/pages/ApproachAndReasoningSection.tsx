@@ -91,7 +91,6 @@ export function ApproachAndReasoningSection({
 
         <div className="flex h-[26rem] flex-col">
           <ChatBox
-            location="approach_and_reasoning"
             messages={messages}
             onSend={onSend}
             cooldownUntil={cooldownUntil}

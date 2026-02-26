@@ -1,11 +1,17 @@
 import type { Metadata } from "next";
-import { Nunito } from "next/font/google";
+import { Geist, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/hooks/useAuth";
+
+const geist = Geist({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-geist",
+});
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -29,10 +35,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${jetbrainsMono.variable} ${nunito.variable} antialiased`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${jetbrainsMono.variable} ${geist.variable} ${nunito.variable}`}
+    >
+      <body className="font-sans antialiased">
         <AuthProvider>
           <ThemeProvider
             attribute="class"

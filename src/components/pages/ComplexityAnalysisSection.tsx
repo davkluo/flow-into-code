@@ -92,7 +92,6 @@ export function ComplexityAnalysisSection({
 
         <div className="flex h-[26rem] flex-col">
           <ChatBox
-            location="complexity_analysis"
             messages={messages}
             onSend={onSend}
             cooldownUntil={cooldownUntil}

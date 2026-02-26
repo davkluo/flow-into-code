@@ -24,8 +24,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useAuth } from "@/hooks/useAuth";
 import { oAuthProviderNames } from "@/constants/oauth";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -94,80 +94,80 @@ const Navbar = () => {
                     </Button>
                   </SheetTrigger>
                   <SheetContent className="overflow-y-auto">
-                  <SheetHeader>
-                    <SheetTitle>Flow Into Code</SheetTitle>
-                  </SheetHeader>
-                  <div className="flex flex-col gap-6 p-4">
-                    <Accordion
-                      type="single"
-                      collapsible
-                      className="flex w-full flex-col gap-4"
-                    >
-                      {navbarMenu.map((item) =>
-                        renderMobileMenuItem(item, pathname),
-                      )}
-                    </Accordion>
+                    <SheetHeader>
+                      <SheetTitle>Flow Into Code</SheetTitle>
+                    </SheetHeader>
+                    <div className="flex flex-col gap-6 p-4">
+                      <Accordion
+                        type="single"
+                        collapsible
+                        className="flex w-full flex-col gap-4"
+                      >
+                        {navbarMenu.map((item) =>
+                          renderMobileMenuItem(item, pathname),
+                        )}
+                      </Accordion>
 
-                    <Separator />
+                      <Separator />
 
-                    <div className="flex flex-col gap-3">
-                      {status === "authenticated" ? (
-                        <div>
-                          <div className="flex items-center gap-4">
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage
-                                src={user?.photoURL || ""}
-                                alt="User Avatar"
-                              />
-                              <AvatarFallback>
-                                {user?.displayName
-                                  ?.split(" ")
-                                  .map((name) => name.charAt(0))
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="text-lg font-semibold">
-                                {user?.displayName || "User"}
+                      <div className="flex flex-col gap-3">
+                        {status === "authenticated" ? (
+                          <div>
+                            <div className="flex items-center gap-4">
+                              <Avatar className="h-9 w-9">
+                                <AvatarImage
+                                  src={user?.photoURL || ""}
+                                  alt="User Avatar"
+                                />
+                                <AvatarFallback>
+                                  {user?.displayName
+                                    ?.split(" ")
+                                    .map((name) => name.charAt(0))
+                                    .join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="text-lg font-semibold">
+                                  {user?.displayName || "User"}
+                                </div>
+                                <p className="text-muted-foreground text-xs">
+                                  {user?.email || "No email available"}
+                                </p>
                               </div>
-                              <p className="text-muted-foreground text-xs">
-                                {user?.email || "No email available"}
+                            </div>
+                            <div className="mt-4 flex flex-col">
+                              <Button asChild>
+                                <Link href="#">Settings</Link>
+                              </Button>
+                              <Separator className="my-4" />
+                              <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={signOutUser}
+                              >
+                                Sign Out
+                              </Button>
+                              <p className="text-muted-foreground mt-1 text-xs">
+                                Signed in via{" "}
+                                <span className="font-medium">
+                                  {
+                                    oAuthProviderNames[
+                                      user?.providerData[0]?.providerId ||
+                                        "unknown"
+                                    ]
+                                  }
+                                </span>
                               </p>
                             </div>
                           </div>
-                          <div className="mt-4 flex flex-col">
-                            <Button asChild>
-                              <Link href="#">Settings</Link>
-                            </Button>
-                            <Separator className="my-4" />
-                            <Button
-                              variant="outline"
-                              className="w-full"
-                              onClick={signOutUser}
-                            >
-                              Sign Out
-                            </Button>
-                            <p className="text-muted-foreground mt-1 text-xs">
-                              Signed in via{" "}
-                              <span className="font-medium">
-                                {
-                                  oAuthProviderNames[
-                                    user?.providerData[0]?.providerId ||
-                                      "unknown"
-                                  ]
-                                }
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <Button asChild variant="outline" className="w-full">
-                          <Link href="/signin">Sign In</Link>
-                        </Button>
-                      )}
+                        ) : (
+                          <Button asChild variant="outline" className="w-full">
+                            <Link href="/signin">Sign In</Link>
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </SheetContent>
+                  </SheetContent>
                 </Sheet>
               </div>
             </div>
@@ -175,7 +175,7 @@ const Navbar = () => {
 
           {/* Desktop Menu */}
           <nav className="hidden w-full items-center justify-between sm:flex">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-8">
               {/* Logo */}
               <Link href="/" className="shrink-0">
                 <Logo />

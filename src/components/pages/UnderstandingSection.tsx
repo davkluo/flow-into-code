@@ -167,7 +167,6 @@ export function UnderstandingSection({
         </div>
         <div className="flex h-[26rem] flex-col">
           <ChatBox
-            location="problem_understanding"
             messages={messages}
             onSend={onSend}
             cooldownUntil={cooldownUntil}

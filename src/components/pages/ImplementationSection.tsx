@@ -34,8 +34,8 @@ import { authFetch } from "@/lib/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet, stripTestBlock } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";
-import { SectionField } from "@/types/practice";
 import { LangSlug } from "@/types/languages";
+import { SectionField } from "@/types/practice";
 import { CodeEditor } from "./CodeEditor";
 
 // Note implementation section fields are separated out of snapshot type for
@@ -285,7 +285,7 @@ export function ImplementationSection({
               {isRunning ? (
                 <span className="text-muted-foreground flex items-center gap-1.5 text-sm font-medium">
                   <Loader2Icon className="size-3.5 animate-spin" />
-                  Loading output
+                  Running Code
                 </span>
               ) : (
                 <>
@@ -293,7 +293,7 @@ export function ImplementationSection({
                   <span
                     className={`ml-1.5 text-sm ${isError ? "text-destructive" : "text-lime-400"}`}
                   >
-                    {isError ? "Error" : "Run successful"}
+                    {isError ? "Error" : "Success"}
                   </span>
                 </>
               )}
@@ -319,7 +319,6 @@ export function ImplementationSection({
         {/* ChatBox — col 2, row 1 on desktop */}
         <div className="flex h-[26rem] flex-col sm:col-start-2 sm:row-start-1">
           <ChatBox
-            location="implementation"
             messages={messages}
             onSend={onSend}
             cooldownUntil={cooldownUntil}

@@ -11,11 +11,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { ChatLog } from "@/components/pages/ChatLog";
 import { SessionMessage } from "@/types/chat";
-import { SectionKey } from "@/types/practice";
 
 interface ChatBoxProps {
-  location: SectionKey;
   messages: SessionMessage[];
   onSend: (message: string) => Promise<void>;
   cooldownUntil?: number;
@@ -28,7 +27,6 @@ interface ChatBoxProps {
 }
 
 export function ChatBox({
-  location,
   messages,
   onSend,
   cooldownUntil = 0,
@@ -142,36 +140,15 @@ export function ChatBox({
             layoutMode === "fixed" ? "min-h-0 flex-1" : "max-h-[40vh]",
           )}
         >
-          <div className="mt-4 flex flex-col gap-2 px-3">
-            {messagesLength === 0 ? (
-              <div className="text-muted-foreground mb-4 flex w-full justify-center text-xs opacity-70">
-                {emptyStateMessage}
+          <div className="mt-4 flex flex-col gap-2 px-3 pb-4">
+            <ChatLog
+              messages={messages}
+              emptyStateMessage={emptyStateMessage}
+            />
+            {showLoadingBubble && (
+              <div className="bg-muted-foreground/10 w-fit rounded-xl px-3 py-2 text-sm font-bold">
+                <span className="animate-pulse">...</span>
               </div>
-            ) : (
-              <>
-                {messages.map(
-                  (msg, i) =>
-                    msg.content !== "" && (
-                      <div
-                        key={`${location}-${i}`}
-                        className={cn(
-                          "max-w-prose rounded-xl px-3 py-2 text-sm whitespace-pre-wrap",
-                          msg.role === "user" &&
-                            "bg-primary text-primary-foreground ml-auto",
-                          msg.role === "assistant" &&
-                            "bg-muted-foreground/10 mr-auto",
-                        )}
-                      >
-                        {msg.content}
-                      </div>
-                    ),
-                )}
-                {showLoadingBubble && (
-                  <div className="bg-muted-foreground/10 w-fit rounded-xl px-3 py-2 text-sm font-bold">
-                    <span className="animate-pulse">...</span>
-                  </div>
-                )}
-              </>
             )}
           </div>
         </ScrollArea>

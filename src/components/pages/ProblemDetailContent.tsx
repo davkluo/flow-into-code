@@ -194,10 +194,10 @@ export function ProblemDetailContent({
                       {example.output}
                     </p>
                     {example.explanation && (
-                        <p className="mt-1 text-sm leading-relaxed">
-                          {example.explanation}
-                        </p>
-                      )}
+                      <p className="mt-1 text-sm leading-relaxed">
+                        {example.explanation}
+                      </p>
+                    )}
                   </ItemContent>
                 </Item>
               </TabsContent>
