@@ -9,6 +9,7 @@ import {
   getProblemDataApiPath,
   LC_PROBLEMS_API_PATH,
   PROBLEM_INDEX_META_API_PATH,
+  SESSIONS_API_PATH,
 } from "@/constants/api";
 import { authFetch } from "@/lib/authFetch";
 import {
@@ -44,7 +45,7 @@ export function ProblemSelectSection({
   >({});
 
   const [currentUIPage, setCurrentUIPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(5);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(10);
   const [totalProblems, setTotalProblems] = useState<number | null>(null);
 
   const [search, setSearch] = useState("");
@@ -56,6 +57,7 @@ export function ProblemSelectSection({
     null,
   );
   const pollAbortRef = useRef<AbortController | null>(null);
+  const [completedSlugs, setCompletedSlugs] = useState<Set<string>>(new Set());
   // #endregion State Variables
 
   // #region Local Helpers
@@ -286,6 +288,28 @@ export function ProblemSelectSection({
   // #endregion Stable Callbacks
 
   // #region Effects
+  // Fetch completed problem slugs from session history on mount
+  useEffect(() => {
+    const fetchCompleted = async () => {
+      try {
+        const res = await authFetch(SESSIONS_API_PATH);
+        if (res.ok) {
+          const data = await res.json();
+          setCompletedSlugs(
+            new Set(
+              data.sessions.map(
+                (s: { problemTitleSlug: string }) => s.problemTitleSlug,
+              ),
+            ),
+          );
+        }
+      } catch (err) {
+        console.error("Failed to fetch session history:", err);
+      }
+    };
+    fetchCompleted();
+  }, []);
+
   // Fetch total problems count on mount
   useEffect(() => {
     const fetchMeta = async () => {
@@ -368,6 +392,7 @@ export function ProblemSelectSection({
               isLoading={isLoadingProblemList}
               itemsPerPage={itemsPerPage}
               search={search}
+              completedSlugs={completedSlugs}
               onSearchChange={setSearch}
               onPageChange={handlePageChange}
               onItemsPerPageChange={handleItemsPerPageChange}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Lock, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, CircleCheckBig, Lock, Search, X } from "lucide-react";
 import { useRef } from "react";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
@@ -22,6 +22,7 @@ interface ProblemsTableProps {
   isLoading: boolean;
   itemsPerPage: ItemsPerPage;
   search: string;
+  completedSlugs?: Set<string>;
   onSearchChange: (search: string) => void;
   onPageChange: (page: number) => void;
   onItemsPerPageChange: (itemsPerPage: ItemsPerPage) => void;
@@ -35,6 +36,7 @@ export function ProblemsTable({
   isLoading,
   itemsPerPage,
   search,
+  completedSlugs,
   onSearchChange,
   onPageChange,
   onItemsPerPageChange,
@@ -197,6 +199,7 @@ export function ProblemsTable({
 
       <Table className="mt-1 table-fixed">
         <colgroup>
+          <col className="w-6" />
           <col className="w-auto" />
           <col className="w-10" />
           <col className="w-60" />
@@ -205,6 +208,7 @@ export function ProblemsTable({
           {isLoading ? (
             Array.from({ length: itemsPerPage }).map((_, i) => (
               <TableRow key={i} className="hover:bg-transparent">
+                <TableCell />
                 <TableCell>
                   <Skeleton className="h-4 w-3/4" />
                 </TableCell>
@@ -222,7 +226,7 @@ export function ProblemsTable({
           ) : problems.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={3}
+                colSpan={4}
                 className="text-muted-foreground text-center"
               >
                 No problems found.
@@ -235,6 +239,7 @@ export function ProblemsTable({
                   key={problem.id}
                   className="opacity-50 hover:bg-transparent"
                 >
+                  <TableCell />
                   <TableCell className="text-sm">
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -285,6 +290,11 @@ export function ProblemsTable({
                 </TableRow>
               ) : (
                 <TableRow key={problem.id} className="hover:bg-transparent">
+                  <TableCell className="align-middle">
+                    {completedSlugs?.has(problem.titleSlug) && (
+                      <CircleCheckBig className="h-3.5 w-3.5 text-green-500" />
+                    )}
+                  </TableCell>
                   <TableCell className="text-sm">
                     <TruncatedText
                       as="button"
