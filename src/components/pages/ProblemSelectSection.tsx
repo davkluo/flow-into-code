@@ -398,7 +398,7 @@ export function ProblemSelectSection({
                 {isEditable && problemDetails && (
                   <div className="flex justify-center">
                     <Button
-                      className="w-min"
+                      className="after:bg-brand-primary relative overflow-hidden after:absolute after:right-0 after:bottom-0 after:left-0 after:h-1 after:origin-left after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
                       onClick={() =>
                         onProblemSelect(selectedProblem, problemDetails)
                       }

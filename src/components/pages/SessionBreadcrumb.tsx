@@ -33,8 +33,14 @@ interface SessionBreadcrumbProps {
   onSectionSummaryClick?: (sectionKey: SectionKey) => void;
 }
 
-const glassyTrigger =
-  "inline-flex h-7 shrink-0 cursor-pointer items-center rounded-md border border-black/10 bg-gradient-to-t from-transparent via-transparent via-[75%] to-white/15 px-2.5 text-xs font-medium uppercase tracking-wide backdrop-blur-2xl transition-all hover:to-white/25 dark:border-white/15 dark:from-white/[0.03] dark:to-white/[0.12] dark:hover:to-white/[0.20]";
+const linkTrigger =
+  "inline-flex shrink-0 cursor-pointer items-center px-0.5 pb-[5px] text-sm font-medium tracking-wide outline-none hover:text-foreground";
+
+const activeBase = "text-foreground font-semibold";
+const activeAccent =
+  "relative after:absolute after:bottom-[1px] after:left-[4px] after:right-[4px] after:h-[3px] after:rounded-full after:bg-brand-secondary";
+
+const menuItemHover = "focus:bg-transparent focus:underline focus:underline-offset-4";
 
 function ProblemDropdownItem({
   problemTitle,
@@ -45,44 +51,25 @@ function ProblemDropdownItem({
   onViewProblem: () => void;
   onEndSession: () => void;
 }) {
-  const [open, setOpen] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
-  const isHoveringRef = useRef(false);
-
-  const handleMouseEnter = () => {
-    isHoveringRef.current = true;
-    setOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    isHoveringRef.current = false;
-    setTimeout(() => {
-      if (!isHoveringRef.current) setOpen(false);
-    }, 150);
-  };
 
   return (
     <>
-      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-        <DropdownMenuTrigger asChild>
-          <button
-            className={cn(glassyTrigger, "hover:text-foreground")}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
+      <DropdownMenu>
+        <DropdownMenuTrigger className={cn(linkTrigger, activeBase)}>
+          <span className="rounded-md border border-input px-2.5 py-1 transition-colors hover:bg-card hover:text-card-foreground">
             {problemTitle}
-          </button>
+          </span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          align="start"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <DropdownMenuItem onClick={onViewProblem}>
-            View problem
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem className={menuItemHover} onClick={onViewProblem}>
+            View reference
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="text-destructive focus:text-destructive"
+            className={cn(
+              menuItemHover,
+              "text-destructive focus:text-destructive",
+            )}
             onClick={() => setAlertOpen(true)}
           >
             End session
@@ -123,44 +110,25 @@ function SectionDropdownItem({
   onSectionNavigate: (sectionKey: SectionKey) => void;
   onSectionSummaryClick?: (sectionKey: SectionKey) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const isHoveringRef = useRef(false);
-
-  const handleMouseEnter = () => {
-    isHoveringRef.current = true;
-    setOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    isHoveringRef.current = false;
-    setTimeout(() => {
-      if (!isHoveringRef.current) setOpen(false);
-    }, 150);
-  };
-
   return (
-    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
-      <DropdownMenuTrigger asChild>
-        <button
-          className={cn(glassyTrigger, "hover:text-foreground")}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
-          {isComplete && <Check className="ml-1 inline-block size-3" />}
-        </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger className={cn(linkTrigger)}>
+        {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
+        {isComplete && <Check className="ml-1 inline-block size-3" />}
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
+      <DropdownMenuContent align="start">
         {onSectionSummaryClick && (
-          <DropdownMenuItem onClick={() => onSectionSummaryClick(sectionKey)}>
+          <DropdownMenuItem
+            className={menuItemHover}
+            onClick={() => onSectionSummaryClick(sectionKey)}
+          >
             View summary
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={() => onSectionNavigate(sectionKey)}>
+        <DropdownMenuItem
+          className={menuItemHover}
+          onClick={() => onSectionNavigate(sectionKey)}
+        >
           Go to section
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -278,12 +246,8 @@ export function SessionBreadcrumb({
         onEndSession={onEndSession}
       />
 
-      <span role="presentation" aria-hidden="true" className="shrink-0">
-        :
-      </span>
-
       {/* Scrollable section list */}
-      <div className="relative min-w-0 shrink">
+      <div className="relative ml-2 min-w-0 shrink">
         {/* Left fade shadow */}
         <div
           className={`from-background pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r to-transparent transition-opacity duration-200 ${
@@ -305,13 +269,16 @@ export function SessionBreadcrumb({
                 index === currentSectionIndex ? (
                   <span
                     className={cn(
-                      glassyTrigger,
-                      "border-lime-400/30 font-semibold text-lime-400 dark:border-lime-400/30",
+                      linkTrigger,
+                      activeBase,
+                      activeAccent,
                       "pointer-events-none",
                     )}
                   >
                     {index + 1}. {SECTION_KEY_TO_DETAILS[sectionKey].title}
-                    {isComplete && <Check className="ml-1 inline-block size-3" />}
+                    {isComplete && (
+                      <Check className="ml-1 inline-block size-3" />
+                    )}
                   </span>
                 ) : (
                   <SectionDropdownItem
@@ -331,7 +298,7 @@ export function SessionBreadcrumb({
                     ref={(el) => {
                       itemRefs.current[0] = el;
                     }}
-                    className="inline-flex shrink-0 items-center"
+                    className="group inline-flex shrink-0 items-center"
                   >
                     {button}
                   </span>
@@ -347,14 +314,14 @@ export function SessionBreadcrumb({
                     itemRefs.current[index] = el;
                   }}
                   className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5",
+                    "group inline-flex shrink-0 items-center gap-1.5",
                     index === newlyAddedIndex && "animate-expand-crumb",
                   )}
                 >
                   <span
                     role="presentation"
                     aria-hidden="true"
-                    className="shrink-0"
+                    className="shrink-0 pb-[5px]"
                   >
                     <ChevronRight className="size-3.5" />
                   </span>

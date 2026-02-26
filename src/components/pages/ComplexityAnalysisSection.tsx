@@ -77,7 +77,7 @@ export function ComplexityAnalysisSection({
                   </TooltipContent>
                 </Tooltip>
                 {isFieldFilled(field.key) && (
-                  <CheckIcon className="ml-auto size-4 text-lime-400" />
+                  <CheckIcon className="ml-auto size-4 text-brand-secondary" />
                 )}
               </div>
               <Textarea

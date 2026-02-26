@@ -99,7 +99,7 @@ export function ProblemReferenceSheet({
                 </span>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="flex flex-col gap-4">
+                <div className="bg-brand-card rounded-md p-4">
                   <ProblemDetailContent
                     problem={problem}
                     problemDetails={problemDetails}
@@ -133,7 +133,7 @@ export function ProblemReferenceSheet({
                           <Item
                             variant="default"
                             size="sm"
-                            className="bg-background rounded-md dark:bg-black"
+                            className="bg-brand-card rounded-md"
                           >
                             <ItemContent>
                               <p className="text-muted-foreground mb-1 text-xs font-medium">
@@ -176,7 +176,7 @@ export function ProblemReferenceSheet({
                           <Item
                             variant="default"
                             size="sm"
-                            className="bg-background rounded-md dark:bg-black"
+                            className="bg-brand-card rounded-md"
                           >
                             <ItemContent>
                               <p className="text-muted-foreground mb-1 text-xs font-medium">
@@ -219,7 +219,7 @@ export function ProblemReferenceSheet({
                           <Item
                             variant="default"
                             size="sm"
-                            className="bg-background rounded-md dark:bg-black"
+                            className="bg-brand-card rounded-md"
                           >
                             <ItemContent className="gap-2">
                               {testCase.description && (
@@ -278,7 +278,7 @@ export function ProblemReferenceSheet({
                           <Item
                             variant="default"
                             size="sm"
-                            className="bg-background rounded-md dark:bg-black"
+                            className="bg-brand-card rounded-md"
                           >
                             <ItemContent className="gap-2">
                               {edgeCase.description && (

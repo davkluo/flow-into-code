@@ -1,7 +1,14 @@
 "use client";
 
-import { InfoIcon } from "lucide-react";
+import {
+  ChevronUp,
+  Command,
+  CornerDownLeft,
+  InfoIcon,
+  Send,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { ChatLog } from "@/components/pages/ChatLog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +18,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { ChatLog } from "@/components/pages/ChatLog";
 import { SessionMessage } from "@/types/chat";
 
 interface ChatBoxProps {
@@ -174,21 +180,27 @@ export function ChatBox({
 
           <Button
             disabled={!input.trim() || secondsLeft > 0}
-            size="sm"
             onClick={handleSend}
-            className="cursor-auto justify-self-end rounded-full"
+            className="group/btn h-8 w-8 cursor-auto gap-0 overflow-hidden rounded-full p-0 transition-[width,padding,gap] duration-200 sm:hover:w-[5.75rem] sm:hover:gap-2 sm:hover:pr-3 sm:hover:pl-2 disabled:sm:hover:w-8"
           >
             {secondsLeft > 0 ? (
-              <>Wait {secondsLeft}s</>
+              <span className="flex h-full w-full items-center justify-center text-xs font-medium">
+                {secondsLeft}
+              </span>
             ) : (
               <>
-                Send
-                <span className="text-muted-foreground hidden items-center gap-1 text-xs sm:inline-flex">
-                  <kbd className="bg-muted aspect-square w-4 rounded border font-mono text-xs">
-                    {isMac ? "⌘" : "⌃"}
+                <Send className="size-4 shrink-0 -translate-x-[1px]" />
+                <span className="hidden max-w-0 min-w-0 items-center gap-0.5 overflow-hidden opacity-0 transition-[max-width,opacity] duration-200 sm:flex sm:group-hover/btn:max-w-11 sm:group-hover/btn:opacity-100">
+                  <kbd className="bg-primary-foreground text-primary flex aspect-square w-5 items-center justify-center rounded">
+                    {isMac ? (
+                      <Command className="size-3" />
+                    ) : (
+                      <ChevronUp className="size-3" />
+                    )}
                   </kbd>
-                  <kbd className="bg-muted aspect-square w-4 rounded border px-1 font-mono text-xs">
-                    ↵
+                  <span className="self-center leading-none">+</span>
+                  <kbd className="bg-primary-foreground text-primary flex aspect-square w-5 items-center justify-center rounded">
+                    <CornerDownLeft className="size-3" />
                   </kbd>
                 </span>
               </>

@@ -587,7 +587,7 @@ export function PracticeSession() {
 
           {/* Fixed bottom bar: back | timer | next */}
           <div className="fixed bottom-8 left-0 z-40 flex w-full items-end gap-5 px-6">
-            <div className="mb-1 flex min-w-0 flex-1 justify-end pr-10">
+            <div className="mb-1 flex min-w-0 flex-1 justify-end pr-2">
               {currentSectionIndex > 0 && (
                 <Button
                   variant="link"
@@ -622,11 +622,13 @@ export function PracticeSession() {
                             }
                           }}
                           disabled={isFeedbackBlocked || isFetchingFeedback}
-                          className="text-muted-foreground hover:text-foreground bg-background/90 mt-2 w-fit cursor-pointer rounded-xl px-2.5 py-1 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_14px_var(--background)] backdrop-blur-sm"
+                          className="group text-white hover:text-brand-primary bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] transition-colors"
                         >
-                          {isFetchingFeedback
-                            ? "Generating feedback..."
-                            : "Finish: Get Feedback →"}
+                          <span className="text-fill-ltr">
+                            {isFetchingFeedback
+                              ? "Generating feedback..."
+                              : "Finish: Get Feedback →"}
+                          </span>
                         </Button>
                       </span>
                     </TooltipTrigger>

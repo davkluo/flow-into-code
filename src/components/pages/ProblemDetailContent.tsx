@@ -46,7 +46,10 @@ export function ProblemDetailContent({
           </Tooltip>
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <DifficultyBadge difficulty={problem.difficulty} />
+          <DifficultyBadge
+            difficulty={problem.difficulty}
+            className="-mt-0.5"
+          />
           {problem.topicTags.map((tag) => (
             <TagBadge key={tag.id} tagName={tag.name} />
           ))}
@@ -121,7 +124,7 @@ export function ProblemDetailContent({
             <Item
               variant="default"
               size="sm"
-              className="bg-background rounded-md dark:bg-black"
+              className="bg-brand-inset rounded-md"
             >
               <ItemContent>
                 <p className="text-sm leading-loose whitespace-pre-line">
@@ -135,7 +138,7 @@ export function ProblemDetailContent({
               <Item
                 variant="default"
                 size="sm"
-                className="bg-background rounded-md dark:bg-black"
+                className="bg-brand-inset rounded-md"
               >
                 <ItemContent>
                   <p className="text-sm leading-loose whitespace-pre-line">
@@ -150,7 +153,7 @@ export function ProblemDetailContent({
               <Item
                 variant="default"
                 size="sm"
-                className="bg-background rounded-md dark:bg-black"
+                className="bg-brand-inset rounded-md"
               >
                 <ItemContent>
                   <p className="text-sm leading-loose whitespace-pre-line">
@@ -182,7 +185,7 @@ export function ProblemDetailContent({
                 <Item
                   variant="default"
                   size="sm"
-                  className="bg-background rounded-md dark:bg-black"
+                  className="bg-brand-inset rounded-md"
                 >
                   <ItemContent className="gap-2">
                     <p className="font-mono text-sm">

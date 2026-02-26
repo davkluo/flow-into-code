@@ -128,7 +128,7 @@ const Navbar = () => {
                               >
                                 Sign Out
                               </Button>
-                              <p className="text-muted-foreground mt-1 text-xs">
+                              <p className="text-muted-foreground mt-1.5 text-xs">
                                 Signed in via{" "}
                                 <span className="font-medium">
                                   {
@@ -207,7 +207,7 @@ const Navbar = () => {
                       >
                         Sign Out
                       </Button>
-                      <p className="text-muted-foreground mt-1 text-xs">
+                      <p className="text-muted-foreground mt-1.5 text-xs">
                         Signed in via{" "}
                         <span className="font-medium">
                           {

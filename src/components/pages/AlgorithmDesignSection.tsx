@@ -57,7 +57,7 @@ export function AlgorithmDesignSection({
                 </TooltipContent>
               </Tooltip>
               {pseudocode.length >= FIELD.threshold && (
-                <CheckIcon className="ml-auto size-4 text-lime-400" />
+                <CheckIcon className="ml-auto size-4 text-brand-secondary" />
               )}
             </div>
             <div className="relative flex-1 overflow-hidden">
