@@ -27,7 +27,8 @@ const FIELDS: SectionField<ApproachSnapshot>[] = [
     threshold: 50,
     tooltip:
       "Describe the overall approach you're taking — what algorithm or technique you're using and how it solves the problem. You can start with a naive solution and refine from there.",
-    placeholder: "Describe your approach.",
+    placeholder:
+      "e.g. Use a hash map to track values as we scan — for each element, check if its complement exists...",
   },
   {
     key: "reasoning",
@@ -36,7 +37,7 @@ const FIELDS: SectionField<ApproachSnapshot>[] = [
     tooltip:
       "What's the core insight that makes this approach work? Why did you choose it over alternatives? Note any complexity or implementation trade-offs you considered.",
     placeholder:
-      "Why does this approach work? What trade-offs did you consider?",
+      "e.g. This works because we need O(1) lookup — storing values in a hash map trades space for time, avoiding a nested scan...",
   },
 ];
 

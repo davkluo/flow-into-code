@@ -71,10 +71,10 @@ export function SectionFeedbackCard({
       className="border-input overflow-hidden rounded-md border"
     >
       <Collapsible>
-        <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-3 text-left transition-colors [&[data-state=open]>svg]:rotate-180">
-          <div className="flex flex-col gap-1">
+        <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-card dark:hover:bg-card [&[data-state=open]>svg]:rotate-180">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">{title}</span>
+              <span className="text-base font-medium">{title}</span>
               {feedback.score === null ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -96,7 +96,7 @@ export function SectionFeedbackCard({
               )}
             </div>
             {feedback.comments && (
-              <span className="text-muted-foreground text-xs">
+              <span className="text-foreground text-sm">
                 {feedback.comments}
               </span>
             )}
@@ -105,7 +105,7 @@ export function SectionFeedbackCard({
         </CollapsibleTrigger>
 
         <CollapsibleContent className="border-t">
-          <div className="px-4 py-4">
+          <div className="px-4 pt-2 pb-4">
             <Tabs defaultValue="feedback">
               <TabsList variant="line">
                 <TabsTrigger value="feedback" className="text-xs">
@@ -116,13 +116,13 @@ export function SectionFeedbackCard({
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="feedback" className="mt-4 space-y-4">
+              <TabsContent value="feedback" className="mt-2 space-y-4">
                 {feedback.compliments && (
                   <div className="space-y-1">
                     <p className="text-xs font-medium text-lime-400">
                       What went well
                     </p>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-foreground text-sm">
                       {feedback.compliments}
                     </p>
                   </div>
@@ -132,14 +132,14 @@ export function SectionFeedbackCard({
                     <p className="text-xs font-medium text-amber-400">
                       To improve
                     </p>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-foreground text-sm">
                       {feedback.advice}
                     </p>
                   </div>
                 )}
               </TabsContent>
 
-              <TabsContent value="inputs" className="mt-4">
+              <TabsContent value="inputs" className="mt-2">
                 {!fields ? (
                   <p className="text-muted-foreground text-sm">
                     No inputs recorded.
@@ -151,7 +151,7 @@ export function SectionFeedbackCard({
                         <p className="text-muted-foreground text-xs font-medium">
                           Language
                         </p>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge variant="secondary" className="bg-card text-xs">
                           {fields.language}
                         </Badge>
                       </div>
@@ -163,20 +163,18 @@ export function SectionFeedbackCard({
                           <p className="text-muted-foreground text-xs font-medium">
                             {label}
                           </p>
-                          {value ? (
-                            isCode ? (
-                              <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs whitespace-pre-wrap">
-                                {value}
-                              </pre>
-                            ) : (
-                              <p className="text-sm whitespace-pre-wrap">
-                                {value}
-                              </p>
-                            )
+                          {isCode ? (
+                            <pre className="bg-card border-input overflow-x-auto rounded-md border p-3 font-mono text-xs whitespace-pre-wrap">
+                              {value || <span className="text-muted-foreground italic">Not provided</span>}
+                            </pre>
                           ) : (
-                            <p className="text-muted-foreground text-sm italic">
-                              Not provided
-                            </p>
+                            <div className="border-input bg-card min-h-10 rounded-md border px-3 py-2">
+                              {value ? (
+                                <p className="text-sm whitespace-pre-wrap">{value}</p>
+                              ) : (
+                                <p className="text-muted-foreground text-sm italic">Not provided</p>
+                              )}
+                            </div>
                           )}
                         </div>
                       );

@@ -44,10 +44,10 @@ export function CommunicationSection({
       className="border-input overflow-hidden rounded-md border"
     >
       <Collapsible>
-        <CollapsibleTrigger className="hover:bg-muted/50 flex w-full items-center justify-between px-4 py-3 text-left transition-colors [&[data-state=open]>svg]:rotate-180">
-          <div className="flex flex-col gap-1">
+        <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left transition-colors hover:bg-card dark:hover:bg-card [&[data-state=open]>svg]:rotate-180">
+          <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
+              <span className="text-base font-medium">
                 Interviewer Communication
               </span>
               {feedback.score === null ? (
@@ -73,7 +73,7 @@ export function CommunicationSection({
               )}
             </div>
             {feedback.comments && (
-              <span className="text-muted-foreground text-xs">
+              <span className="text-foreground text-sm">
                 {feedback.comments}
               </span>
             )}
@@ -81,7 +81,7 @@ export function CommunicationSection({
           <ChevronDownIcon className="text-muted-foreground size-4 shrink-0 transition-transform duration-200" />
         </CollapsibleTrigger>
         <CollapsibleContent className="border-t">
-          <div className="px-4 py-4">
+          <div className="px-4 pt-2 pb-4">
             <Tabs defaultValue={defaultTab}>
               <TabsList variant="line">
                 {hasFeedbackTab && (
@@ -96,13 +96,13 @@ export function CommunicationSection({
                 ))}
               </TabsList>
               {hasFeedbackTab && (
-                <TabsContent value="feedback" className="mt-4 space-y-4">
+                <TabsContent value="feedback" className="mt-2 space-y-4">
                   {feedback.compliments && (
                     <div className="space-y-1">
                       <p className="text-xs font-medium text-lime-400">
                         What went well
                       </p>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-foreground text-sm">
                         {feedback.compliments}
                       </p>
                     </div>
@@ -112,7 +112,7 @@ export function CommunicationSection({
                       <p className="text-xs font-medium text-amber-400">
                         To improve
                       </p>
-                      <p className="text-muted-foreground text-sm">
+                      <p className="text-foreground text-sm">
                         {feedback.advice}
                       </p>
                     </div>
@@ -120,12 +120,14 @@ export function CommunicationSection({
                 </TabsContent>
               )}
               {SECTION_ORDER.map((key) => (
-                <TabsContent key={key} value={key} className="mt-4">
-                  <div className="max-h-80 overflow-y-auto pr-2">
-                    <ChatLog
-                      messages={messages.filter((m) => m.section === key)}
-                      emptyStateMessage="No chat messages in this section."
-                    />
+                <TabsContent key={key} value={key} className="mt-2">
+                  <div className="border-input overflow-hidden rounded-md border">
+                    <div className="max-h-80 overflow-y-auto p-3">
+                      <ChatLog
+                        messages={messages.filter((m) => m.section === key)}
+                        emptyStateMessage="No chat messages in this section."
+                      />
+                    </div>
                   </div>
                 </TabsContent>
               ))}

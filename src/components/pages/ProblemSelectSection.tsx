@@ -375,8 +375,12 @@ export function ProblemSelectSection({
   // #endregion Effects
 
   return (
-    <div className="flex flex-col gap-4 px-3.5">
-      <Card className="mx-auto mt-6 overflow-hidden py-0 lg:max-w-3xl">
+    <div className="mx-auto flex max-w-3xl flex-col gap-6 px-3.5 pt-4">
+      <div className="flex items-baseline gap-2">
+        <h1 className="text-xl font-semibold">Problems</h1>
+      </div>
+
+      <Card className="overflow-hidden py-0">
         <div
           className={cn(
             "flex w-[200%] transition-transform duration-300 ease-in-out",

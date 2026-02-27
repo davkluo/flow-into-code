@@ -157,10 +157,10 @@ export default function FeedbackPage() {
         return (
           <div className="grid grid-cols-2">
             {items.map((item) => (
-              <a key={item.href} href={item.href} className="group px-3 py-2">
+              <a key={item.href} href={item.href} className="group rounded-md px-3 py-2 transition-colors hover:bg-card dark:hover:bg-card">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-muted-foreground group-hover:text-foreground text-xs transition-colors">
+                    <span className="text-foreground text-xs">
                       {item.title}
                     </span>
                     {item.score !== null ? (
@@ -198,9 +198,9 @@ export default function FeedbackPage() {
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             Session Summary
           </p>
-          <div className="border-input overflow-hidden rounded-md border px-4 py-3">
-            <p className="text-sm">{feedback.summary}</p>
-          </div>
+          <p className="border-l-2 border-muted-foreground/30 pl-4 text-base font-medium leading-relaxed tracking-wide">
+            {feedback.summary}
+          </p>
         </div>
       )}
 

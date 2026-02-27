@@ -34,13 +34,14 @@ interface SessionBreadcrumbProps {
 }
 
 const linkTrigger =
-  "inline-flex shrink-0 cursor-pointer items-center px-0.5 pb-[5px] text-sm font-medium tracking-wide outline-none hover:text-foreground";
+  "inline-flex shrink-0 cursor-pointer items-center px-0.5 pb-[8px] text-sm font-medium tracking-wide outline-none hover:text-foreground";
 
 const activeBase = "text-foreground font-semibold";
 const activeAccent =
-  "relative after:absolute after:bottom-[1px] after:left-[4px] after:right-[4px] after:h-[3px] after:rounded-full after:bg-brand-secondary";
+  "relative after:absolute after:bottom-[1px] after:left-[8px] after:right-[8px] after:h-[3px] after:rounded-full after:bg-brand-secondary";
 
-const menuItemHover = "focus:bg-transparent focus:underline focus:underline-offset-4";
+const menuItemHover =
+  "focus:bg-transparent focus:underline focus:underline-offset-4";
 
 function ProblemDropdownItem({
   problemTitle,
@@ -57,7 +58,7 @@ function ProblemDropdownItem({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger className={cn(linkTrigger, activeBase)}>
-          <span className="rounded-md border border-input px-2.5 py-1 transition-colors hover:bg-card hover:text-card-foreground">
+          <span className="border-input hover:bg-card hover:text-card-foreground rounded-md border px-2.5 py-1 transition-colors">
             {problemTitle}
           </span>
         </DropdownMenuTrigger>
