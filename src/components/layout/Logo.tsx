@@ -1,7 +1,6 @@
 "use client";
 
 import { useRef, useState } from "react";
-
 import { cn } from "@/lib/utils";
 
 const LETTERS = [
@@ -40,7 +39,7 @@ export function Logo({ className }: LogoProps) {
 
   return (
     <div
-      className={cn("inline-flex flex-col leading-none", className)}
+      className={cn("inline-flex items-center", className)}
       onMouseEnter={handleMouseEnter}
     >
       <span className="font-logo inline-block origin-center scale-y-[1.1] text-xl font-bold tracking-tight">

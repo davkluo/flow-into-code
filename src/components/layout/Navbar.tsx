@@ -62,11 +62,12 @@ const Navbar = () => {
         <div className="relative flex h-16 items-center justify-between">
           <div className="absolute inset-y-0 left-0 flex w-full items-center sm:hidden">
             {/* Mobile Menu */}
-            <div className="flex w-full items-center justify-between">
+            <div className="flex w-full items-center">
+              <div className="flex-1" />
               <Link href="/" className="shrink-0">
                 <Logo />
-              </Link>{" "}
-              <div className="flex items-center gap-2">
+              </Link>
+              <div className="flex flex-1 items-center justify-end gap-2">
                 <ModeSelect />
                 <Sheet>
                   <SheetTrigger asChild>
@@ -79,11 +80,11 @@ const Navbar = () => {
                     </Button>
                   </SheetTrigger>
                   <SheetContent className="overflow-y-auto">
-                    <SheetHeader>
+                    <SheetHeader className="sr-only">
                       <SheetTitle>Flow Into Code</SheetTitle>
                     </SheetHeader>
                     <div className="flex flex-col gap-6 p-4">
-                      <div className="flex w-full flex-col gap-4">
+                      <div className="flex w-full flex-col gap-1">
                         {navbarMenu.map((item) =>
                           renderMobileMenuItem(item, pathname),
                         )}
@@ -157,7 +158,7 @@ const Navbar = () => {
               <Link href="/" className="shrink-0">
                 <Logo />
               </Link>
-              <NavigationMenu viewport={false}>
+              <NavigationMenu viewport={false} className="mt-1">
                 <NavigationMenuList>
                   {navbarMenu.map((item) => renderMenuItem(item, pathname))}
                 </NavigationMenuList>
