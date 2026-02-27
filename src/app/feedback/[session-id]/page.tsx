@@ -72,12 +72,12 @@ function FeedbackSkeleton() {
 
 export default function FeedbackPage() {
   const params = useParams<{ "session-id": string }>();
-  const session_id = params["session-id"];
+  const sessionId = params["session-id"];
   const [data, setData] = useState<FeedbackPageData | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
-    authFetch(getSessionApiPath(session_id)).then(async (res) => {
+    authFetch(getSessionApiPath(sessionId)).then(async (res) => {
       if (res.status === 404 || res.status === 401) {
         setIsNotFound(true);
         return;
@@ -85,7 +85,7 @@ export default function FeedbackPage() {
       const json = await res.json();
       setData(json);
     });
-  }, [session_id]);
+  }, [sessionId]);
 
   if (isNotFound) notFound();
   if (!data) return <FeedbackSkeleton />;

@@ -15,10 +15,10 @@ export async function GET(
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { "session-id": session_id } = await params;
+  const { "session-id": sessionId } = await params;
 
   const [session, user] = await Promise.all([
-    sessionRepo.getById(session_id),
+    sessionRepo.getById(sessionId),
     userRepo.getById(uid),
   ]);
 
