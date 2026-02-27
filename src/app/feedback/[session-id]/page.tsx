@@ -63,9 +63,23 @@ function FeedbackSkeleton() {
         <Skeleton className="h-3 w-32" />
         <Skeleton className="h-20 w-full rounded-md" />
       </div>
-      {Array.from({ length: 3 }).map((_, i) => (
-        <Skeleton key={i} className="h-32 w-full rounded-md" />
-      ))}
+
+      <div className="space-y-4">
+        <Skeleton className="h-3 w-28" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-32 w-full rounded-md" />
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-40 w-full rounded-md" />
+      </div>
+
+      <div className="space-y-4">
+        <Skeleton className="h-3 w-28" />
+        <Skeleton className="h-40 w-full rounded-md" />
+      </div>
     </div>
   );
 }

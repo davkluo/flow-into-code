@@ -83,18 +83,27 @@ export function CommunicationSection({
         <CollapsibleContent className="border-t">
           <div className="px-4 pt-2 pb-4">
             <Tabs defaultValue={defaultTab}>
-              <TabsList variant="line">
-                {hasFeedbackTab && (
-                  <TabsTrigger value="feedback" className="text-xs">
-                    Feedback
-                  </TabsTrigger>
-                )}
-                {SECTION_ORDER.map((key) => (
-                  <TabsTrigger key={key} value={key} className="text-xs">
-                    {SECTION_KEY_TO_DETAILS[key].title}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              <div className="no-scrollbar overflow-x-auto">
+                <TabsList variant="line" className="min-w-max flex-nowrap">
+                  {hasFeedbackTab && (
+                    <TabsTrigger
+                      value="feedback"
+                      className="shrink-0 text-xs"
+                    >
+                      Feedback
+                    </TabsTrigger>
+                  )}
+                  {SECTION_ORDER.map((key) => (
+                    <TabsTrigger
+                      key={key}
+                      value={key}
+                      className="shrink-0 text-xs"
+                    >
+                      {SECTION_KEY_TO_DETAILS[key].title}
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+              </div>
               {hasFeedbackTab && (
                 <TabsContent value="feedback" className="mt-2 space-y-4">
                   {feedback.compliments && (
