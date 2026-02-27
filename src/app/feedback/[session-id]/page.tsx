@@ -71,7 +71,8 @@ function FeedbackSkeleton() {
 }
 
 export default function FeedbackPage() {
-  const { session_id } = useParams<{ session_id: string }>();
+  const params = useParams<{ "session-id": string }>();
+  const session_id = params["session-id"];
   const [data, setData] = useState<FeedbackPageData | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
 
