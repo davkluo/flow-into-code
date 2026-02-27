@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
         interviewerCommunication: {
           score: feedback.interviewerCommunication.score,
         },
+        summary: feedback.summary ?? "",
       },
     };
   });

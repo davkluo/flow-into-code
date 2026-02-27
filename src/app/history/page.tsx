@@ -1,10 +1,16 @@
 "use client";
 
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -27,6 +33,7 @@ type SessionSummary = {
   feedback: {
     sections: Record<SectionKey, { score: number | null }>;
     interviewerCommunication: { score: number | null };
+    summary: string;
   };
 };
 
@@ -112,23 +119,12 @@ function ScoreChips({ session }: { session: SessionSummary }) {
   );
 }
 
-function HistorySkeleton() {
-  return (
-    <div className="mx-auto max-w-3xl space-y-4 px-3.5 py-8">
-      <Skeleton className="h-7 w-24" />
-      <div className="space-y-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-12 w-full rounded-md" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const isLoading = sessions === null;
+  const router = useRouter();
 
   useEffect(() => {
     authFetch(SESSIONS_API_PATH)
@@ -145,21 +141,25 @@ export default function HistoryPage() {
     }
   }
 
-  if (!sessions) return <HistorySkeleton />;
-
   const displayed =
-    sortKey !== null ? sortSessions(sessions, sortKey, sortDir) : sessions;
+    sessions !== null && sortKey !== null
+      ? sortSessions(sessions, sortKey, sortDir)
+      : (sessions ?? []);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-3.5 py-8">
+    <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
       <div className="flex items-baseline gap-2">
         <h1 className="text-xl font-semibold">History</h1>
-        <span className="text-muted-foreground text-sm">
-          {sessions.length} session{sessions.length !== 1 ? "s" : ""}
-        </span>
+        {isLoading ? (
+          <Skeleton className="h-4 w-20" />
+        ) : (
+          <span className="text-muted-foreground text-sm">
+            {sessions.length} session{sessions.length !== 1 ? "s" : ""}
+          </span>
+        )}
       </div>
 
-      {sessions.length === 0 ? (
+      {!isLoading && sessions.length === 0 ? (
         <p className="text-muted-foreground text-sm">
           No sessions yet.{" "}
           <Link
@@ -172,17 +172,11 @@ export default function HistoryPage() {
         </p>
       ) : (
         <Card className="overflow-hidden py-0">
-          <div className="px-4 pt-4 pb-2">
-            <Table className="table-fixed">
-              <colgroup>
-                <col />
-                <col className="w-32" />
-                <col className="w-40" />
-                <col className="w-10" />
-              </colgroup>
+          <div className="overflow-x-auto px-4 pt-4 pb-2">
+            <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="h-12">
+                  <TableHead className="h-12 w-40">
                     <button
                       onClick={() => handleSort("problemId")}
                       className="hover:text-foreground inline-flex items-center transition-colors"
@@ -195,7 +189,8 @@ export default function HistoryPage() {
                       />
                     </button>
                   </TableHead>
-                  <TableHead className="h-12">
+                  <TableHead className="h-12">Summary</TableHead>
+                  <TableHead className="h-12 w-28">
                     <button
                       onClick={() => handleSort("date")}
                       className="hover:text-foreground inline-flex items-center transition-colors"
@@ -208,48 +203,70 @@ export default function HistoryPage() {
                       />
                     </button>
                   </TableHead>
-                  <TableHead className="h-12">Scores</TableHead>
-                  <TableHead className="h-12" />
+                  <TableHead className="h-12 w-36">Scores</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {displayed.map((session) => (
-                  <TableRow
-                    key={session.id}
-                    className="group hover:bg-transparent"
-                  >
-                    <TableCell className="py-3 font-medium">
-                      <span className="group-hover:underline group-hover:underline-offset-2">
-                        {session.problemId && (
-                          <span className="font-normal">
-                            {session.problemId}.{" "}
+                {isLoading
+                  ? Array.from({ length: 5 }).map((_, i) => (
+                      <TableRow key={i} className="hover:bg-transparent">
+                        <TableCell className="py-3">
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <Skeleton className="h-4 w-full" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <Skeleton className="h-4 w-28" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : displayed.map((session) => (
+                      <TableRow
+                        key={session.id}
+                        className="group cursor-pointer hover:bg-transparent"
+                        onClick={() => router.push(`/feedback/${session.id}`)}
+                      >
+                        <TableCell className="py-3 font-medium">
+                          <span className="group-hover:underline group-hover:underline-offset-2">
+                            {session.problemId && (
+                              <span className="font-normal">
+                                {session.problemId}.{" "}
+                              </span>
+                            )}
+                            {formatSlug(session.problemTitleSlug)}
                           </span>
-                        )}
-                        {formatSlug(session.problemTitleSlug)}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground py-3">
-                      {new Date(session.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell className="py-3">
-                      <ScoreChips session={session} />
-                    </TableCell>
-                    <TableCell className="py-3">
-                      <div className="flex justify-end">
-                        <Link
-                          href={`/feedback/${session.id}`}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground max-w-0 py-3">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="truncate text-sm">
+                                {session.feedback.summary}
+                              </p>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-sm">
+                              {session.feedback.summary}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground py-3">
+                          {new Date(session.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              month: "short",
+                              day: "numeric",
+                              year: "numeric",
+                            },
+                          )}
+                        </TableCell>
+                        <TableCell className="py-3">
+                          <ScoreChips session={session} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
               </TableBody>
             </Table>
           </div>
