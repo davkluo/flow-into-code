@@ -12,6 +12,7 @@ interface TruncatedTextProps {
   tooltip?: React.ReactNode;
   as?: "span" | "button";
   className?: string;
+  minChars?: number;
   onClick?: () => void;
 }
 
@@ -20,6 +21,7 @@ export function TruncatedText({
   tooltip,
   as: Tag = "span",
   className,
+  minChars = 20,
   onClick,
 }: TruncatedTextProps) {
   const ref = useRef<HTMLElement>(null);
@@ -35,6 +37,7 @@ export function TruncatedText({
     <Tag
       ref={ref as React.RefObject<HTMLButtonElement & HTMLSpanElement>}
       className={className}
+      style={minChars ? { minWidth: `${minChars}ch` } : undefined}
       onClick={onClick}
       onMouseEnter={checkTruncation}
     >

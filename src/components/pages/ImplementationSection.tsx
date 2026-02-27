@@ -317,7 +317,7 @@ export function ImplementationSection({
         )}
 
         {/* ChatBox — col 2, row 1 on desktop */}
-        <div className="flex h-full flex-col sm:col-start-2 sm:row-start-1">
+        <div className="hidden sm:flex h-full flex-col sm:col-start-2 sm:row-start-1">
           <ChatBox
             messages={messages}
             onSend={onSend}

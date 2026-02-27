@@ -238,7 +238,7 @@ export function SessionBreadcrumb({
   return (
     <nav
       aria-label="breadcrumb"
-      className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-4 text-sm sm:px-10"
+      className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-2 sm:pt-4 text-sm sm:px-10"
     >
       {/* Always-visible: problem title trigger */}
       <ProblemDropdownItem

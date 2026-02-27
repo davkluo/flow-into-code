@@ -14,7 +14,7 @@ export function SectionHeader({ sectionKey }: SectionHeaderProps) {
   const details = SECTION_KEY_TO_DETAILS[sectionKey];
 
   return (
-    <div className="mx-8 flex flex-col gap-1">
+    <div className="flex flex-col gap-1 sm:mx-8">
       <p className="text-sm">{details.description}</p>
       <Popover>
         <PopoverTrigger asChild>

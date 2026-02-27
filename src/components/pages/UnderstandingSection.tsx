@@ -152,7 +152,7 @@ export function UnderstandingSection({
             </div>
           ))}
         </div>
-        <div className="flex h-full flex-col">
+        <div className="hidden sm:flex h-full flex-col">
           <ChatBox
             messages={messages}
             onSend={onSend}

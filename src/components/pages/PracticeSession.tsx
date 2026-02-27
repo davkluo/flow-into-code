@@ -1,5 +1,6 @@
 "use client";
 
+import { MessagesSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -34,9 +35,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { AlgorithmDesignSection } from "./AlgorithmDesignSection";
 import { ApproachAndReasoningSection } from "./ApproachAndReasoningSection";
+import { ChatBox } from "./ChatBox";
 import { ComplexityAnalysisSection } from "./ComplexityAnalysisSection";
 import { FeedbackLoadingScreen } from "./FeedbackLoadingScreen";
 import { ImplementationSection } from "./ImplementationSection";
@@ -90,6 +93,7 @@ export function PracticeSession() {
 
   const [isFetchingFeedback, setIsFetchingFeedback] = useState(false);
   const [isWarningDialogOpen, setIsWarningDialogOpen] = useState(false);
+  const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
 
   const { start: startTimer, reset: resetTimer } = useTimerActions();
   const { status } = useAuth();
@@ -292,6 +296,7 @@ export function PracticeSession() {
     setAlgorithmFields({ pseudocode: "" });
     setImplFields({ code: "", language: DEFAULT_LANGUAGE, output: "" });
     setComplexityFields({ timeComplexity: "", spaceComplexity: "" });
+    setIsMobileChatOpen(false);
   }, [llmReset, resetTimer]);
 
   const pollForFeedback = useCallback(async (slug: string): Promise<void> => {
@@ -452,6 +457,15 @@ export function PracticeSession() {
     }
   }, [router, status]);
 
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    const handler = (e: MediaQueryListEvent) => {
+      if (e.matches) setIsMobileChatOpen(false);
+    };
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+
   return (
     <div className="relative w-full">
       {!isPracticeStarted && !isPreparingSession && (
@@ -482,7 +496,7 @@ export function PracticeSession() {
             }}
           />
 
-          <div className="mx-auto mt-6 w-full max-w-5xl overflow-hidden pb-28">
+          <div className="mx-auto mt-6 w-full max-w-5xl overflow-hidden pb-40 sm:pb-28">
             <div
               className="flex transition-transform duration-300 ease-in-out"
               style={{
@@ -586,13 +600,13 @@ export function PracticeSession() {
           </div>
 
           {/* Fixed bottom bar: back | timer | next */}
-          <div className="fixed bottom-8 left-0 z-40 flex w-full items-end gap-5 px-6">
-            <div className="mb-1 flex min-w-0 flex-1 justify-end pr-2">
+          <div className="fixed bottom-8 left-0 z-40 flex w-full items-end gap-2 px-2 sm:gap-5 sm:px-6">
+            <div className="mb-1 flex min-w-0 flex-1 justify-end pr-1 sm:pr-2">
               {currentSectionIndex > 0 && (
                 <Button
                   variant="link"
                   onClick={goBackSection}
-                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)]"
+                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-xs whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] sm:text-sm"
                 >
                   ← Back:{" "}
                   {
@@ -606,7 +620,7 @@ export function PracticeSession() {
 
             <Timer />
 
-            <div className="mb-1 flex min-w-0 flex-1 justify-start pl-2">
+            <div className="mb-1 flex min-w-0 flex-1 justify-start pl-1 sm:pl-2">
               {isLastSection ? (
                 <>
                   <Tooltip>
@@ -622,7 +636,7 @@ export function PracticeSession() {
                             }
                           }}
                           disabled={isFeedbackBlocked || isFetchingFeedback}
-                          className="group text-foreground hover:text-brand-primary bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] transition-colors dark:text-white"
+                          className="group text-foreground hover:text-brand-primary bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-xs whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] transition-colors sm:text-sm dark:text-white"
                         >
                           <span className="text-fill-ltr">
                             {isFetchingFeedback
@@ -688,7 +702,7 @@ export function PracticeSession() {
                 <Button
                   variant="link"
                   onClick={proceedNextSection}
-                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)]"
+                  className="text-muted-foreground hover:text-foreground bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-xs whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] sm:text-sm"
                 >
                   Next:{" "}
                   {
@@ -715,6 +729,39 @@ export function PracticeSession() {
             open={isSummarySheetOpen}
             onOpenChange={setIsSummarySheetOpen}
           />
+
+          {/* Floating chat button — mobile only */}
+          <Button
+            onClick={() => setIsMobileChatOpen(true)}
+            className="fixed bottom-28 left-1/2 z-50 h-9 -translate-x-1/2 gap-1.5 rounded-full px-3.5 text-xs shadow-[0_4px_16px_rgba(0,0,0,0.25)] sm:hidden"
+            aria-label="Open AI chat"
+          >
+            <MessagesSquare className="size-3.5 shrink-0" />
+            Chat with interviewer
+          </Button>
+
+          <Sheet open={isMobileChatOpen} onOpenChange={setIsMobileChatOpen}>
+            <SheetContent
+              side="bottom"
+              className="flex h-[90dvh] flex-col gap-0 p-0"
+            >
+              <SheetHeader className="border-b px-4 py-3">
+                <SheetTitle className="text-sm font-medium">
+                  AI Interviewer
+                </SheetTitle>
+              </SheetHeader>
+              <div className="min-h-0 flex-1 p-4">
+                <ChatBox
+                  messages={llmGetMessages(SECTION_ORDER[currentSectionIndex])}
+                  onSend={(content) =>
+                    handleSend(SECTION_ORDER[currentSectionIndex], content)
+                  }
+                  cooldownUntil={llmCooldownUntil}
+                  layoutMode="fixed"
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       )}
     </div>

@@ -3,6 +3,7 @@
 import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
@@ -33,6 +34,7 @@ interface MenuItem {
 const Navbar = () => {
   const { user, status, signOutUser } = useAuth();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const publicMenu: MenuItem[] = [
     {
@@ -69,7 +71,7 @@ const Navbar = () => {
               </Link>
               <div className="flex flex-1 items-center justify-end gap-2">
                 <ModeSelect />
-                <Sheet>
+                <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
                   <SheetTrigger asChild>
                     <Button
                       variant="outline"
@@ -86,7 +88,7 @@ const Navbar = () => {
                     <div className="flex flex-col gap-6 p-4">
                       <div className="flex w-full flex-col gap-1">
                         {navbarMenu.map((item) =>
-                          renderMobileMenuItem(item, pathname),
+                          renderMobileMenuItem(item, pathname, () => setMobileOpen(false)),
                         )}
                       </div>
 
@@ -246,13 +248,14 @@ const renderMenuItem = (item: MenuItem, pathname: string) => {
 };
 
 // Mobile Menu
-const renderMobileMenuItem = (item: MenuItem, pathname: string) => {
+const renderMobileMenuItem = (item: MenuItem, pathname: string, onClose: () => void) => {
   const isActive = pathname.startsWith(item.url);
 
   return (
     <Link
       key={item.label}
       href={item.url}
+      onClick={onClose}
       className={cn(
         "text-md focus-visible:border-ring focus-visible:ring-ring/50 block rounded-md p-3 leading-none font-semibold transition-colors outline-none focus-visible:ring-[3px] focus-visible:outline-none",
         "underline-offset-4 hover:underline",
