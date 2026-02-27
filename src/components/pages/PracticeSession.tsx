@@ -622,7 +622,7 @@ export function PracticeSession() {
                             }
                           }}
                           disabled={isFeedbackBlocked || isFetchingFeedback}
-                          className="group text-white hover:text-brand-primary bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] transition-colors"
+                          className="group text-foreground hover:text-brand-primary bg-background/80 mb-1 h-fit w-fit cursor-pointer rounded-md px-1.5 py-0.5 text-sm whitespace-normal underline underline-offset-2 shadow-[0_0_20px_16px_var(--background)] transition-colors dark:text-white"
                         >
                           <span className="text-fill-ltr">
                             {isFetchingFeedback

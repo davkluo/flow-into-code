@@ -50,6 +50,8 @@
   --color-brand-background: var(--brand-background);
   --color-brand-card: var(--brand-card);
   --color-brand-inset: var(--brand-inset);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-muted-fg: var(--brand-muted-fg);
 }
 
 :root {
@@ -57,6 +59,9 @@
   --brand-primary: oklch(70.38% 0.123 182.5);
   --brand-secondary: oklch(66.56% 0.224 34.33);
   --brand-background: oklch(96.52% 0.009 106.57);
+  --brand-muted: oklch(91% 0.006 70);
+  --brand-muted-fg: oklch(50% 0.013 56);
+  --text-fill-base: var(--foreground);
 
   --radius: 0.625rem;
   /* --background: oklch(1 0 0); */
@@ -96,6 +101,7 @@
 .dark {
   /* Custom color palette */
   --brand-background: oklch(8% 0.03 235.42);
+  --text-fill-base: white;
   --brand-card: oklch(22.65% 0.019 266.15);
   --brand-inset: oklch(8% 0.019 266.15 / 50%);
 
@@ -201,7 +207,7 @@
     background-image: linear-gradient(
       to right,
       var(--brand-primary) 50%,
-      white 50%
+      var(--text-fill-base) 50%
     );
     background-size: 200% 100%;
     background-position: 100% center;

@@ -171,7 +171,7 @@ export function ChatBox({
         />
 
         <div
-          className="dark:bg-input/30 flex h-fit cursor-text items-end justify-between rounded-md rounded-t-none bg-transparent p-2"
+          className="dark:bg-input/30 flex h-fit cursor-text items-end justify-between rounded-md rounded-t-none bg-white p-2"
           onClick={() => textareaRef.current?.focus()}
         >
           <div className="text-muted-foreground text-xs opacity-70">

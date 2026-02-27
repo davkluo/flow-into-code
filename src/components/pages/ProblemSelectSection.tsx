@@ -388,7 +388,7 @@ export function ProblemSelectSection({
           )}
         >
           {/* Panel 1: Problem List */}
-          <div className="w-1/2 shrink-0 p-4">
+          <div className="w-1/2 shrink-0 px-4 pt-4 pb-2">
             <ProblemsTable
               problems={displayedProblems}
               currentPage={currentUIPage}

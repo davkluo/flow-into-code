@@ -172,7 +172,7 @@ export default function HistoryPage() {
         </p>
       ) : (
         <Card className="overflow-hidden py-0">
-          <div className="p-4">
+          <div className="px-4 pt-4 pb-2">
             <Table className="table-fixed">
               <colgroup>
                 <col />
