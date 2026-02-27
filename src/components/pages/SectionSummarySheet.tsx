@@ -7,7 +7,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { SECTION_KEY_TO_DETAILS } from "@/constants/practice";
-import { formatFieldKey } from "@/lib/chat/context";
+import { formatFieldKey } from "@/lib/chatContext";
 import { SectionKey, SectionSnapshotData } from "@/types/practice";
 
 interface SectionSummarySheetProps {

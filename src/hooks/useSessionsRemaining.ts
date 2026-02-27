@@ -4,7 +4,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { DAILY_SESSION_LIMIT } from "@/constants/practice";
 import { USERS_COLLECTION } from "@/constants/firestore";
-import { db } from "@/lib/firebase";
+import { db } from "@/lib/firebase/client";
 import { User } from "@/types/user";
 import { useAuth } from "./useAuth";
 

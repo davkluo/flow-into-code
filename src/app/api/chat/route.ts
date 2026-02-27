@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { streamChatCompletion } from "@/services/llm/client";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { chatRateLimit } from "@/lib/rateLimit";
 import { Message } from "@/types/chat";
 

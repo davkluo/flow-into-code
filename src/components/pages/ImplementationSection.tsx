@@ -30,7 +30,7 @@ import {
 import { EXECUTE_API_PATH } from "@/constants/api";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet, stripTestBlock } from "@/lib/codeSnippet";
 import { SessionMessage } from "@/types/chat";

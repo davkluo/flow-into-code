@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { META_COLLECTION, PROBLEM_INDEX_META_DOC_ID } from "@/constants/firestore";
 
 const COLLECTION = META_COLLECTION;

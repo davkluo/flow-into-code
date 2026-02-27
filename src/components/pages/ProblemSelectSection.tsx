@@ -12,7 +12,7 @@ import {
   SESSIONS_API_PATH,
 } from "@/constants/api";
 import { useSessionsRemaining } from "@/hooks/useSessionsRemaining";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { timeUntilMidnightUTC } from "@/lib/date";
 import {
   CACHE_PAGE_SIZE,

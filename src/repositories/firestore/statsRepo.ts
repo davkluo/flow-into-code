@@ -1,6 +1,6 @@
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 import { GLOBAL_STATS_DOC_ID, STATS_COLLECTION } from "@/constants/firestore";
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 
 const GLOBAL_STATS_DOC = adminDb
   .collection(STATS_COLLECTION)

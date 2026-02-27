@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react";
 import { CHAT_API_PATH } from "@/constants/api";
 import { CHAT_COOLDOWN_MS } from "@/constants/chat";
-import { authFetch } from "@/lib/authFetch";
-import { buildProblemContext, buildSnapshotContext } from "@/lib/chat/context";
+import { authFetch } from "@/lib/firebase/authFetch";
+import { buildProblemContext, buildSnapshotContext } from "@/lib/chatContext";
 import { pruneSnapshots } from "@/lib/snapshots";
 import { GLOBAL_PROMPT, SECTION_PROMPTS } from "@/services/llm/prompts/chat";
 import { Message, SessionMessage } from "@/types/chat";

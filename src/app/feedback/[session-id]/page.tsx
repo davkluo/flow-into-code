@@ -16,7 +16,7 @@ import {
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { getSessionApiPath } from "@/constants/api";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { Problem, ProblemSolution } from "@/types/problem";
 import { Session } from "@/types/session";
 

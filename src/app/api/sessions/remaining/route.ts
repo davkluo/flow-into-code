@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { DAILY_SESSION_LIMIT } from "@/constants/practice";
 import * as userRepo from "@/repositories/firestore/userRepo";
 

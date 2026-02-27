@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import * as sessionRepo from "@/repositories/firestore/sessionRepo";
 import * as userRepo from "@/repositories/firestore/userRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";

@@ -1,5 +1,5 @@
 import { Problem } from "@/types/problem";
-import { normalizeToWords } from "../normalize";
+import { normalizeToWords } from "./normalize";
 
 export function computeSearchTerms(problem: Problem): string[] {
   const terms = new Set<string>();

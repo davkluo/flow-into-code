@@ -14,7 +14,7 @@ import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimerActions } from "@/context/TimerContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { processCodeSnippet } from "@/lib/codeSnippet";
 import {
   AlgorithmSnapshot,

@@ -1,6 +1,6 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { PROBLEMS_COLLECTION } from "@/constants/firestore";
-import { computeSearchTerms } from "@/lib/search/computeSearchTerms";
+import { computeSearchTerms } from "@/lib/computeSearchTerms";
 import { Problem } from "@/types/problem";
 
 const COLLECTION = PROBLEMS_COLLECTION;

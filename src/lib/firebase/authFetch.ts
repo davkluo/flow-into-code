@@ -1,4 +1,4 @@
-import { auth } from "./firebase";
+import { auth } from "./client";
 
 export async function authFetch(
   url: string,

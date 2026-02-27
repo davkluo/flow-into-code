@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { generatePracticeData, getPracticeData } from "@/services/practiceData";
 
 export async function GET(

@@ -1,5 +1,5 @@
 import { SECTION_KEY_TO_DETAILS } from "@/constants/practice";
-import { FIELD_LABELS, formatFieldKey } from "@/lib/chat/context";
+import { FIELD_LABELS, formatFieldKey } from "@/lib/chatContext";
 import { SessionMessage } from "@/types/chat";
 import { SectionKey, SectionSnapshotData } from "@/types/practice";
 import { Framing, GradingCriterion } from "@/types/problem";

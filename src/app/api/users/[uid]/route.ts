@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import * as userRepo from "@/repositories/firestore/userRepo";
 
 export async function GET(

@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 import { User } from "@/types/user";
 

@@ -22,7 +22,7 @@ import {
 import { SESSIONS_API_PATH } from "@/constants/api";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
-import { authFetch } from "@/lib/authFetch";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { SectionKey } from "@/types/practice";
 
 type SessionSummary = {

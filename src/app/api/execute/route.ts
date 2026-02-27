@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { executeRateLimit } from "@/lib/rateLimit";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 
 // Default value references the docker-compose service name and port
 const EXECUTOR_URL = process.env.EXECUTOR_URL ?? "http://executor:8080";

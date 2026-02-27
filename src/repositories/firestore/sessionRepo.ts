@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { Transaction } from "firebase-admin/firestore";
 import { Session } from "@/types/session";
 import { SESSIONS_COLLECTION } from "@/constants/firestore";

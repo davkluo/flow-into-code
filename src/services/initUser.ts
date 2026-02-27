@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { USERS_COLLECTION } from "@/constants/firestore";
 import * as userRepo from "@/repositories/firestore/userRepo";
 import * as statsRepo from "@/repositories/firestore/statsRepo";

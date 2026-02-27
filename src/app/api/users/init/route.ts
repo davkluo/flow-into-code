@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { initUser } from "@/services/initUser";
 
 export async function POST(req: Request) {

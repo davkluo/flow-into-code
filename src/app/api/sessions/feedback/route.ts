@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { DailyLimitExceededError } from "@/lib/errors";
 import { generateSessionFeedback } from "@/services/sessionFeedback";
 import type { LLMState } from "@/hooks/useLLM";

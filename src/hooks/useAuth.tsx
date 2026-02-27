@@ -9,8 +9,8 @@ import {
 } from "firebase/auth";
 import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, githubProvider, googleProvider } from "@/lib/firebase";
-import { authFetch } from "@/lib/authFetch";
+import { auth, githubProvider, googleProvider } from "@/lib/firebase/client";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { USER_INIT_API_PATH } from "@/constants/api";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";

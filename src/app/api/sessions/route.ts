@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "@/lib/firebaseAdmin";
-import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { adminDb } from "@/lib/firebase/admin";
+import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import * as sessionRepo from "@/repositories/firestore/sessionRepo";
 import { PROBLEMS_COLLECTION } from "@/constants/firestore";
 import { Problem } from "@/types/problem";

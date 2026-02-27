@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebaseAdmin";
+import { adminDb } from "@/lib/firebase/admin";
 import { PROBLEM_DETAILS_COLLECTION } from "@/constants/firestore";
 import {
   PROBLEM_SCHEMA_VERSION,
