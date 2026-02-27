@@ -8,14 +8,14 @@ import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ session_id: string }> },
+  { params }: { params: Promise<{ "session-id": string }> },
 ) {
   const uid = await verifyFirebaseToken(req);
   if (!uid) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { session_id } = await params;
+  const { "session-id": session_id } = await params;
 
   const [session, user] = await Promise.all([
     sessionRepo.getById(session_id),
