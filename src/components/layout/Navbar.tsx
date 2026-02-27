@@ -74,7 +74,7 @@ const Navbar = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="aspect-square"
+                      className="aspect-square border-input shadow-none hover:bg-card hover:text-card-foreground dark:bg-transparent dark:hover:bg-card"
                     >
                       <Menu className="size-4" />
                     </Button>
