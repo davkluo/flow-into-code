@@ -1,3 +1,5 @@
+import { SocialsRow } from "@/components/shared/SocialsRow";
+
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
@@ -18,6 +20,7 @@ export default function AboutPage() {
             of thought and intention into this project, and I&apos;m proud of what it&apos;s
             becoming.
           </p>
+          <SocialsRow />
         </section>
 
         <section className="space-y-3">
