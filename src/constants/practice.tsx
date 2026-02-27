@@ -7,6 +7,8 @@ interface SectionDetails {
   explanation: ReactNode;
 }
 
+export const DAILY_SESSION_LIMIT = 5;
+
 export const SECTION_ORDER: SectionKey[] = [
   "problem_understanding",
   "approach_and_reasoning",

@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { verifyFirebaseToken } from "@/lib/verifyFirebaseToken";
+import { DailyLimitExceededError } from "@/lib/errors";
 import { generateSessionFeedback } from "@/services/sessionFeedback";
 import type { LLMState } from "@/hooks/useLLM";
 
@@ -27,6 +28,11 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    if (err instanceof DailyLimitExceededError) {
+      return new Response(JSON.stringify({ error: "Daily session limit reached" }), {
+        status: 429,
+      });
+    }
     console.error("Session feedback generation failed:", err);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,

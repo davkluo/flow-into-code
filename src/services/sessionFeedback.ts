@@ -1,4 +1,5 @@
 import { SECTION_ORDER } from "@/constants/practice";
+import { DailyLimitExceededError } from "@/lib/errors";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
 import * as sessionRepo from "@/repositories/firestore/sessionRepo";
@@ -17,6 +18,15 @@ export async function generateSessionFeedback(
   problemSlug: string,
   llmState: LLMState,
 ): Promise<string> {
+  // Step 0: Enforce daily session limit (power/admin bypass)
+  const user = await userRepo.getById(uid);
+  if (!user) throw new Error(`User not found: ${uid}`);
+
+  if (user.role === "user") {
+    const { allowed } = await userRepo.checkAndIncrementDailySessions(uid);
+    if (!allowed) throw new DailyLimitExceededError();
+  }
+
   // Step 1: Fetch problem and details — both required
   const [problem, details] = await Promise.all([
     problemRepo.getBySlug(problemSlug),

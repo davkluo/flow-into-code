@@ -2,6 +2,7 @@ import { adminDb } from "@/lib/firebaseAdmin";
 import { FieldValue, Transaction } from "firebase-admin/firestore";
 import { User } from "@/types/user";
 
+import { DAILY_SESSION_LIMIT } from "@/constants/practice";
 import { USERS_COLLECTION } from "@/constants/firestore";
 
 const COLLECTION = USERS_COLLECTION;
@@ -55,4 +56,26 @@ export async function removeSavedProblem(
     .collection(COLLECTION)
     .doc(uid)
     .update({ savedProblems: FieldValue.arrayRemove(titleSlug) });
+}
+
+export async function checkAndIncrementDailySessions(
+  uid: string,
+): Promise<{ allowed: boolean }> {
+  const ref = adminDb.collection(COLLECTION).doc(uid);
+
+  return adminDb.runTransaction(async (tx) => {
+    const doc = await tx.get(ref);
+    if (!doc.exists) return { allowed: false };
+
+    const user = doc.data() as User;
+    const today = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD" UTC
+
+    const existing = user.dailySessions;
+    const currentCount = !existing || existing.date !== today ? 0 : existing.count;
+
+    if (currentCount >= DAILY_SESSION_LIMIT) return { allowed: false };
+
+    tx.update(ref, { dailySessions: { date: today, count: currentCount + 1 } });
+    return { allowed: true };
+  });
 }

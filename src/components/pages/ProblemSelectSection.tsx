@@ -11,7 +11,9 @@ import {
   PROBLEM_INDEX_META_API_PATH,
   SESSIONS_API_PATH,
 } from "@/constants/api";
+import { useSessionsRemaining } from "@/hooks/useSessionsRemaining";
 import { authFetch } from "@/lib/authFetch";
+import { timeUntilMidnightUTC } from "@/lib/date";
 import {
   CACHE_PAGE_SIZE,
   getCachedPagesForUIPage,
@@ -58,6 +60,7 @@ export function ProblemSelectSection({
   );
   const pollAbortRef = useRef<AbortController | null>(null);
   const [completedSlugs, setCompletedSlugs] = useState<Set<string>>(new Set());
+  const { remaining, isLoading: isLoadingRemaining } = useSessionsRemaining();
   // #endregion State Variables
 
   // #region Local Helpers
@@ -380,6 +383,24 @@ export function ProblemSelectSection({
         <h1 className="text-xl font-semibold">Problems</h1>
       </div>
 
+      {!isLoadingRemaining && remaining !== null && (
+        <div
+          className={cn(
+            "rounded-lg border px-4 py-2.5",
+            remaining === 0
+              ? "border-destructive/40 bg-destructive/5 text-destructive"
+              : "border-border bg-muted/30 text-muted-foreground",
+          )}
+        >
+          <p className="text-xs">
+            {remaining === 0
+              ? "You have no practice sessions remaining today"
+              : `You have ${remaining} practice session${remaining === 1 ? "" : "s"} remaining today`}
+            . Resets in {timeUntilMidnightUTC()}
+          </p>
+        </div>
+      )}
+
       <Card className="overflow-hidden py-0">
         <div
           className={cn(
@@ -428,6 +449,7 @@ export function ProblemSelectSection({
                   <div className="flex justify-center">
                     <Button
                       className="after:bg-brand-primary relative overflow-hidden after:absolute after:right-0 after:bottom-0 after:left-0 after:h-1 after:origin-left after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"
+                      disabled={remaining !== null && remaining === 0}
                       onClick={() =>
                         onProblemSelect(selectedProblem, problemDetails)
                       }
