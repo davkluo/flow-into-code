@@ -117,10 +117,6 @@ const Navbar = () => {
                               </div>
                             </div>
                             <div className="mt-4 flex flex-col">
-                              <Button asChild>
-                                <Link href="#">Settings</Link>
-                              </Button>
-                              <Separator className="my-4" />
                               <Button
                                 variant="outline"
                                 className="w-full"
@@ -195,11 +191,6 @@ const Navbar = () => {
                     </p>
 
                     <div className="mt-4 flex flex-col">
-                      <Button asChild>
-                        <Link href="#">Settings</Link>
-                      </Button>
-                      <Separator className="my-4" />
-
                       <Button
                         variant="outline"
                         className="w-full"
