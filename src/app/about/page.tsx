@@ -1,4 +1,9 @@
+import type { Metadata } from "next";
 import { SocialsRow } from "@/components/shared/SocialsRow";
+
+export const metadata: Metadata = {
+  title: "About",
+};
 
 export default function AboutPage() {
   return (
