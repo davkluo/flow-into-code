@@ -54,6 +54,12 @@ export function ProblemDetailContent({
             <TagBadge key={tag.id} tagName={tag.name} />
           ))}
         </div>
+        <p className="text-muted-foreground mt-3 text-[11px] leading-relaxed">
+          LeetCode owns the original problem content. Reframed text here is
+          independently generated for learning purposes only. No affiliation
+          with or endorsement by LeetCode. Support the original source at
+          leetcode.com.
+        </p>
       </div>
 
       {showGenerateButton && !problemDetails && !isLoading && (
