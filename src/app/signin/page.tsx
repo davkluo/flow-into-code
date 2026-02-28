@@ -29,7 +29,7 @@ export default function SignInPage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-sm">
+      <Card className="w-full max-w-sm -translate-y-24">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Sign In</CardTitle>
         </CardHeader>
