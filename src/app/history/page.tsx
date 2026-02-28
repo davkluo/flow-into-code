@@ -149,7 +149,7 @@ export default function HistoryPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-6 py-8">
       <div className="flex items-baseline gap-2">
-        <h1 className="text-xl font-semibold">History</h1>
+        <h1 className="text-2xl font-bold tracking-tight">History</h1>
         {isLoading ? (
           <Skeleton className="h-4 w-20" />
         ) : (
