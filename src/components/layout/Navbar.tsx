@@ -215,7 +215,7 @@ const Navbar = () => {
                   </PopoverContent>
                 </Popover>
               ) : (
-                <Button asChild variant="outline" size="sm">
+                <Button asChild variant="outline" size="sm" className="border-input shadow-none hover:bg-card hover:text-card-foreground dark:bg-transparent dark:hover:bg-card">
                   <Link href="/signin">Sign In</Link>
                 </Button>
               )}
