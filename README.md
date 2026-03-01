@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flow Into Code
+
+**Practice technical interviews like the real thing.**
+
+Flow Into Code is an AI-powered technical interview preparation platform that guides engineers through a consistent, communication-first problem-solving process. The primary intent is to conduct coding practice the way a real interview actually works. Instead of jumping straight into code, each session walks you through clarifying requirements, identifying edge cases, designing an algorithm, implementing it, and analyzing complexity.
+
+Free, open source, and built by a fellow engineer trying to navigate the world of technical interviews.
+
+---
+
+## Features
+
+- **Structured 5-section practice sessions** — Understanding → Approach & Reasoning → Algorithm Design → Implementation → Complexity Analysis
+- **AI interviewer chat** — Real-time streaming responses from a context-aware AI that simulates a real technical interviewer
+- **Code execution** — Run Python solutions directly in the browser; write your own test cases to verify behavior
+- **Session feedback** — AI-generated per-section scores and explanations after each session
+- **Session history** — Browse and review your past sessions and feedback
+- **Problem framings** — Classic LeetCode problems presented from General, Backend, and Systems perspectives to connect theory to real engineering work
+- **Daily session limits** — 5 sessions per user per day
+
+---
+
+## Tech Stack
+
+| Layer          | Technology                                            |
+| -------------- | ----------------------------------------------------- |
+| Framework      | [Next.js](https://nextjs.org) (App Router, Turbopack) |
+| UI             | React, TypeScript, Tailwind CSS, shadcn/ui            |
+| Auth & DB      | Firebase Authentication, Firestore                    |
+| LLM            | OpenAI API (`gpt-4o-mini`)                            |
+| Rate Limiting  | Upstash Redis                                         |
+| Code Execution | Docker-based Python executor (FastAPI + uvicorn)      |
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- **Docker** with Compose support
+- A **Firebase** project with Firestore and Authentication enabled
+- An **OpenAI** API key
+- An **Upstash Redis** database ([upstash.com](https://upstash.com))
+
+### 1. Clone the repository
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/davkluo/flow-into-code.git
+cd flow-into-code
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install dependencies
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Configure environment variables
 
-## Learn More
+Copy the example file and fill in your credentials:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+cp .env.example .env.local
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable                                   | Description                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Firebase project API key (public)                                                     |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Firebase auth domain (public)                                                         |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Firebase project ID (public)                                                          |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Firebase storage bucket (public)                                                      |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID (public)                                                 |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Firebase app ID (public)                                                              |
+| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics measurement ID (public)                                            |
+| `FIREBASE_PROJECT_ID`                      | Firebase project ID (server-only)                                                     |
+| `FIREBASE_CLIENT_EMAIL`                    | Firebase Admin SDK service account email                                              |
+| `FIREBASE_PRIVATE_KEY`                     | Firebase Admin SDK private key — must be a single line with literal `\n` for newlines |
+| `OPENAI_API_KEY`                           | OpenAI API key for the AI interviewer and feedback generation                         |
+| `UPSTASH_REDIS_REST_URL`                   | Upstash Redis REST endpoint                                                           |
+| `UPSTASH_REDIS_REST_TOKEN`                 | Upstash Redis REST auth token                                                         |
+| `EXECUTOR_URL`                             | URL for the code execution service — leave unset to use the default Docker DNS value  |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+> The `NEXT_PUBLIC_*` Firebase variables are safe to expose in the browser. All other variables are server-only and must never be committed or exposed publicly.
 
-## Deploy on Vercel
+### 4. Build and start all services
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Both the app server and the code executor run as Docker containers. From the project root:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+docker compose up --build
+```
+
+This builds and starts:
+
+- **web** — the Next.js app server on [http://localhost:3000](http://localhost:3000)
+- **executor** — the Python code execution service (internal only, accessed via Docker DNS)
+
+### 5. Open the app
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router — pages and API routes
+│   ├── about/              # About / mission page
+│   ├── feedback/           # Post-session feedback report
+│   ├── history/            # Session history
+│   ├── practice/           # Main practice session
+│   ├── signin/             # Sign-in page
+│   └── api/                # API routes (chat, execute, sessions, problems, users)
+│
+├── components/
+│   ├── pages/              # Full-page feature components (ChatBox, CodeEditor, Timer, etc.)
+│   ├── layout/             # Global layout components (Navbar)
+│   ├── shared/             # Reusable components
+│   └── ui/                 # shadcn/Radix UI primitives
+│
+├── lib/
+│   └── firebase/           # Firebase client, admin, and auth helpers
+│
+├── services/
+│   ├── llm/                # OpenAI structured output + streaming, Zod schemas
+│   └── leetcode/           # LeetCode problem syncing utilities
+│
+├── repositories/
+│   └── firestore/          # Firestore query and mutation helpers
+│
+├── context/                # React Context providers
+├── hooks/                  # Custom React hooks
+├── types/                  # TypeScript interfaces and enums
+└── constants/              # App-wide constants (API paths, section config, etc.)
+
+executor/                   # Standalone Docker code execution service (Python/FastAPI)
+```
+
+---
+
+## Contributing
+
+Contributions are welcome. If you find a bug or have a feature idea, feel free to open an issue or submit a pull request.
+
+If you'd like to self-host or fork this project to remove the daily session limits or add your own changes, you have my blessing!
