@@ -1,6 +1,15 @@
 import { Problem } from "@/types/problem";
 import { normalizeToWords } from "./normalize";
 
+/**
+ * Compute a set of search terms for a given problem, to be used for querying
+ * the Firestore database. The search terms include:
+ * - The problem ID (exact match)
+ * - Words from the title
+ * - Words from the title slug
+ * - Words from the topic tags
+ * - The difficulty level (e.g., "easy", "medium", "hard")
+ */
 export function computeSearchTerms(problem: Problem): string[] {
   const terms = new Set<string>();
 

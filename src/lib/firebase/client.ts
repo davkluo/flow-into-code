@@ -8,7 +8,7 @@ import {
 import { Firestore, getFirestore } from "firebase/firestore";
 
 // Firebase client configuration
-// Safe to expose as per Firebase documentation
+// Safe to expose as per Firebase documentation (https://firebase.google.com/docs/web/setup#config-object)
 const firebaseConfig = {
   apiKey: "AIzaSyCQ11pbOVqHxoHoGzjE2u-mOEBxpnBP3fc",
   authDomain: "flow-into-code.firebaseapp.com",

@@ -1,3 +1,4 @@
+/** Format time in seconds to MM:SS */
 export function formatTime(seconds: number) {
   const min = Math.floor(seconds / 60)
     .toString()
@@ -6,6 +7,7 @@ export function formatTime(seconds: number) {
   return `${min}:${sec}`;
 }
 
+/** Capitalize the first letter of a string */
 export function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
@@ -28,8 +30,13 @@ export function stripHtml(html: string): string {
     .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
     .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
     .replace(/<\/?[^>]+>/g, "")
-    .replace(/&(amp|lt|gt|quot|apos|nbsp);/gi, (_, key: string) => HTML_ENTITIES[key.toLowerCase()] ?? _)
-    .replace(/&#(\d+);/g, (_, code: string) => String.fromCharCode(Number(code)))
+    .replace(
+      /&(amp|lt|gt|quot|apos|nbsp);/gi,
+      (_, key: string) => HTML_ENTITIES[key.toLowerCase()] ?? _,
+    )
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCharCode(Number(code)),
+    )
     .replace(/\s+/g, " ")
     .trim();
 }
