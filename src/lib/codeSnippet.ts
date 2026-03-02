@@ -32,8 +32,16 @@ function uncommentPythonDefinitions(snippet: string): string {
         block.push(lines[i]);
         i++;
       }
+      // Find the first line whose uncommented content starts with "class "
+      // so that real comments above the definition are left untouched
+      const classStart = block.findIndex((l) => /^# class /.test(l));
+      const beforeClass = classStart > 0 ? block.slice(0, classStart) : [];
+      const toUncomment = classStart >= 0 ? block.slice(classStart) : block;
+      for (const blockLine of beforeClass) {
+        result.push(blockLine);
+      }
       // Strip leading `# ` (hash + single space) from each collected line
-      for (const blockLine of block) {
+      for (const blockLine of toUncomment) {
         result.push(blockLine.replace(/^# ?/, ""));
       }
     } else {
