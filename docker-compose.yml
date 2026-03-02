@@ -1,6 +1,9 @@
 services:
   web:
     build: . # Dockerfile in project root
+    env_file:
+      - path: .env.local
+        required: false # for deployment
     ports:
       - "3000:3000"
     environment:
@@ -13,8 +16,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # Docker daemon access
       - /tmp/code-runs:/tmp/code-runs # For temporary code files
-    ports:
-      - "8080:8080" # NOTE: For development only, remove in production
+    # ports:
+    #   - "8080:8080" # NOTE: For development only, comment out in production
     networks:
       - app-network
 
