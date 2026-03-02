@@ -2,16 +2,20 @@
 
 import {
   AuthProvider as FirebaseAuthProvider,
+  User as FirebaseUser,
   onAuthStateChanged,
   signInWithPopup,
   signOut,
-  User as FirebaseUser,
 } from "firebase/auth";
 import { toast } from "sonner";
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth, githubProvider, googleProvider } from "@/lib/firebase/client";
-import { authFetch } from "@/lib/firebase/authFetch";
 import { USER_INIT_API_PATH } from "@/constants/api";
+import { authFetch } from "@/lib/firebase/authFetch";
+import {
+  getClientAuth,
+  githubProvider,
+  googleProvider,
+} from "@/lib/firebase/client";
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
 
@@ -30,7 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(getClientAuth(), (firebaseUser) => {
       setUser(firebaseUser);
       setStatus(firebaseUser ? "authenticated" : "unauthenticated");
     });
@@ -40,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithProvider = async (provider: FirebaseAuthProvider) => {
     setStatus("loading");
     try {
-      const credential = await signInWithPopup(auth, provider);
+      const credential = await signInWithPopup(getClientAuth(), provider);
       const token = await credential.user.getIdToken();
       await authFetch(USER_INIT_API_PATH, { method: "POST" }, token);
       toast.success("Signed in successfully", {
@@ -68,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGitHub = () => signInWithProvider(githubProvider);
 
   const signOutUser = async () => {
-    await signOut(auth);
+    await signOut(getClientAuth());
     toast.success("Signed out successfully", {
       description: "See you again soon!",
     });

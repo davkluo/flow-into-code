@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { PROBLEM_DETAILS_COLLECTION } from "@/constants/firestore";
 import {
   PROBLEM_SCHEMA_VERSION,
@@ -56,7 +56,7 @@ export interface ProblemDetailsRepo {
 }
 
 export async function getBySlug(slug: string): Promise<ProblemDetails | null> {
-  const doc = await adminDb.collection(COLLECTION).doc(slug).get();
+  const doc = await getAdminDb().collection(COLLECTION).doc(slug).get();
   if (!doc.exists) {
     return null;
   }
@@ -67,7 +67,7 @@ export async function createIfNotExists(
   slug: string,
   initial: Partial<ProblemDetails>,
 ): Promise<void> {
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   await ref.set(initial, { merge: true });
 }
 
@@ -75,7 +75,7 @@ export async function updateSource(
   slug: string,
   source: ProblemDetails["source"],
 ): Promise<void> {
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   await ref.update({ source });
 }
 
@@ -83,7 +83,7 @@ export async function updateDerived(
   slug: string,
   derived: Partial<NonNullable<ProblemDetails["derived"]>>,
 ): Promise<void> {
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   const doc = await ref.get();
   const existing = doc.exists
     ? ((doc.data() as ProblemDetails).derived ?? {})
@@ -99,7 +99,7 @@ export async function updateProcessingMeta(
   layer: ProcessingLayer,
   meta: ProcessingLayerMeta,
 ): Promise<void> {
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   await ref.update({
     [`processingMeta.layers.${layer}`]: meta,
   });
@@ -121,9 +121,9 @@ export async function claimFramingGeneration(
   opts: { staleAfterMs: number; currentPromptVersion: number },
 ): Promise<ClaimFramingResult> {
   const { staleAfterMs, currentPromptVersion } = opts;
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
 
-  return adminDb.runTransaction(async (tx) => {
+  return getAdminDb().runTransaction(async (tx) => {
     const doc = await tx.get(ref);
     const data = doc.exists ? (doc.data() as ProblemDetails) : null;
     const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
@@ -189,7 +189,7 @@ export async function claimPracticeLayers(
   opts: { staleAfterMs: number },
 ): Promise<ClaimPracticeLayersResult> {
   const { staleAfterMs } = opts;
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   const layers: PracticeLayer[] = [
     "testCases",
     "edgeCases",
@@ -197,7 +197,7 @@ export async function claimPracticeLayers(
     "pitfalls",
   ];
 
-  return adminDb.runTransaction(async (tx) => {
+  return getAdminDb().runTransaction(async (tx) => {
     const doc = await tx.get(ref);
     const data = doc.exists ? (doc.data() as ProblemDetails) : null;
     const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;
@@ -281,10 +281,10 @@ export async function claimFeedbackLayers(
   opts: { staleAfterMs: number },
 ): Promise<ClaimFeedbackLayersResult> {
   const { staleAfterMs } = opts;
-  const ref = adminDb.collection(COLLECTION).doc(slug);
+  const ref = getAdminDb().collection(COLLECTION).doc(slug);
   const layers: FeedbackLayer[] = ["solutions", "gradingCriteria"];
 
-  return adminDb.runTransaction(async (tx) => {
+  return getAdminDb().runTransaction(async (tx) => {
     const doc = await tx.get(ref);
     const data = doc.exists ? (doc.data() as ProblemDetails) : null;
     const storedSchemaVersion = data?.processingMeta?.schemaVersion ?? 0;

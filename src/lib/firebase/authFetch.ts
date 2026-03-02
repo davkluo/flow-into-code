@@ -1,4 +1,4 @@
-import { auth } from "./client";
+import { getClientAuth } from "./client";
 
 export async function authFetch(
   url: string,
@@ -6,8 +6,8 @@ export async function authFetch(
   token?: string,
 ): Promise<Response> {
   if (!token) {
-    await auth.authStateReady();
-    token = await auth.currentUser?.getIdToken();
+    await getClientAuth().authStateReady();
+    token = await getClientAuth().currentUser?.getIdToken();
   }
   return fetch(url, {
     ...options,

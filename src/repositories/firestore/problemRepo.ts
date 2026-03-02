@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { PROBLEMS_COLLECTION } from "@/constants/firestore";
 import { computeSearchTerms } from "@/lib/computeSearchTerms";
 import { Problem } from "@/types/problem";
@@ -10,7 +10,7 @@ const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end 
  * Fetch all LeetCode problems from Firestore.
  */
 export async function getAll(): Promise<Problem[]> {
-  const snapshot = await adminDb.collection(COLLECTION).get();
+  const snapshot = await getAdminDb().collection(COLLECTION).get();
   return snapshot.docs.map((doc) => doc.data() as Problem);
 }
 
@@ -22,10 +22,10 @@ export async function getAll(): Promise<Problem[]> {
 export async function upsertMany(problems: Problem[]): Promise<void> {
   if (problems.length === 0) return;
 
-  const batch = adminDb.batch();
+  const batch = getAdminDb().batch();
 
   for (const problem of problems) {
-    const ref = adminDb.collection(COLLECTION).doc(problem.titleSlug);
+    const ref = getAdminDb().collection(COLLECTION).doc(problem.titleSlug);
     const parsedId = Number(problem.id);
 
     const searchTerms = computeSearchTerms(problem);
@@ -62,7 +62,7 @@ export async function getProblemPage({
   cursor?: number;
   q?: string;
 }): Promise<ProblemsPage> {
-  const collectionRef = adminDb.collection(COLLECTION);
+  const collectionRef = getAdminDb().collection(COLLECTION);
 
   if (q) {
     const searchQuery = collectionRef
@@ -97,7 +97,7 @@ export async function getProblemPage({
 }
 
 export async function getBySlug(slug: string): Promise<Problem | null> {
-  const doc = await adminDb.collection(COLLECTION).doc(slug).get();
+  const doc = await getAdminDb().collection(COLLECTION).doc(slug).get();
   if (!doc.exists) {
     return null;
   }

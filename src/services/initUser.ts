@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { USERS_COLLECTION } from "@/constants/firestore";
 import * as userRepo from "@/repositories/firestore/userRepo";
 import * as statsRepo from "@/repositories/firestore/statsRepo";
@@ -8,9 +8,9 @@ import * as statsRepo from "@/repositories/firestore/statsRepo";
  * atomically if the user doesn't already exist. No-ops on subsequent calls.
  */
 export async function initUser(uid: string): Promise<void> {
-  const userRef = adminDb.collection(USERS_COLLECTION).doc(uid);
+  const userRef = getAdminDb().collection(USERS_COLLECTION).doc(uid);
 
-  await adminDb.runTransaction(async (tx) => {
+  await getAdminDb().runTransaction(async (tx) => {
     const userDoc = await tx.get(userRef);
     if (userDoc.exists) return;
 

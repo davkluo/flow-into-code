@@ -1,10 +1,20 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-});
+let _redis: Redis | null = null;
+
+function getRedis(): Redis {
+  if (!_redis) {
+    _redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL!,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+    });
+  }
+  return _redis;
+}
+
+let _chatRateLimit: Ratelimit | null = null;
+let _executeRateLimit: Ratelimit | null = null;
 
 /**
  * 7 requests per 60-second sliding window per user.
@@ -13,11 +23,16 @@ const redis = new Redis({
  * one retry's worth of headroom for failed requests. This limit only activates
  * for API-level abuse bypassing the UI entirely.
  */
-export const chatRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(7, "60 s"),
-  prefix: "ratelimit:chat",
-});
+export function getChatRateLimit(): Ratelimit {
+  if (!_chatRateLimit) {
+    _chatRateLimit = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(7, "60 s"),
+      prefix: "ratelimit:chat",
+    });
+  }
+  return _chatRateLimit;
+}
 
 /**
  * 10 requests per 60-second sliding window per user.
@@ -27,8 +42,13 @@ export const chatRateLimit = new Ratelimit({
  * enforces a 15s cooldown between runs, but this server-side limit gives some
  * headroom for retries and failed requests.
  */
-export const executeRateLimit = new Ratelimit({
-  redis,
-  limiter: Ratelimit.slidingWindow(10, "60 s"),
-  prefix: "ratelimit:execute",
-});
+export function getExecuteRateLimit(): Ratelimit {
+  if (!_executeRateLimit) {
+    _executeRateLimit = new Ratelimit({
+      redis: getRedis(),
+      limiter: Ratelimit.slidingWindow(10, "60 s"),
+      prefix: "ratelimit:execute",
+    });
+  }
+  return _executeRateLimit;
+}

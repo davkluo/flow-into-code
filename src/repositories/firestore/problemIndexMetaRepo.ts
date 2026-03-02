@@ -1,4 +1,4 @@
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { META_COLLECTION, PROBLEM_INDEX_META_DOC_ID } from "@/constants/firestore";
 
 const COLLECTION = META_COLLECTION;
@@ -17,13 +17,13 @@ export async function get(): Promise<ProblemIndexMeta | null> {
     return cachedMeta;
   }
 
-  const snap = await adminDb.collection(COLLECTION).doc(DOC_ID).get();
+  const snap = await getAdminDb().collection(COLLECTION).doc(DOC_ID).get();
   return snap.exists ? (snap.data() as ProblemIndexMeta) : null;
 }
 
 export async function markFullyPopulated(totalProblems: number) {
   const timestamp = Date.now();
-  await adminDb.collection(COLLECTION).doc(DOC_ID).set({
+  await getAdminDb().collection(COLLECTION).doc(DOC_ID).set({
     fullyPopulated: true,
     lastFetchedAt: timestamp,
     totalProblems,

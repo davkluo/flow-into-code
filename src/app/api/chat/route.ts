@@ -1,14 +1,17 @@
 import { NextRequest } from "next/server";
-import { streamChatCompletion } from "@/services/llm/client";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
-import { chatRateLimit } from "@/lib/rateLimit";
+import { getChatRateLimit } from "@/lib/rateLimit";
+import { streamChatCompletion } from "@/services/llm/client";
 import { Message } from "@/types/chat";
 
 export async function POST(req: NextRequest) {
   const uid = await verifyFirebaseToken(req);
-  if (!uid) return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+  if (!uid)
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+    });
 
-  const { success, reset } = await chatRateLimit.limit(uid);
+  const { success, reset } = await getChatRateLimit().limit(uid);
   if (!success) {
     const retryAfter = Math.ceil((reset - Date.now()) / 1000);
     return new Response(JSON.stringify({ error: "Too Many Requests" }), {
@@ -25,7 +28,7 @@ export async function POST(req: NextRequest) {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
-      "Connection": "keep-alive",
+      Connection: "keep-alive",
     },
   });
 }

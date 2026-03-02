@@ -55,7 +55,25 @@ cd flow-into-code
 npm install
 ```
 
-### 3. Configure environment variables
+### 3. Configure Firebase client
+
+The Firebase client SDK config is baked into the browser bundle at build time and is safe to commit — Firebase security is enforced through Security Rules and Authentication, not by keeping this config secret.
+
+In `src/lib/firebase/client.ts`, replace the `firebaseConfig` values with your own. You can find them in the Firebase console under **Project Settings → Your apps → SDK setup and configuration**:
+
+```ts
+const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.firebasestorage.app",
+  messagingSenderId: "...",
+  appId: "...",
+  measurementId: "...",
+};
+```
+
+### 4. Configure environment variables
 
 Copy the example file and fill in your credentials:
 
@@ -63,24 +81,17 @@ Copy the example file and fill in your credentials:
 cp .env.example .env.local
 ```
 
-| Variable                                   | Description                                                                           |
-| ------------------------------------------ | ------------------------------------------------------------------------------------- |
-| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Firebase project API key (public)                                                     |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Firebase auth domain (public)                                                         |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Firebase project ID (public)                                                          |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Firebase storage bucket (public)                                                      |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID (public)                                                 |
-| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Firebase app ID (public)                                                              |
-| `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`      | Firebase Analytics measurement ID (public)                                            |
-| `FIREBASE_PROJECT_ID`                      | Firebase project ID (server-only)                                                     |
-| `FIREBASE_CLIENT_EMAIL`                    | Firebase Admin SDK service account email                                              |
-| `FIREBASE_PRIVATE_KEY`                     | Firebase Admin SDK private key — must be a single line with literal `\n` for newlines |
-| `OPENAI_API_KEY`                           | OpenAI API key for the AI interviewer and feedback generation                         |
-| `UPSTASH_REDIS_REST_URL`                   | Upstash Redis REST endpoint                                                           |
-| `UPSTASH_REDIS_REST_TOKEN`                 | Upstash Redis REST auth token                                                         |
-| `EXECUTOR_URL`                             | URL for the code execution service — leave unset to use the default Docker DNS value  |
+| Variable              | Description                                                                           |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `FIREBASE_PROJECT_ID` | Firebase project ID (server-only)                                                     |
+| `FIREBASE_CLIENT_EMAIL` | Firebase Admin SDK service account email                                            |
+| `FIREBASE_PRIVATE_KEY` | Firebase Admin SDK private key — must be a single line with literal `\n` for newlines |
+| `OPENAI_API_KEY`      | OpenAI API key for the AI interviewer and feedback generation                         |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint                                                        |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST auth token                                                    |
+| `EXECUTOR_URL`        | URL for the code execution service — leave unset to use the default Docker DNS value  |
 
-> The `NEXT_PUBLIC_*` Firebase variables are safe to expose in the browser. All other variables are server-only and must never be committed or exposed publicly.
+> These variables are server-only secrets and must never be committed or exposed publicly.
 
 ### 4. Build and start all services
 

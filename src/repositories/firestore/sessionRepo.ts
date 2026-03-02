@@ -1,7 +1,7 @@
-import { adminDb } from "@/lib/firebase/admin";
 import { Transaction } from "firebase-admin/firestore";
-import { Session } from "@/types/session";
 import { SESSIONS_COLLECTION } from "@/constants/firestore";
+import { getAdminDb } from "@/lib/firebase/admin";
+import { Session } from "@/types/session";
 
 const COLLECTION = SESSIONS_COLLECTION;
 
@@ -13,7 +13,7 @@ export async function create(
   session: Session,
   tx?: Transaction,
 ): Promise<string> {
-  const ref = adminDb.collection(COLLECTION).doc();
+  const ref = getAdminDb().collection(COLLECTION).doc();
   if (tx) {
     tx.set(ref, session);
   } else {
@@ -25,7 +25,7 @@ export async function create(
 export async function getById(
   sessionId: string,
 ): Promise<(Session & { id: string }) | null> {
-  const doc = await adminDb.collection(COLLECTION).doc(sessionId).get();
+  const doc = await getAdminDb().collection(COLLECTION).doc(sessionId).get();
   if (!doc.exists) return null;
   return { id: doc.id, ...(doc.data() as Session) };
 }
@@ -33,7 +33,7 @@ export async function getById(
 export async function getByUserId(
   userId: string,
 ): Promise<Array<Session & { id: string }>> {
-  const snapshot = await adminDb
+  const snapshot = await getAdminDb()
     .collection(COLLECTION)
     .where("userId", "==", userId)
     .orderBy("createdAt", "desc")

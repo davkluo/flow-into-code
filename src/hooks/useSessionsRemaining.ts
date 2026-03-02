@@ -4,7 +4,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { DAILY_SESSION_LIMIT } from "@/constants/practice";
 import { USERS_COLLECTION } from "@/constants/firestore";
-import { db } from "@/lib/firebase/client";
+import { getClientDb } from "@/lib/firebase/client";
 import { User } from "@/types/user";
 import { useAuth } from "./useAuth";
 
@@ -24,7 +24,7 @@ export function useSessionsRemaining(): {
       return;
     }
 
-    const ref = doc(db, USERS_COLLECTION, user.uid);
+    const ref = doc(getClientDb(), USERS_COLLECTION, user.uid);
     const unsubscribe = onSnapshot(ref, (snapshot) => {
       if (!snapshot.exists()) {
         setIsLoading(false);

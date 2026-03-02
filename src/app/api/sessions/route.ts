@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { Timestamp } from "firebase-admin/firestore";
-import { adminDb } from "@/lib/firebase/admin";
+import { getAdminDb } from "@/lib/firebase/admin";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import * as sessionRepo from "@/repositories/firestore/sessionRepo";
 import { PROBLEMS_COLLECTION } from "@/constants/firestore";
@@ -19,10 +19,10 @@ export async function GET(req: NextRequest) {
   // Batch-fetch problem metadata for all unique slugs in one Firestore RPC
   const uniqueSlugs = [...new Set(rawSessions.map((s) => s.problemTitleSlug))];
   const problemRefs = uniqueSlugs.map((slug) =>
-    adminDb.collection(PROBLEMS_COLLECTION).doc(slug),
+    getAdminDb().collection(PROBLEMS_COLLECTION).doc(slug),
   );
   const problemDocs =
-    problemRefs.length > 0 ? await adminDb.getAll(...problemRefs) : [];
+    problemRefs.length > 0 ? await getAdminDb().getAll(...problemRefs) : [];
   const problemIdMap = new Map(
     problemDocs.map((doc) => [
       doc.id,

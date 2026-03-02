@@ -1,6 +1,6 @@
 import { zodTextFormat } from "openai/helpers/zod";
 import { z } from "zod";
-import { openAIClient } from "@/lib/openai";
+import { getOpenAIClient } from "@/lib/openai";
 import { Message } from "@/types/chat";
 
 const DEFAULT_MODEL = "gpt-4o-mini";
@@ -35,7 +35,7 @@ export async function callLLMStructured<T extends z.ZodType>({
   model = DEFAULT_MODEL,
   temperature = 0,
 }: CallLLMStructuredInput<T>): Promise<LLMStructuredResult<z.infer<T>>> {
-  const response = await openAIClient.responses.parse({
+  const response = await getOpenAIClient().responses.parse({
     model,
     temperature,
     instructions: "You are a precise JSON-producing assistant.",
@@ -57,7 +57,7 @@ export async function streamChatCompletion({
   model = DEFAULT_MODEL,
   temperature = 0.7,
 }: CallLLMChatStreamInput): Promise<ReadableStream<Uint8Array>> {
-  const stream = await openAIClient.chat.completions.create({
+  const stream = await getOpenAIClient().chat.completions.create({
     model,
     messages,
     temperature,
