@@ -30,12 +30,20 @@ import { ProblemsTable } from "./ProblemsTable";
 
 interface ProblemSelectSectionProps {
   onProblemSelect: (problem: Problem, problemDetails: ProblemDetails) => void;
-  isEditable: boolean;
 }
 
+/**
+ * Two-panel problem browser used at the start of a practice session.
+ *
+ * Left panel shows a paginated, searchable list of LeetCode problems. Selecting
+ * a problem slides in the right panel with a detail view and "Begin Practice"
+ * button. Fetches and caches problem pages incrementally to avoid loading the
+ * full list upfront.
+ *
+ * @param onProblemSelect Called with the chosen problem and its details when the user clicks "Begin Practice".
+ */
 export function ProblemSelectSection({
   onProblemSelect,
-  isEditable,
 }: ProblemSelectSectionProps) {
   // #region State Variables
   const [isLoadingProblemList, setIsLoadingProblemList] = useState(true);
@@ -64,6 +72,10 @@ export function ProblemSelectSection({
   // #endregion State Variables
 
   // #region Local Helpers
+  /**
+   * Slices the full search result array to the subset for the given UI page.
+   * Used instead of the cached-page pagination helpers when a search is active.
+   */
   const getSearchResultsForUIPage = (
     results: Problem[],
     uiPage: number,
@@ -76,6 +88,7 @@ export function ProblemSelectSection({
   // #endregion Local Helpers
 
   // #region Derived Values
+  /** Problems to show in the current page of the table — from search results or the cache. */
   const displayedProblems = useMemo(() => {
     if (searchResults !== null) {
       return getSearchResultsForUIPage(
@@ -88,6 +101,7 @@ export function ProblemSelectSection({
     return getProblemsForUIPage(currentUIPage, itemsPerPage, cachedPages);
   }, [searchResults, currentUIPage, itemsPerPage, cachedPages]);
 
+  /** Total number of UI pages, derived from search result count or the full problem index total. */
   const totalUIPages = useMemo(() => {
     if (searchResults !== null) {
       return getTotalUIPages(searchResults.length, itemsPerPage);
@@ -188,6 +202,10 @@ export function ProblemSelectSection({
     [],
   );
 
+  /**
+   * Polls the preview data endpoint with exponential backoff until the server
+   * returns 200 or a non-202 error. Cancels any in-flight poll via `pollAbortRef`.
+   */
   const pollForPreview = useCallback(
     async (slug: string): Promise<ProblemDetails | null> => {
       pollAbortRef.current?.abort();
@@ -216,6 +234,10 @@ export function ProblemSelectSection({
     [],
   );
 
+  /**
+   * Selects a problem and fetches its preview-layer details. Falls through to
+   * `pollForPreview` if the server returns 202 (generation in progress).
+   */
   const handleViewProblem = useCallback(
     async (problem: Problem) => {
       setSelectedProblem(problem);
@@ -248,12 +270,17 @@ export function ProblemSelectSection({
     [pollForPreview],
   );
 
+  /** Cancels any in-flight preview poll and returns to the problem list panel. */
   const handleBack = useCallback(() => {
     pollAbortRef.current?.abort();
     setSelectedProblem(null);
     setProblemDetails(null);
   }, []);
 
+  /**
+   * Triggers server-side generation of the selected problem's preview layer,
+   * then polls until the data is ready or times out.
+   */
   const handleGeneratePreview = useCallback(async () => {
     if (!selectedProblem) return;
 
@@ -445,7 +472,7 @@ export function ProblemSelectSection({
                   showGenerateButton={true}
                 />
 
-                {isEditable && problemDetails && (
+                {problemDetails && (
                   <div className="flex justify-center">
                     <Button
                       className="after:bg-brand-primary relative overflow-hidden after:absolute after:right-0 after:bottom-0 after:left-0 after:h-1 after:origin-left after:scale-x-0 after:transition-transform after:duration-300 hover:after:scale-x-100"

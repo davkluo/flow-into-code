@@ -154,10 +154,21 @@ const CODE_SKELETON_WIDTHS = [88, 74, 67, 81, 59, 76, 64, 84, 71, 57, 79, 68];
 const CODE_LINE_INDENTS = [0, 12, 12, 24, 12, 12, 24, 12, 12, 20, 12, 12];
 const CODE_LINE_EXTRA_TOP_MARGIN = [0, 0, 0, 6, 0, 0, 8, 0, 0, 6, 0, 0];
 
+/** Clamps `value` to the range [min, max]. */
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
+/**
+ * Maps a global scroll progress value (0–1) to a local 0–1 progress for
+ * a specific token in a sequence. Each token occupies an equal slice of
+ * the overall range, so token `index` starts at `index/total` and ends
+ * at `(index+1)/total`.
+ *
+ * @param globalProgress  Overall scroll progress, 0–1.
+ * @param index           Zero-based index of this token in the sequence.
+ * @param total           Total number of tokens.
+ */
 function tokenProgress(
   globalProgress: number,
   index: number,
@@ -168,6 +179,19 @@ function tokenProgress(
   return clamp((globalProgress - start) / (end - start), 0, 1);
 }
 
+/**
+ * Marketing landing page for Flow Into Code.
+ *
+ * Contains two sections:
+ * 1. A hero section with headline copy and CTA buttons.
+ * 2. A scroll-driven animation section where practice "ingredient" cards fly in
+ *    from alternating sides and dissolve into a mock code editor window, driven
+ *    entirely by scroll position without a scroll-jacking library.
+ *
+ * The animation is computed from a single normalized `progress` value (0–1) that
+ * tracks how far the sticky scroll container has scrolled through its 550svh track.
+ * Per-token and per-phase progress values are derived from that single source via `clamp`.
+ */
 export default function LandingPage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [progress, setProgress] = useState(0);
@@ -234,6 +258,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", updateBackToTop);
   }, []);
 
+  /** Percentage (0–100) of code skeleton lines that should appear "filled in", based on how many tokens have fully dissolved into the editor. */
   const codeFill = useMemo(() => {
     const total = STORY_TOKENS.length;
     const aggregate = STORY_TOKENS.reduce((sum, _, index) => {
@@ -243,6 +268,7 @@ export default function LandingPage() {
     }, 0);
     return (aggregate / total) * 100;
   }, [ingredientsProgress]);
+  /** Set of token indices that use the secondary brand color in both the story cards and code skeleton lines. Alternates between gaps of 3 and 4 to create a non-uniform visual rhythm. */
   const secondaryLineIndices = useMemo(() => {
     const set = new Set<number>();
     let index = 2;
@@ -254,6 +280,7 @@ export default function LandingPage() {
     }
     return set;
   }, []);
+  /** Returns Tailwind classes for the hero entrance animation — fades, lifts, and unblurs each element on mount. */
   const heroRevealClass = () =>
     cn(
       "transition-[opacity,transform,filter] duration-700 ease-out",

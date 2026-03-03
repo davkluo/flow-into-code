@@ -40,6 +40,7 @@ type SessionSummary = {
 type SortKey = "problemId" | "date";
 type SortDir = "asc" | "desc";
 
+/** Converts a kebab-case problem slug into a title-cased display name (e.g. "two-sum" → "Two Sum"). */
 function formatSlug(slug: string): string {
   return slug
     .split("-")
@@ -47,6 +48,7 @@ function formatSlug(slug: string): string {
     .join(" ");
 }
 
+/** Returns a Tailwind text-color class for a numeric score, ranging from red (low) to green (high). */
 function scoreColor(score: number): string {
   if (score < 2) return "text-red-400";
   if (score < 3) return "text-amber-400";
@@ -54,6 +56,13 @@ function scoreColor(score: number): string {
   return "text-green-400";
 }
 
+/**
+ * Returns a sorted copy of the sessions array.
+ *
+ * @param sessions  The sessions to sort.
+ * @param key       Sort column: "problemId" (numeric) or "date" (chronological).
+ * @param dir       "asc" or "desc".
+ */
 function sortSessions(
   sessions: SessionSummary[],
   key: SortKey,
@@ -72,6 +81,15 @@ function sortSessions(
   });
 }
 
+/**
+ * Column header sort indicator icon.
+ * Shows a neutral double-arrow when the column is not sorted,
+ * and an up/down arrow reflecting the active sort direction.
+ *
+ * @param col     The column this icon represents.
+ * @param sortKey The currently active sort column, or null if unsorted.
+ * @param sortDir The current sort direction.
+ */
 function SortIcon({
   col,
   sortKey,
@@ -90,6 +108,12 @@ function SortIcon({
   );
 }
 
+/**
+ * Renders a row of numeric score chips for all graded sections plus
+ * interviewer communication. Scores are color-coded; ungraded fields show "–".
+ *
+ * @param session The session whose feedback scores to display.
+ */
 function ScoreChips({ session }: { session: SessionSummary }) {
   const entries = [
     ...SECTION_ORDER.map((key) => ({
@@ -119,6 +143,11 @@ function ScoreChips({ session }: { session: SessionSummary }) {
   );
 }
 
+/**
+ * Session history page — shows a sortable table of all the user's past practice
+ * sessions with problem title, feedback summary, date, and per-section scores.
+ * Clicking a row navigates to that session's full feedback page.
+ */
 export default function HistoryPage() {
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
@@ -132,6 +161,7 @@ export default function HistoryPage() {
       .then((json) => setSessions(json.sessions));
   }, []);
 
+  /** Toggles sort direction if already sorting by this column, otherwise sets it as the active sort. */
   function handleSort(col: SortKey) {
     if (sortKey === col) {
       setSortDir((d) => (d === "asc" ? "desc" : "asc"));

@@ -26,6 +26,7 @@ type FeedbackPageData = {
   solutions: ProblemSolution[];
 };
 
+/** Returns a Tailwind text-color class for a numeric score, ranging from red (low) to green (high). */
 function scoreClass(score: number): string {
   if (score < 2) return "text-red-400";
   if (score < 3) return "text-amber-400";
@@ -33,6 +34,7 @@ function scoreClass(score: number): string {
   return "text-green-400";
 }
 
+/** Returns a Tailwind background-color class for a numeric score, used for the progress bar fill. */
 function scoreBg(score: number): string {
   if (score < 2) return "bg-red-400";
   if (score < 3) return "bg-amber-400";
@@ -40,6 +42,7 @@ function scoreBg(score: number): string {
   return "bg-green-400";
 }
 
+/** Loading skeleton shown while the session feedback data is being fetched. */
 function FeedbackSkeleton() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
@@ -84,6 +87,19 @@ function FeedbackSkeleton() {
   );
 }
 
+/**
+ * Feedback page for a completed practice session (`/feedback/[session-id]`).
+ *
+ * Fetches session data on mount and renders:
+ * - Problem title, difficulty, and tags
+ * - A 3×2 score overview grid with progress bars, linking to section anchors
+ * - An overall session summary paragraph
+ * - Per-section feedback cards
+ * - Interviewer communication feedback and chat log
+ * - Sample solutions (if available from the problem's feedback layer)
+ *
+ * Shows a skeleton UI while loading and calls `notFound()` for 404/401 responses.
+ */
 export default function FeedbackPage() {
   const params = useParams<{ "session-id": string }>();
   const sessionId = params["session-id"];

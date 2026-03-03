@@ -36,6 +36,16 @@ export type LLMState = {
 // Hook
 // ---------------------------------------------------------------------------
 
+/**
+ * Manages LLM chat state for a practice session.
+ *
+ * Maintains a single shared message list across all sections, with per-section
+ * snapshot history attached to each message. Handles streaming SSE responses
+ * and enforces a send cooldown to prevent request spam.
+ *
+ * @param problem        The active problem, used to build system context.
+ * @param problemDetails Full problem details (constraints, examples, etc.).
+ */
 export function useLLM(
   problem: Problem | null,
   problemDetails: ProblemDetails | null,
@@ -198,6 +208,7 @@ export function useLLM(
     return { ...llmState, sections: finalSections };
   };
 
+  /** Clears all messages, snapshots, and cooldown state. */
   const reset = useCallback(() => {
     setLlmState({ messages: [], sections: {} });
     setCooldownUntil(0);

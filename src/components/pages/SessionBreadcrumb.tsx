@@ -43,6 +43,16 @@ const activeAccent =
 const menuItemHover =
   "focus:bg-transparent focus:underline focus:underline-offset-4";
 
+/**
+ * Breadcrumb item for the active problem.
+ *
+ * Renders the problem title as a dropdown trigger with "View reference" and
+ * "End session" options. End session is guarded by a confirmation AlertDialog.
+ *
+ * @param problemTitle  Display title for the current problem.
+ * @param onViewProblem Opens the problem reference sheet.
+ * @param onEndSession  Resets session state after the user confirms.
+ */
 function ProblemDropdownItem({
   problemTitle,
   onViewProblem,
@@ -98,6 +108,18 @@ function ProblemDropdownItem({
   );
 }
 
+/**
+ * Breadcrumb item for a visited section.
+ *
+ * Renders the section title as a dropdown with "View summary" and "Go to section" options.
+ * Shows a checkmark when the section is complete.
+ *
+ * @param sectionKey            The section this item represents.
+ * @param index                 Zero-based position in SECTION_ORDER (used for display numbering).
+ * @param isComplete            Whether all required fields for this section are filled.
+ * @param onSectionNavigate     Navigates to this section.
+ * @param onSectionSummaryClick Opens the section summary sheet (optional).
+ */
 function SectionDropdownItem({
   sectionKey,
   index,
@@ -137,6 +159,23 @@ function SectionDropdownItem({
   );
 }
 
+/**
+ * Horizontally scrollable breadcrumb bar shown at the top of the practice session.
+ *
+ * Displays the problem title (with a dropdown for reference/end session) followed
+ * by each visited section as a dropdown item. Sections animate in when first
+ * visited and the bar auto-scrolls to keep the active section centred. Left/right
+ * fade shadows appear when there is overflow to scroll.
+ *
+ * @param problemTitle          Title of the active problem.
+ * @param currentSectionIndex   Index of the currently displayed section.
+ * @param highestVisitedIndex   Index of the furthest section the user has reached.
+ * @param completedSections     Set of section keys where all required fields are filled.
+ * @param onViewProblem         Opens the problem reference sheet.
+ * @param onEndSession          Resets the session back to problem selection.
+ * @param onSectionNavigate     Jumps to the given section.
+ * @param onSectionSummaryClick Opens the summary sheet for the given section.
+ */
 export function SessionBreadcrumb({
   problemTitle,
   currentSectionIndex,
@@ -170,6 +209,7 @@ export function SessionBreadcrumb({
     return () => clearTimeout(t);
   }, [highestVisitedIndex]);
 
+  /** Recalculates whether left/right overflow shadows should be visible. */
   const updateShadows = useCallback(() => {
     const el = scrollRef.current;
     if (!el) return;
@@ -205,6 +245,10 @@ export function SessionBreadcrumb({
     return () => ro.disconnect();
   }, [updateShadows]);
 
+  /**
+   * Provides edge-proximity auto-scrolling: moves the breadcrumb list left or
+   * right via requestAnimationFrame when the cursor is within 64px of either edge.
+   */
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const el = scrollRef.current;
     if (!el) return;
@@ -231,6 +275,7 @@ export function SessionBreadcrumb({
     rafRef.current = requestAnimationFrame(scroll);
   }, []);
 
+  /** Cancels the pending requestAnimationFrame auto-scroll loop when the cursor leaves the breadcrumb area. */
   const handleMouseLeave = useCallback(() => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
   }, []);

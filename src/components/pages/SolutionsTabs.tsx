@@ -9,12 +9,23 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProblemSolution } from "@/types/problem";
 
+/**
+ * Returns the tab value that should be selected by default for a solution.
+ * Prefers "algorithm" > "tradeoffs" > "complexity" based on what content is available.
+ */
 function firstAvailableTab(solution: ProblemSolution): string {
   if (solution.algorithm) return "algorithm";
   if (solution.tradeoffs) return "tradeoffs";
   return "complexity";
 }
 
+/**
+ * Renders a list of problem solutions as collapsible cards, each with tabbed
+ * content for algorithm walkthrough, tradeoff notes, and complexity analysis.
+ * Only renders tabs for fields that have content.
+ *
+ * @param solutions List of solution objects from the problem's feedback/preview data.
+ */
 export function SolutionsTabs({ solutions }: { solutions: ProblemSolution[] }) {
   return (
     <div className="space-y-2">

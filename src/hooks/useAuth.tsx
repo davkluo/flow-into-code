@@ -29,6 +29,13 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
+/**
+ * Provides Firebase authentication state to the component tree.
+ *
+ * Subscribes to Firebase auth state changes and exposes the current user,
+ * auth status, and sign-in/sign-out methods via `AuthContext`. Also calls
+ * the user-init API on first sign-in to ensure the user record exists.
+ */
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [status, setStatus] = useState<AuthStatus>("loading");
@@ -41,6 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
+  /**
+   * Signs in with the given Firebase OAuth provider via popup.
+   * Handles known error codes (duplicate email, too many requests, popup closed)
+   * and initializes the user record on the backend after a successful sign-in.
+   */
   const signInWithProvider = async (provider: FirebaseAuthProvider) => {
     setStatus("loading");
 
@@ -122,6 +134,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * Returns the current auth context (user, status, sign-in/sign-out methods).
+ * Must be called within an `AuthProvider`.
+ */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used within an AuthProvider");

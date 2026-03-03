@@ -17,6 +17,17 @@ import { useTimer } from "@/context/TimerContext";
 import { formatTime } from "@/lib/formatting";
 import { cn } from "@/lib/utils";
 
+/**
+ * Countdown timer widget rendered in the fixed bottom bar.
+ *
+ * Reads from `TimerContext` and renders the remaining time, a progress bar,
+ * and play/pause/settings controls. Fires a toast notification when time reaches
+ * zero and continues counting into overtime (negative values), reflecting that
+ * in both the time display color and the progress bar style.
+ *
+ * Settings dialog lets the user change the timer duration (1–120 min) and
+ * immediately resets the timer to the new setpoint.
+ */
 export function Timer() {
   const { timeLeft, isRunning, start, pause, reset, setpoint, setSetpoint } =
     useTimer();
@@ -31,6 +42,7 @@ export function Timer() {
       ? Math.min(Math.abs(timeLeft) / setpoint, 1) * 100 // 0 -> 100 overtime
       : (timeLeft / setpoint) * 100; // 100 -> 0
 
+  /** Validates the input, applies the new setpoint, and resets the timer. */
   const handleResetAndApply = () => {
     const parsed = parseInt(inputMinutes);
     if (!parsed) {
@@ -45,6 +57,7 @@ export function Timer() {
     setIsDialogOpen(false);
   };
 
+  /** Syncs the input field to the current setpoint when the settings dialog opens. */
   const handleDialogChange = (isOpen: boolean) => {
     if (isOpen) {
       setInputMinutes(String(Math.round(setpoint / 60)));

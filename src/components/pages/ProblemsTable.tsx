@@ -36,6 +36,26 @@ interface ProblemsTableProps {
   onProblemSelect?: (problem: Problem) => void;
 }
 
+/**
+ * Paginated, searchable table of LeetCode problems.
+ *
+ * Renders a list of problems with difficulty badges, topic tags, and a
+ * completion indicator. Paid-only problems are shown as unclickable rows
+ * with a lock icon and LeetCode link. All pagination and search state is
+ * controlled externally via props.
+ *
+ * @param problems              Problems to display on the current page.
+ * @param currentPage           Active page number (1-indexed).
+ * @param totalPages            Total pages available, or null if not yet known.
+ * @param isLoading             Shows skeleton rows while data is loading.
+ * @param itemsPerPage          Current items-per-page selection.
+ * @param search                Current search input value.
+ * @param completedSlugs        Set of problem slugs the user has previously practiced.
+ * @param onSearchChange        Called when the search input changes.
+ * @param onPageChange          Called when the user navigates to a new page.
+ * @param onItemsPerPageChange  Called when the user changes items-per-page.
+ * @param onProblemSelect       Called when a non-premium problem row is clicked.
+ */
 export function ProblemsTable({
   problems,
   currentPage,

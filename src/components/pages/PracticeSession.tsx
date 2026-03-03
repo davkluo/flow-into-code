@@ -50,6 +50,16 @@ import { SessionLoadingScreen } from "./SessionLoadingScreen";
 import { Timer } from "./Timer";
 import { UnderstandingSection } from "./UnderstandingSection";
 
+/**
+ * Root component for a full practice session.
+ *
+ * Manages the entire session lifecycle: problem selection → section-by-section
+ * guided practice → feedback generation. Holds all section field state as a
+ * single source of truth and coordinates the LLM chat, timer, and navigation.
+ *
+ * Renders the problem select screen when idle, a loading screen during session
+ * setup, and the multi-section slider UI once a session is active.
+ */
 export function PracticeSession() {
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
@@ -108,6 +118,7 @@ export function PracticeSession() {
   const pollAbortRef = useRef<AbortController | null>(null);
   const feedbackPollRef = useRef<AbortController | null>(null);
 
+  /** Advances to the next section and updates the highest visited index. */
   const proceedNextSection = () => {
     if (isLastSection) return;
     const nextIndex = currentSectionIndex + 1;
@@ -115,11 +126,17 @@ export function PracticeSession() {
     setHighestVisitedIndex((prev) => Math.max(prev, nextIndex));
   };
 
+  /** Goes back to the previous section. No-ops at the first section. */
   const goBackSection = () => {
     if (currentSectionIndex <= 0) return;
     setCurrentSectionIndex((prev) => prev - 1);
   };
 
+  /**
+   * Polls the practice data endpoint with exponential backoff until the server
+   * returns 200 (data ready) or a non-202 error. Aborts any in-flight poll before
+   * starting a new one via `pollAbortRef`.
+   */
   const pollForPractice = useCallback(
     async (slug: string): Promise<ProblemDetails | null> => {
       pollAbortRef.current?.abort();
@@ -147,6 +164,10 @@ export function PracticeSession() {
     [],
   );
 
+  /**
+   * Triggers server-side generation of practice data for a problem, then returns
+   * the result. Falls through to `pollForPractice` if the server responds 202.
+   */
   const generatePractice = useCallback(
     async (slug: string): Promise<ProblemDetails | null> => {
       try {
@@ -165,6 +186,13 @@ export function PracticeSession() {
     [pollForPractice],
   );
 
+  /**
+   * Initializes a new practice session for the selected problem.
+   *
+   * Fetches or generates practice-layer data, resets all section fields and
+   * LLM state, pre-populates the implementation editor with the starter snippet,
+   * and starts the timer.
+   */
   const handleStartSession = useCallback(
     async (
       selectedProblem: Problem,
@@ -231,6 +259,7 @@ export function PracticeSession() {
     [llmReset, pollForPractice, generatePractice, resetTimer, startTimer],
   );
 
+  /** Returns the current field values for the active summary section key. */
   const summarySnapshot = useMemo((): SectionSnapshotData => {
     switch (summarySectionKey) {
       case "problem_understanding":
@@ -253,6 +282,10 @@ export function PracticeSession() {
     complexityFields,
   ]);
 
+  /**
+   * Forwards a chat message to the LLM along with the current section snapshot,
+   * so the model has up-to-date context about the user's work.
+   */
   const handleSend = useCallback(
     async (section: SectionKey, content: string): Promise<void> => {
       const snapshots: Record<SectionKey, SectionSnapshotData> = {
@@ -274,6 +307,7 @@ export function PracticeSession() {
     ],
   );
 
+  /** Resets all session state and returns to the problem selection screen. */
   const handleEndSession = useCallback(() => {
     llmReset();
     resetTimer();
@@ -299,6 +333,12 @@ export function PracticeSession() {
     setIsMobileChatOpen(false);
   }, [llmReset, resetTimer]);
 
+  /**
+   * Polls the feedback data endpoint until the problem-level feedback layer is
+   * ready (200) or a non-202 error is returned. Run concurrently with session
+   * feedback generation so both layers are available when the user lands on the
+   * feedback page.
+   */
   const pollForFeedback = useCallback(async (slug: string): Promise<void> => {
     feedbackPollRef.current?.abort();
     const controller = new AbortController();
@@ -322,6 +362,14 @@ export function PracticeSession() {
     }
   }, []);
 
+  /**
+   * Submits the completed session for feedback generation and redirects to the
+   * feedback page.
+   *
+   * 1. Triggers problem-level feedback layer generation (polls if 202).
+   * 2. POSTs the full LLM state (messages + final snapshots) to generate session feedback.
+   * 3. Navigates to `/feedback/[sessionId]`.
+   */
   const handleGetFeedback = useCallback(async () => {
     if (!problem) return;
     setIsFetchingFeedback(true);
@@ -372,6 +420,7 @@ export function PracticeSession() {
     complexityFields,
   ]);
 
+  /** True when the implementation field is empty or unchanged from the starter boilerplate. */
   const isFeedbackBlocked = useMemo(() => {
     if (!implFields.code.trim()) return true;
     const boilerplate = processCodeSnippet(
@@ -381,6 +430,7 @@ export function PracticeSession() {
     return implFields.code.trim() === boilerplate.trim();
   }, [implFields, problemDetails]);
 
+  /** Sections that have at least one empty required field. Shown in the pre-submit warning dialog. */
   const warningSections = useMemo((): {
     key: SectionKey;
     emptyFields: string[];
@@ -434,6 +484,7 @@ export function PracticeSession() {
     return result;
   }, [understandingFields, approachFields, algorithmFields, complexityFields]);
 
+  /** Set of section keys where all required fields are filled. Used for breadcrumb completion indicators. */
   const completedSections = useMemo((): Set<SectionKey> => {
     const warnedKeys = new Set(warningSections.map((w) => w.key));
     const result = new Set<SectionKey>();
@@ -471,7 +522,6 @@ export function PracticeSession() {
       {!isPracticeStarted && !isPreparingSession && (
         <ProblemSelectSection
           onProblemSelect={handleStartSession}
-          isEditable={true}
         />
       )}
 

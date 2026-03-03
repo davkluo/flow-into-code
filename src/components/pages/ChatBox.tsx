@@ -32,6 +32,24 @@ interface ChatBoxProps {
   emptyStateMessage?: string;
 }
 
+/**
+ * Chat interface for communicating with the AI interviewer during a section.
+ *
+ * Displays the message history in a scrollable log, auto-scrolls to the latest
+ * message, and shows a loading bubble while the assistant is responding.
+ * Supports a send cooldown (countdown shown on the button) and Cmd/Ctrl+Enter
+ * as a keyboard shortcut.
+ *
+ * @param messages          The full message history for this section.
+ * @param onSend            Callback invoked with the trimmed message string on submit.
+ * @param cooldownUntil     Unix timestamp (ms) until which sending is blocked. 0 = no cooldown.
+ * @param layoutMode        "grow" expands to content height; "fixed" fills its container (for sidebar/sheet use).
+ * @param title             Optional header label shown above the message log.
+ * @param titleTooltip      Optional tooltip content rendered next to the title.
+ * @param placeholder       Textarea placeholder text.
+ * @param inputDescription  Small descriptive text shown in the input footer.
+ * @param emptyStateMessage Text shown when there are no messages yet.
+ */
 export function ChatBox({
   messages,
   onSend,

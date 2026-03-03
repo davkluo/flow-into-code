@@ -36,6 +36,16 @@ const TimerStateContext = createContext<TimerState | null>(null);
 
 // --- Provider ---
 
+/**
+ * Provides countdown timer state and controls to the component tree.
+ *
+ * Uses two separate contexts — `TimerActionsContext` and `TimerStateContext` —
+ * to avoid re-rendering action consumers (e.g. control buttons) every second
+ * when the tick updates. Only components that read `timeLeft` or `isRunning`
+ * will re-render on each tick.
+ *
+ * @param defaultTime Initial and reset target in seconds. Defaults to 1800 (30 min).
+ */
 export const TimerProvider = ({
   children,
   defaultTime = 1800,
@@ -108,19 +118,27 @@ export const TimerProvider = ({
 
 // --- Hooks ---
 
+/**
+ * Returns timer control methods (start, pause, reset, setTime, setSetpoint).
+ * Stable between ticks — safe to use in components that don't need live time display.
+ */
 export const useTimerActions = (): TimerActions => {
   const ctx = useContext(TimerActionsContext);
   if (!ctx) throw new Error("useTimerActions must be used within a TimerProvider");
   return ctx;
 };
 
+/**
+ * Returns live timer state (`timeLeft`, `isRunning`). Re-renders every second
+ * while the timer is running — use only where the live countdown is needed.
+ */
 export const useTimerState = (): TimerState => {
   const ctx = useContext(TimerStateContext);
   if (!ctx) throw new Error("useTimerState must be used within a TimerProvider");
   return ctx;
 };
 
-// Convenience hook for components that need everything (i.e. Timer.tsx)
+/** Convenience hook that merges both timer actions and state. Re-renders every second. */
 export const useTimer = (): TimerContextType => ({
   ...useTimerActions(),
   ...useTimerState(),

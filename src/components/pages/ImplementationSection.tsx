@@ -30,9 +30,9 @@ import {
 import { EXECUTE_API_PATH } from "@/constants/api";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
-import { authFetch } from "@/lib/firebase/authFetch";
 import { languageOptions } from "@/lib/codeMirror";
 import { processCodeSnippet, stripTestBlock } from "@/lib/codeSnippet";
+import { authFetch } from "@/lib/firebase/authFetch";
 import { SessionMessage } from "@/types/chat";
 import { LangSlug } from "@/types/languages";
 import { SectionField } from "@/types/practice";
@@ -69,6 +69,26 @@ const FIELD: SectionField<{ code: string }> = {
   ),
 };
 
+/**
+ * Section where the user writes and runs their implementation.
+ *
+ * Contains a CodeMirror editor with a floating toolbar (language selector,
+ * run, copy, submit to LeetCode, reset), an output panel that appears after
+ * running, and the AI interviewer ChatBox. Code execution goes through the
+ * internal execute API with an enforced cooldown between runs.
+ *
+ * @param code            Current editor content.
+ * @param onCodeChange    Called when the editor content changes.
+ * @param language        Currently selected language slug.
+ * @param onLanguageChange Called when the user switches language.
+ * @param messages        LLM chat messages for this section.
+ * @param onSend          Sends a chat message to the LLM.
+ * @param cooldownUntil   Unix timestamp (ms) until chat sending is blocked.
+ * @param codeSnippets    Map of language slug to raw starter code snippet.
+ * @param titleSlug       Problem title slug.
+ * @param output          Last execution output to display in the output panel.
+ * @param onOutputChange  Called to update the stored output string.
+ */
 export function ImplementationSection({
   code,
   onCodeChange,
@@ -82,6 +102,7 @@ export function ImplementationSection({
   output,
   onOutputChange,
 }: ImplementationSectionProps) {
+  /** Returns the processed starter code snippet for the given language. */
   const getSnippet = (lang: LangSlug) =>
     processCodeSnippet(codeSnippets[lang] ?? "", lang);
   const [outputVisible, setOutputVisible] = useState(false);
@@ -109,17 +130,20 @@ export function ImplementationSection({
     return () => clearInterval(id);
   }, [executionCooldownUntil]);
 
+  /** Copies the full editor contents to the clipboard. */
   const handleCopy = async () => {
     await navigator.clipboard.writeText(code);
     toast.success("Code copied to clipboard.");
   };
 
+  /** Strips local test cases, copies the clean solution, and opens the problem on LeetCode. */
   const handleSubmit = async () => {
     await navigator.clipboard.writeText(stripTestBlock(code, language));
     toast.success("Solution copied to clipboard.");
     window.open(`https://leetcode.com/problems/${titleSlug}/`, "_blank");
   };
 
+  /** Executes the current code via the internal execute API and displays stdout/stderr in the output panel. */
   const handleRun = async () => {
     setIsRunning(true);
     setIsError(false);
@@ -169,7 +193,7 @@ export function ImplementationSection({
                 </TooltipContent>
               </Tooltip>
               {code.length - getSnippet(language).length >= FIELD.threshold && (
-                <CheckIcon className="ml-auto size-4 text-brand-secondary" />
+                <CheckIcon className="text-brand-secondary ml-auto size-4" />
               )}
             </div>
             <div className="relative flex-1 overflow-hidden">
@@ -307,7 +331,7 @@ export function ImplementationSection({
                 </div>
               ) : (
                 <span
-                  className={`whitespace-pre-wrap font-mono text-sm ${isError ? "text-destructive" : "text-muted-foreground"}`}
+                  className={`font-mono text-sm whitespace-pre-wrap ${isError ? "text-destructive" : "text-muted-foreground"}`}
                 >
                   {output}
                 </span>
@@ -317,7 +341,7 @@ export function ImplementationSection({
         )}
 
         {/* ChatBox — col 2, row 1 on desktop */}
-        <div className="hidden sm:flex h-full flex-col sm:col-start-2 sm:row-start-1">
+        <div className="hidden h-full flex-col sm:col-start-2 sm:row-start-1 sm:flex">
           <ChatBox
             messages={messages}
             onSend={onSend}

@@ -8,6 +8,13 @@ import { getClientDb } from "@/lib/firebase/client";
 import { User } from "@/types/user";
 import { useAuth } from "./useAuth";
 
+/**
+ * Subscribes to the current user's Firestore document and returns how many
+ * practice sessions they have remaining today.
+ *
+ * Returns `null` for `remaining` if the user has a non-"user" role (i.e. no
+ * limit applies). Reflects real-time updates via a Firestore `onSnapshot` listener.
+ */
 export function useSessionsRemaining(): {
   remaining: number | null;
   isLoading: boolean;
