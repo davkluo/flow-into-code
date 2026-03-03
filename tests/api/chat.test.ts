@@ -56,7 +56,12 @@ describe("POST /api/chat", () => {
     vi.mocked(verifyFirebaseToken).mockResolvedValue("uid");
     const mockStream = new ReadableStream({
       start(controller) {
-        controller.enqueue(new TextEncoder().encode("data: hello\n\n"));
+        controller.enqueue(
+          new TextEncoder().encode('data: {"delta":"hello"}\n\n'),
+        );
+        controller.enqueue(
+          new TextEncoder().encode("data: [DONE]\n\n"),
+        );
         controller.close();
       },
     });
