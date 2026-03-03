@@ -43,28 +43,63 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithProvider = async (provider: FirebaseAuthProvider) => {
     setStatus("loading");
+
+    let credential;
     try {
-      const credential = await signInWithPopup(getClientAuth(), provider);
-      const token = await credential.user.getIdToken();
-      await authFetch(USER_INIT_API_PATH, { method: "POST" }, token);
-      toast.success("Signed in successfully", {
-        description: "Welcome back!",
-      });
+      credential = await signInWithPopup(getClientAuth(), provider);
     } catch (error: unknown) {
+      const code =
+        typeof error === "object" && error !== null && "code" in error
+          ? String(error.code)
+          : null;
+
       if (
-        typeof error === "object" &&
-        error !== null &&
-        "code" in error &&
-        error.code === "auth/account-exists-with-different-credential"
+        code === "auth/account-exists-with-different-credential"
       ) {
         toast.error("Account already exists", {
           description:
             "An account already exists with this email. Please sign in with the provider you used originally.",
         });
+      } else if (code === "auth/too-many-requests") {
+        toast.error("Too many sign-in attempts", {
+          description: "Please try again later.",
+        });
+      } else if (code === "auth/popup-closed-by-user") {
+        // User intentionally dismissed the popup; fail silently.
       } else {
+        toast.error("Sign-in failed", {
+          description: "Please try again.",
+        });
         console.error("Sign-in error:", error);
       }
+
       setStatus("unauthenticated");
+      return;
+    }
+
+    try {
+      const token = await credential.user.getIdToken();
+      const res = await authFetch(USER_INIT_API_PATH, { method: "POST" }, token);
+
+      if (!res.ok) {
+        await signOut(getClientAuth());
+        setStatus("unauthenticated");
+        toast.error("Sign-in failed", {
+          description: "Unable to initialize your account. Please try again.",
+        });
+        return;
+      } else {
+        toast.success("Signed in successfully", {
+          description: "Welcome back!",
+        });
+      }
+    } catch (error: unknown) {
+      await signOut(getClientAuth());
+      setStatus("unauthenticated");
+      toast.error("Sign-in failed", {
+        description: "Please try again.",
+      });
+      console.error("Sign-in error:", error);
     }
   };
 
