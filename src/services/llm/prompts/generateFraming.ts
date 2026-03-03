@@ -7,6 +7,7 @@ export interface GenerateFramingPromptInput {
   examples?: { input: string; output: string }[];
 }
 
+/** Construct the prompt for generating real-world framings for a problem. */
 export function buildGenerateFramingPrompt(
   input: GenerateFramingPromptInput,
 ): string {

@@ -9,6 +9,9 @@ export interface GenerateCasesPromptInput {
   framing: Framing;
 }
 
+/**
+ * Construct the prompt for generating test cases and edge cases for a problem.
+ */
 export function buildGenerateCasesPrompt(
   input: GenerateCasesPromptInput,
 ): string {

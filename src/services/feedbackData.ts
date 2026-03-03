@@ -20,6 +20,11 @@ const PROMPT_VERSIONS: Record<FeedbackLayer, number> = {
   gradingCriteria: GENERATE_GRADING_CRITERIA_PROMPT_VERSION,
 };
 
+/**
+ * Determines whether a given processing layer is up-to-date based on its
+ * metadata, the current prompt version, and whether the underlying problem
+ * schema is outdated.
+ */
 function isLayerUpToDate(
   meta: ProcessingLayerMeta | undefined,
   currentPromptVersion: number,
@@ -32,6 +37,11 @@ function isLayerUpToDate(
   );
 }
 
+/**
+ * Retrieves the feedback layer of data for a problem, including solutions and
+ * grading criteria. If any layer is missing or outdated, returns the
+ * appropriate status to indicate whether generation is needed or in progress.
+ */
 export async function getFeedbackData(slug: string): Promise<ProcessingResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
@@ -62,6 +72,10 @@ export async function getFeedbackData(slug: string): Promise<ProcessingResult> {
   return { status: "not_found" };
 }
 
+/**
+ * Claims feedback data generation for a problem and then generates any missing
+ * data fields by calling the appropriate LLM functions.
+ */
 export async function generateFeedbackDataForProblem(
   slug: string,
 ): Promise<ProblemDetails | null> {

@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { Framing } from "@/types/problem";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGenerateFramingPrompt,
   GENERATE_FRAMING_PROMPT_VERSION,
   GenerateFramingPromptInput,
-  buildGenerateFramingPrompt,
 } from "./prompts/generateFraming";
 
 const FramingSchema = z.object({
@@ -13,6 +13,10 @@ const FramingSchema = z.object({
   systems: z.string().nullable(),
 });
 
+/**
+ * Calls LLM to generate a canonical framing and optional backend/systems for a
+ * problem
+ */
 export async function generateFraming(
   input: GenerateFramingPromptInput,
 ): Promise<LLMGenerationResult<Framing>> {
@@ -28,8 +32,10 @@ export async function generateFraming(
   return {
     data: {
       canonical: data.canonical,
-      ...(data.backend !== null && data.backend !== "null" && { backend: data.backend }),
-      ...(data.systems !== null && data.systems !== "null" && { systems: data.systems }),
+      ...(data.backend !== null &&
+        data.backend !== "null" && { backend: data.backend }),
+      ...(data.systems !== null &&
+        data.systems !== "null" && { systems: data.systems }),
     },
     model,
     promptVersion: GENERATE_FRAMING_PROMPT_VERSION,

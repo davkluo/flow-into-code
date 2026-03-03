@@ -5,6 +5,7 @@ export interface ExtractExamplesPromptInput {
   originalContent: string;
 }
 
+/** Construct the prompt for extracting examples from a problem description. */
 export function buildExtractExamplesPrompt(
   input: ExtractExamplesPromptInput,
 ): string {

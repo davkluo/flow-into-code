@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGenerateHintsPrompt,
   GENERATE_HINTS_PROMPT_VERSION,
   GenerateHintsPromptInput,
-  buildGenerateHintsPrompt,
 } from "./prompts/generateHints";
 
 const HintsSchema = z.object({
@@ -15,6 +15,7 @@ const HintsSchema = z.object({
   ),
 });
 
+/** Calls LLM to generate hints for a problem */
 export async function generateHints(
   input: GenerateHintsPromptInput,
 ): Promise<LLMGenerationResult<{ level: number; text: string }[]>> {

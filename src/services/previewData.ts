@@ -1,3 +1,4 @@
+import { SUPPORTED_LANGS } from "@/constants/languages";
 import { stripHtml } from "@/lib/formatting";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
@@ -5,7 +6,6 @@ import {
   fetchLCProblemCodeSnippets,
   fetchLCProblemContent,
 } from "@/services/leetcode/client";
-import { SUPPORTED_LANGS } from "@/constants/languages";
 import { extractExamples } from "@/services/llm/extractExamples";
 import { generateFraming } from "@/services/llm/generateFraming";
 import { GENERATE_FRAMING_PROMPT_VERSION } from "@/services/llm/prompts/generateFraming";
@@ -15,6 +15,12 @@ import {
   ProcessingResult,
 } from "@/types/problem";
 
+/**
+ * Retrieves the preview layer of data for a problem, which consists of
+ * the problem description, canonical framing, and examples. If the framing is
+ * missing or outdated, returns the appropriate status to indicate whether
+ * generation is needed or in progress.
+ */
 export async function getPreviewData(slug: string): Promise<ProcessingResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
@@ -41,6 +47,9 @@ export async function getPreviewData(slug: string): Promise<ProcessingResult> {
   return { status: "not_found" };
 }
 
+/**
+ * Claim preview data generation for a problem and calls LLM for generation
+ */
 export async function generatePreviewData(
   slug: string,
 ): Promise<ProblemDetails | null> {

@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGeneratePitfallsPrompt,
   GENERATE_PITFALLS_PROMPT_VERSION,
   GeneratePitfallsPromptInput,
-  buildGeneratePitfallsPrompt,
 } from "./prompts/generatePitfalls";
 
 const PitfallsSchema = z.object({
@@ -15,6 +15,7 @@ const PitfallsSchema = z.object({
   ),
 });
 
+/** Calls LLM to generate common pitfalls for a problem */
 export async function generatePitfalls(
   input: GeneratePitfallsPromptInput,
 ): Promise<LLMGenerationResult<{ level: number; text: string }[]>> {

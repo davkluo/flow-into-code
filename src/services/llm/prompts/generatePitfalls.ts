@@ -9,6 +9,7 @@ export interface GeneratePitfallsPromptInput {
   framing: Framing;
 }
 
+/** Construct the prompt for generating common pitfalls for a problem. */
 export function buildGeneratePitfallsPrompt(
   input: GeneratePitfallsPromptInput,
 ): string {

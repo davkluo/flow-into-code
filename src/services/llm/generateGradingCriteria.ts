@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { GradingCriterion } from "@/types/problem";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGenerateGradingCriteriaPrompt,
   GENERATE_GRADING_CRITERIA_PROMPT_VERSION,
   GenerateGradingCriteriaPromptInput,
-  buildGenerateGradingCriteriaPrompt,
 } from "./prompts/generateGradingCriteria";
-import { GradingCriterion } from "@/types/problem";
 
 const GradingCriterionSchema = z.object({
   category: z.enum([
@@ -23,6 +23,7 @@ const GradingCriteriaSchema = z.object({
   gradingCriteria: z.array(GradingCriterionSchema),
 });
 
+/** Calls LLM to generate grading criteria for a problem */
 export async function generateGradingCriteria(
   input: GenerateGradingCriteriaPromptInput,
 ): Promise<LLMGenerationResult<{ gradingCriteria: GradingCriterion[] }>> {

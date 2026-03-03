@@ -1,4 +1,5 @@
 import { SECTION_ORDER } from "@/constants/practice";
+import { LLMState } from "@/hooks/useLLM";
 import { DailyLimitExceededError } from "@/lib/errors";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
@@ -9,10 +10,12 @@ import {
   generateSectionFeedback,
   generateSessionSummary,
 } from "@/services/llm/generateSessionFeedback";
-import { LLMState } from "@/hooks/useLLM";
 import { SectionKey, SectionSnapshots } from "@/types/practice";
 import { CategoryFeedback, Session, SessionFeedback } from "@/types/session";
 
+/**
+ * Generate feedback for a user's practice session
+ */
 export async function generateSessionFeedback(
   uid: string,
   problemSlug: string,
@@ -40,7 +43,9 @@ export async function generateSessionFeedback(
   const gradingCriteria = details.derived?.gradingCriteria;
 
   if (!framing) {
-    throw new Error(`Problem framing missing for feedback generation: ${problemSlug}`);
+    throw new Error(
+      `Problem framing missing for feedback generation: ${problemSlug}`,
+    );
   }
   if (!gradingCriteria || gradingCriteria.length === 0) {
     throw new Error(

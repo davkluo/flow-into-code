@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { Example } from "@/types/problem";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildExtractExamplesPrompt,
   EXTRACT_EXAMPLES_PROMPT_VERSION,
   ExtractExamplesPromptInput,
-  buildExtractExamplesPrompt,
 } from "./prompts/extractExamples";
 
 // OpenAI structured outputs require a top-level object schema
@@ -18,6 +18,7 @@ const ExamplesSchema = z.object({
   ),
 });
 
+/** Calls LLM to extract examples from problem content */
 export async function extractExamples(
   input: ExtractExamplesPromptInput,
 ): Promise<LLMGenerationResult<Example[]>> {

@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { ProblemSolution } from "@/types/problem";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGenerateSolutionsPrompt,
   GENERATE_SOLUTIONS_PROMPT_VERSION,
   GenerateSolutionsPromptInput,
-  buildGenerateSolutionsPrompt,
 } from "./prompts/generateSolutions";
-import { ProblemSolution } from "@/types/problem";
 
 const SolutionSchema = z.object({
   approach: z.string(),
@@ -20,6 +20,7 @@ const SolutionsSchema = z.object({
   solutions: z.array(SolutionSchema),
 });
 
+/** Calls LLM to generate canonical solutions for a problem */
 export async function generateSolutions(
   input: GenerateSolutionsPromptInput,
 ): Promise<LLMGenerationResult<{ solutions: ProblemSolution[] }>> {

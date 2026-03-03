@@ -28,6 +28,12 @@ interface CallLLMChatStreamInput {
   temperature?: number;
 }
 
+/**
+ * Call OpenAI's structured output API with a Zod schema, and get back the
+ * parsed result.
+ *
+ * Throws an error if the LLM fails to produce valid output.
+ */
 export async function callLLMStructured<T extends z.ZodType>({
   prompt,
   schema,
@@ -52,6 +58,13 @@ export async function callLLMStructured<T extends z.ZodType>({
   return { data: response.output_parsed, model };
 }
 
+/**
+ * Call OpenAI's chat completion API with streaming enabled, and return a
+ * ReadableStream of the deltas as they come in. Each chunk is a JSON string
+ * with this shape: { data: string }.
+ *
+ * The stream will end with a final chunk: { data: "[DONE]" }.
+ */
 export async function streamChatCompletion({
   messages,
   model = DEFAULT_MODEL,

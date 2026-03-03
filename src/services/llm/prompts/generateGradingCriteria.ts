@@ -12,6 +12,7 @@ export interface GenerateGradingCriteriaPromptInput {
   solutions: ProblemSolution[];
 }
 
+/** Format test cases for inclusion in a prompt */
 function formatTestCases(cases: TestCase[]): string {
   return cases
     .map((tc, i) => {
@@ -25,6 +26,7 @@ function formatTestCases(cases: TestCase[]): string {
     .join("\n");
 }
 
+/** Format reference solutions for inclusion in a prompt */
 function formatSolutions(solutions: ProblemSolution[]): string {
   return solutions
     .map(
@@ -37,6 +39,7 @@ function formatSolutions(solutions: ProblemSolution[]): string {
     .join("\n\n");
 }
 
+/** Construct the prompt for generating grading criteria for a problem. */
 export function buildGenerateGradingCriteriaPrompt(
   input: GenerateGradingCriteriaPromptInput,
 ): string {

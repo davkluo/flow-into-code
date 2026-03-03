@@ -9,6 +9,7 @@ export interface GenerateHintsPromptInput {
   framing: Framing;
 }
 
+/** Construct the prompt for generating hints for a problem. */
 export function buildGenerateHintsPrompt(
   input: GenerateHintsPromptInput,
 ): string {

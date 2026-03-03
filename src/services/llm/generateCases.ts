@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { TestCase } from "@/types/problem";
-import { LLMGenerationResult, callLLMStructured } from "./client";
+import { callLLMStructured, LLMGenerationResult } from "./client";
 import {
+  buildGenerateCasesPrompt,
   GENERATE_CASES_PROMPT_VERSION,
   GenerateCasesPromptInput,
-  buildGenerateCasesPrompt,
 } from "./prompts/generateCases";
 
 const TestCaseSchema = z.object({
@@ -19,20 +19,24 @@ const CasesSchema = z.object({
   edgeCases: z.array(TestCaseSchema),
 });
 
-function stripNulls(
-  raw: z.infer<typeof TestCaseSchema>,
-): TestCase {
+/** Remove nulls from a TestCase object */
+function stripNulls(raw: z.infer<typeof TestCaseSchema>): TestCase {
   return {
     input: raw.input,
     expectedOutput: raw.expectedOutput,
-    ...(raw.description !== null && raw.description !== "null" && { description: raw.description }),
-    ...(raw.explanation !== null && raw.explanation !== "null" && { explanation: raw.explanation }),
+    ...(raw.description !== null &&
+      raw.description !== "null" && { description: raw.description }),
+    ...(raw.explanation !== null &&
+      raw.explanation !== "null" && { explanation: raw.explanation }),
   };
 }
 
+/** Calls LLM to generate test cases and edge cases for a problem */
 export async function generateCases(
   input: GenerateCasesPromptInput,
-): Promise<LLMGenerationResult<{ testCases: TestCase[]; edgeCases: TestCase[] }>> {
+): Promise<
+  LLMGenerationResult<{ testCases: TestCase[]; edgeCases: TestCase[] }>
+> {
   const prompt = buildGenerateCasesPrompt(input);
 
   const { data, model } = await callLLMStructured({

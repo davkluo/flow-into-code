@@ -11,6 +11,7 @@ export interface GenerateSolutionsPromptInput {
   edgeCases: TestCase[];
 }
 
+/** Format test cases for inclusion in a prompt */
 function formatTestCases(cases: TestCase[]): string {
   return cases
     .map((tc, i) => {
@@ -24,6 +25,7 @@ function formatTestCases(cases: TestCase[]): string {
     .join("\n");
 }
 
+/** Construct the prompt for generating reference solutions for a problem. */
 export function buildGenerateSolutionsPrompt(
   input: GenerateSolutionsPromptInput,
 ): string {

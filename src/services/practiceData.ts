@@ -28,6 +28,11 @@ const PROMPT_VERSIONS: Record<PracticeLayer, number> = {
   pitfalls: GENERATE_PITFALLS_PROMPT_VERSION,
 };
 
+/**
+ * Determines whether a given processing layer is up-to-date based on its
+ * metadata, the current prompt version, and whether the underlying problem
+ * schema is outdated.
+ */
 function isLayerUpToDate(
   meta: ProcessingLayerMeta | undefined,
   currentPromptVersion: number,
@@ -40,6 +45,12 @@ function isLayerUpToDate(
   );
 }
 
+/**
+ * Retrieves the practice layer of data for a problem, including hints,
+ * pitfalls, and test/edge cases. If any layer is missing or outdated, returns
+ * the appropriate status to indicate whether generation is needed or in
+ * progress.
+ */
 export async function getPracticeData(slug: string): Promise<ProcessingResult> {
   const details = await problemDetailsRepo.getBySlug(slug);
 
@@ -70,6 +81,11 @@ export async function getPracticeData(slug: string): Promise<ProcessingResult> {
   return { status: "not_found" };
 }
 
+/**
+ * Claims the practice layers for generation. If already claimed by another
+ * process, returns the appropriate status. If claimed successfully, proceeds to
+ * generate any layers that are missing or outdated.
+ */
 export async function generatePracticeData(
   slug: string,
 ): Promise<ProblemDetails | null> {

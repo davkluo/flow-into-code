@@ -70,6 +70,11 @@ General signals to consider:
 // Shared snapshot formatter
 // ---------------------------------------------------------------------------
 
+/**
+ * Format the candidate's snapshots for a section into a readable string. Each
+ * snapshot's fields are labeled and indented for clarity. If no snapshots were
+ * submitted, return a message indicating that.
+ */
 function formatSnapshots(snapshots: { data: SectionSnapshotData }[]): string {
   if (snapshots.length === 0) {
     return "The candidate did not provide any written work in this section.";
@@ -95,14 +100,14 @@ function formatSnapshots(snapshots: { data: SectionSnapshotData }[]): string {
     .join("\n\n");
 }
 
+/** Format a section's chat log for inclusion in a prompt */
 function formatSectionChatLog(messages: SessionMessage[]): string {
   if (messages.length === 0) {
     return "The candidate did not use the chat in this section.";
   }
   return messages
     .map(
-      (m) =>
-        `${m.role === "user" ? "Candidate" : "Interviewer"}: ${m.content}`,
+      (m) => `${m.role === "user" ? "Candidate" : "Interviewer"}: ${m.content}`,
     )
     .join("\n");
 }
@@ -124,6 +129,7 @@ export interface GradeSectionPromptInput {
   chatLog: SessionMessage[]; // filtered to this section only
 }
 
+/** Construct the prompt for grading a single section of a session. */
 export function buildGradeSectionPrompt(
   input: GradeSectionPromptInput,
 ): string {
@@ -197,6 +203,7 @@ export interface SessionSummaryPromptInput {
   fullChatLog: SessionMessage[]; // all sections combined, in order
 }
 
+/** Format section results for inclusion in a session summary prompt */
 function formatSectionResults(
   results: Partial<Record<SectionKey, CategoryFeedback>>,
 ): string {
@@ -209,6 +216,7 @@ function formatSectionResults(
     .join("\n\n");
 }
 
+/** Format full chat log for inclusion in a session summary prompt */
 function formatFullChatLog(messages: SessionMessage[]): string {
   if (messages.length === 0) {
     return "The candidate did not use the chat at any point during the session.";
@@ -222,6 +230,7 @@ function formatFullChatLog(messages: SessionMessage[]): string {
     .join("\n");
 }
 
+/** Construct the prompt for generating a session summary */
 export function buildSessionSummaryPrompt(
   input: SessionSummaryPromptInput,
 ): string {
