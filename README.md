@@ -73,6 +73,22 @@ const firebaseConfig = {
 };
 ```
 
+### Firebase Security Patterns
+
+This project assumes Firebase client config is public and secures access using layered controls:
+
+- **Firestore rules**: versioned in [firestore.rules](./firestore.rules). Client reads are limited to `get` on `/users/{uid}` for the authenticated owner. Client writes are denied.
+- **Server-only Firestore writes**: all mutations run through Next.js API routes + Firebase Admin SDK.
+- **API key restrictions (GCP)**:
+  - Application restriction: `HTTP referrers`
+  - API allowlist: `Identity Toolkit API`, `Cloud Firestore API`, `Firebase Installations API`
+- **Firebase Auth restrictions**:
+  - Only Google/GitHub providers enabled
+  - Authorized domains restricted to active app domains
+  - Sign-up quota per IP enabled in Firebase Auth settings
+
+For local development before production cutover, `localhost` can be temporarily included in both API key referrers and Firebase Auth authorized domains. After deployment, remove `localhost` and rotate the web API key.
+
 ### 4. Configure environment variables
 
 Copy the example file and fill in your credentials:
