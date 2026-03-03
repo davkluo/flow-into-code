@@ -171,7 +171,7 @@ const Navbar = () => {
               {status === "authenticated" ? (
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Avatar>
+                    <Avatar data-testid="nav-user-avatar">
                       <AvatarImage
                         src={user?.photoURL || ""}
                         alt="User Avatar"

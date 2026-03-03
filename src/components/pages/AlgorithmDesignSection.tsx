@@ -60,7 +60,7 @@ export function AlgorithmDesignSection({
                 <CheckIcon className="ml-auto size-4 text-brand-secondary" />
               )}
             </div>
-            <div className="relative flex-1 overflow-hidden">
+            <div className="relative flex-1 overflow-hidden" data-testid="pseudocode-editor">
               <div className="absolute inset-0">
                 <PseudocodeEditor
                   value={pseudocode}
@@ -77,6 +77,7 @@ export function AlgorithmDesignSection({
             onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
+            testIdPrefix="algorithm-chat"
             title="AI Interviewer &mdash; Walk Through Your Algorithm"
             titleTooltip={
               <div className="space-y-1.5">

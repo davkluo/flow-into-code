@@ -127,7 +127,7 @@ export function UnderstandingSection({
               className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border"
             >
               <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
-                <span className="text-sm font-medium">{field.label}</span>
+                <label htmlFor={field.key} className="text-sm font-medium">{field.label}</label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
@@ -144,6 +144,8 @@ export function UnderstandingSection({
                 )}
               </div>
               <Textarea
+                id={field.key}
+                data-testid={`understanding-${field.key}-field`}
                 value={fields[field.key]}
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
@@ -158,6 +160,7 @@ export function UnderstandingSection({
             onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
+            testIdPrefix="understanding-chat"
             title="AI Interviewer &mdash; Ask Clarifying Questions"
             titleTooltip={
               <div className="space-y-1.5">

@@ -196,7 +196,10 @@ export function ImplementationSection({
                 <CheckIcon className="text-brand-secondary ml-auto size-4" />
               )}
             </div>
-            <div className="relative flex-1 overflow-hidden">
+            <div
+              className="relative flex-1 overflow-hidden"
+              data-testid="code-editor"
+            >
               <div className="absolute inset-0">
                 <CodeEditor
                   value={code}
@@ -347,6 +350,7 @@ export function ImplementationSection({
             onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
+            testIdPrefix="implementation-chat"
             title="AI Interviewer &mdash; Walk Through Your Code"
             titleTooltip={
               <div className="space-y-1.5">

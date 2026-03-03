@@ -808,6 +808,7 @@ export function PracticeSession() {
                   }
                   cooldownUntil={llmCooldownUntil}
                   layoutMode="fixed"
+                  testIdPrefix="mobile-chat"
                 />
               </div>
             </SheetContent>

@@ -65,7 +65,7 @@ export function ApproachAndReasoningSection({
               className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border"
             >
               <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
-                <span className="text-sm font-medium">{field.label}</span>
+                <label htmlFor={field.key} className="text-sm font-medium">{field.label}</label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
@@ -81,6 +81,8 @@ export function ApproachAndReasoningSection({
                 )}
               </div>
               <Textarea
+                id={field.key}
+                data-testid={`approach-${field.key}-field`}
                 value={fields[field.key]}
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
@@ -96,6 +98,7 @@ export function ApproachAndReasoningSection({
             onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
+            testIdPrefix="approach-chat"
             title="AI Interviewer &mdash; Think Out Loud"
             titleTooltip={
               <div className="space-y-1.5">

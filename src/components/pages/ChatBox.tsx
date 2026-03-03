@@ -25,6 +25,7 @@ interface ChatBoxProps {
   onSend: (message: string) => Promise<void>;
   cooldownUntil?: number;
   layoutMode?: "grow" | "fixed";
+  testIdPrefix?: string;
   title?: string;
   titleTooltip?: React.ReactNode;
   placeholder?: string;
@@ -55,6 +56,7 @@ export function ChatBox({
   onSend,
   cooldownUntil = 0,
   layoutMode = "grow",
+  testIdPrefix,
   title,
   titleTooltip,
   placeholder = "Type your message.",
@@ -123,9 +125,13 @@ export function ChatBox({
     messagesLength > 0 &&
     (lastMessage.role === "user" ||
       (lastMessage.role === "assistant" && lastMessage.content === ""));
+  const containerTestId = testIdPrefix ? `${testIdPrefix}-box` : undefined;
+  const inputTestId = testIdPrefix ? `${testIdPrefix}-input` : undefined;
+  const sendButtonTestId = testIdPrefix ? `${testIdPrefix}-send` : undefined;
 
   return (
     <div
+      data-testid={containerTestId}
       className={cn(
         "flex w-full flex-col gap-4 rounded-md",
         layoutMode === "fixed" && "h-full",
@@ -181,6 +187,7 @@ export function ChatBox({
       <div className="group focus-within:border-ring border-input relative flex flex-col rounded-md border focus-within:border">
         <Textarea
           ref={textareaRef}
+          data-testid={inputTestId}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -197,6 +204,8 @@ export function ChatBox({
           </div>
 
           <Button
+            data-testid={sendButtonTestId}
+            aria-label="Send message"
             disabled={!input.trim() || secondsLeft > 0}
             onClick={handleSend}
             className="group/btn h-8 w-8 cursor-auto gap-0 overflow-hidden rounded-full p-0 transition-[width,padding,gap] duration-200 sm:hover:w-[5.75rem] sm:hover:gap-2 sm:hover:pr-3 sm:hover:pl-2 disabled:sm:hover:w-8"

@@ -65,7 +65,7 @@ export function ComplexityAnalysisSection({
               className="border-input flex min-h-0 flex-1 flex-col overflow-hidden rounded-md border"
             >
               <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
-                <span className="text-sm font-medium">{field.label}</span>
+                <label htmlFor={field.key} className="text-sm font-medium">{field.label}</label>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <span className="inline-flex">
@@ -81,6 +81,8 @@ export function ComplexityAnalysisSection({
                 )}
               </div>
               <Textarea
+                id={field.key}
+                data-testid={`complexity-${field.key}-field`}
                 value={fields[field.key]}
                 onChange={(e) => onFieldChange(field.key, e.target.value)}
                 placeholder={field.placeholder}
@@ -96,6 +98,7 @@ export function ComplexityAnalysisSection({
             onSend={onSend}
             cooldownUntil={cooldownUntil}
             layoutMode="fixed"
+            testIdPrefix="complexity-chat"
             title="AI Interviewer &mdash; Justify Your Analysis"
             titleTooltip={
               <div className="space-y-1.5">
