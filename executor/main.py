@@ -14,6 +14,7 @@ MEMORY_LIMIT = "64m"
 CPU_LIMIT = "0.25"
 EXECUTION_IMAGE = "python:3.12-alpine"
 SUPPORTED_LANGUAGES = { "python3" }
+RUNS_BASE_DIR = "/tmp/code-runs"
 
 PREAMBLES = {
     "python3": (
@@ -45,7 +46,7 @@ async def run_code(req: RunRequest):
         raise HTTPException(status_code=400, detail="Code too long")
     
     run_id = str(uuid.uuid4())
-    work_dir = f"/tmp/code-runs/{run_id}"
+    work_dir = os.path.join(RUNS_BASE_DIR, run_id)
     os.makedirs(work_dir, exist_ok=True)
 
     try:
