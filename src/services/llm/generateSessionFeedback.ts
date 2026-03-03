@@ -11,7 +11,7 @@ import {
 
 // Coerces the string literal "null" → null to handle known OpenAI structured
 // output quirk where nullable fields sometimes arrive as the string "null".
-const CategoryFeedbackSchema = z.object({
+export const CategoryFeedbackSchema = z.object({
   score: z
     .union([z.number(), z.null(), z.literal("null").transform(() => null)])
     .nullable(),

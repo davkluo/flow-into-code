@@ -7,7 +7,7 @@ import {
   GenerateGradingCriteriaPromptInput,
 } from "./prompts/generateGradingCriteria";
 
-const GradingCriterionSchema = z.object({
+export const GradingCriterionSchema = z.object({
   category: z.enum([
     "problem_understanding",
     "approach_and_reasoning",

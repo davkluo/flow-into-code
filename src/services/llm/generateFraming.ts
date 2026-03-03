@@ -7,7 +7,7 @@ import {
   GenerateFramingPromptInput,
 } from "./prompts/generateFraming";
 
-const FramingSchema = z.object({
+export const FramingSchema = z.object({
   canonical: z.string(),
   backend: z.string().nullable(), // OpenAI structured outputs require nullable() over optional()
   systems: z.string().nullable(),

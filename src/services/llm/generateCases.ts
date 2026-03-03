@@ -7,7 +7,7 @@ import {
   GenerateCasesPromptInput,
 } from "./prompts/generateCases";
 
-const TestCaseSchema = z.object({
+export const TestCaseSchema = z.object({
   input: z.string(),
   expectedOutput: z.string(),
   description: z.string().nullable(),

@@ -8,7 +8,7 @@ import {
 } from "./prompts/extractExamples";
 
 // OpenAI structured outputs require a top-level object schema
-const ExamplesSchema = z.object({
+export const ExamplesSchema = z.object({
   examples: z.array(
     z.object({
       input: z.string(),

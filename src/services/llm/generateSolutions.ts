@@ -7,7 +7,7 @@ import {
   GenerateSolutionsPromptInput,
 } from "./prompts/generateSolutions";
 
-const SolutionSchema = z.object({
+export const SolutionSchema = z.object({
   approach: z.string(),
   explanation: z.string(),
   algorithm: z.string(),

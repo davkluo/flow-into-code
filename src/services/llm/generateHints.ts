@@ -6,7 +6,7 @@ import {
   GenerateHintsPromptInput,
 } from "./prompts/generateHints";
 
-const HintsSchema = z.object({
+export const HintsSchema = z.object({
   hints: z.array(
     z.object({
       level: z.number(),

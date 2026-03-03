@@ -6,7 +6,7 @@ import {
   GeneratePitfallsPromptInput,
 } from "./prompts/generatePitfalls";
 
-const PitfallsSchema = z.object({
+export const PitfallsSchema = z.object({
   pitfalls: z.array(
     z.object({
       level: z.number(),
