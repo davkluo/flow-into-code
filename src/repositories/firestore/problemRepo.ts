@@ -1,7 +1,13 @@
 import { getAdminDb } from "@/lib/firebase/admin";
 import { PROBLEMS_COLLECTION } from "@/constants/firestore";
 import { computeSearchTerms } from "@/lib/computeSearchTerms";
+import { normalizeToWords } from "@/lib/normalize";
 import { Problem } from "@/types/problem";
+
+// Firestore's array-contains-any supports at most 10 values.
+const MAX_SEARCH_TOKENS = 10;
+
+type StoredProblem = Problem & { searchTerms: string[] };
 
 const COLLECTION = PROBLEMS_COLLECTION;
 const FALLBACK_ID_NUMBER = 9999; // Used when id cannot be parsed; sorts to end of list
@@ -65,12 +71,22 @@ export async function getProblemPage({
   const collectionRef = getAdminDb().collection(COLLECTION);
 
   if (q) {
-    const searchQuery = collectionRef
-      .where("searchTerms", "array-contains", q)
-      .orderBy("idNumber");
+    const tokens = normalizeToWords(q).slice(0, MAX_SEARCH_TOKENS);
 
-    const snap = await searchQuery.get();
-    const problems = snap.docs.map((d) => d.data() as Problem);
+    if (tokens.length === 0) {
+      return { problems: [], nextCursor: undefined, hasMore: false };
+    }
+
+    const snap = await collectionRef
+      .where("searchTerms", "array-contains-any", tokens)
+      .orderBy("idNumber")
+      .get();
+
+    const docs = snap.docs.map((d) => d.data() as StoredProblem);
+    const problems: Problem[] =
+      tokens.length === 1
+        ? docs
+        : docs.filter((p) => tokens.every((t) => p.searchTerms.includes(t)));
 
     return {
       problems,
