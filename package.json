@@ -7,8 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "npm run test:js && npm run test:py",
+    "test:watch": "vitest",
+    "test:js": "vitest run",
+    "test:py": "python3 -m pytest executor/tests",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.6",
@@ -60,6 +63,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@ianvs/prettier-plugin-sort-imports": "^4.5.1",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/lodash": "^4.17.20",
     "@types/node": "^20",

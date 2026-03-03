@@ -6,6 +6,7 @@
 .pnp.*
 .yarn/*
 /executor/.venv
+**/__pycache__
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
@@ -13,6 +14,9 @@
 
 # testing
 /coverage
+/playwright/.auth
+/playwright-report
+/test-results
 
 # next.js
 /.next/
