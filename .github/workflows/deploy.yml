@@ -152,12 +152,10 @@ jobs:
             "commands": [
               "set -euo pipefail",
               "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
-              "APP_IMAGE=${ECR_REGISTRY}/flow-into-code/app:${GITHUB_SHA}",
-              "EXECUTOR_IMAGE=${ECR_REGISTRY}/flow-into-code/executor:${GITHUB_SHA}",
               "cd /home/ec2-user/flow-into-code",
               "git pull --ff-only origin main",
-              "APP_IMAGE=\\$APP_IMAGE EXECUTOR_IMAGE=\\$EXECUTOR_IMAGE docker compose -f docker-compose.prod.yml pull",
-              "APP_IMAGE=\\$APP_IMAGE EXECUTOR_IMAGE=\\$EXECUTOR_IMAGE docker compose -f docker-compose.prod.yml up -d",
+              "APP_IMAGE=${ECR_REGISTRY}/flow-into-code/app:${GITHUB_SHA} EXECUTOR_IMAGE=${ECR_REGISTRY}/flow-into-code/executor:${GITHUB_SHA} docker compose -f docker-compose.prod.yml pull",
+              "APP_IMAGE=${ECR_REGISTRY}/flow-into-code/app:${GITHUB_SHA} EXECUTOR_IMAGE=${ECR_REGISTRY}/flow-into-code/executor:${GITHUB_SHA} docker compose -f docker-compose.prod.yml up -d",
               "docker image prune -f"
             ]
           }
