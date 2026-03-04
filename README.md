@@ -106,8 +106,9 @@ cp .env.example .env.local
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint                                                        |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST auth token                                                    |
 | `EXECUTOR_URL`        | URL for the code execution service — leave unset to use the default Docker DNS value  |
+| `FIREBASE_BROWSER_API_KEY` | Firebase web API key used by Playwright E2E auth bootstrap                         |
 
-> These variables are server-only secrets and must never be committed or exposed publicly.
+> Most variables above are server-only secrets and must never be committed or exposed publicly. `FIREBASE_BROWSER_API_KEY` is a web key used for E2E bootstrap.
 
 ### 4. Build and start all services
 
