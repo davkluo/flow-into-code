@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { CategoryFeedback } from "@/types/session";
 import { SectionKey } from "@/types/practice";
@@ -76,14 +76,14 @@ export function SectionFeedbackCard({
             <div className="flex items-center gap-2">
               <span className="text-base font-medium">{title}</span>
               {feedback.score === null ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                <AdaptiveTooltip>
+                  <AdaptiveTooltipTrigger asChild>
                     <span className="text-muted-foreground cursor-default text-sm font-semibold">
                       —
                     </span>
-                  </TooltipTrigger>
-                  <TooltipContent>Insufficient content to review</TooltipContent>
-                </Tooltip>
+                  </AdaptiveTooltipTrigger>
+                  <AdaptiveTooltipContent>Insufficient content to review</AdaptiveTooltipContent>
+                </AdaptiveTooltip>
               ) : (
                 <span
                   className={cn(

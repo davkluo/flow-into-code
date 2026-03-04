@@ -5,10 +5,10 @@ import { Item, ItemContent } from "@/components/ui/item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { Problem, ProblemDetails } from "@/types/problem";
 
 interface ProblemDetailContentProps {
@@ -31,8 +31,8 @@ export function ProblemDetailContent({
       <div className="mt-2">
         <h3 className="text-lg font-semibold">
           {problem.id}. {problem.title}
-          <Tooltip>
-            <TooltipTrigger asChild>
+          <AdaptiveTooltip>
+            <AdaptiveTooltipTrigger asChild>
               <a
                 href={`https://leetcode.com/problems/${problem.titleSlug}/description/`}
                 target="_blank"
@@ -41,9 +41,9 @@ export function ProblemDetailContent({
               >
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
-            </TooltipTrigger>
-            <TooltipContent>View original on LeetCode</TooltipContent>
-          </Tooltip>
+            </AdaptiveTooltipTrigger>
+            <AdaptiveTooltipContent>View original on LeetCode</AdaptiveTooltipContent>
+          </AdaptiveTooltip>
         </h3>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <DifficultyBadge

@@ -9,10 +9,10 @@ import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { getSessionApiPath } from "@/constants/api";
@@ -128,8 +128,8 @@ export default function FeedbackPage() {
     <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
       {/* Header */}
       <div className="flex flex-col items-center space-y-2">
-        <Tooltip>
-          <TooltipTrigger asChild>
+        <AdaptiveTooltip>
+          <AdaptiveTooltipTrigger asChild>
             <h1 className="flex items-center gap-2 text-4xl font-semibold">
               {problem && (
                 <a
@@ -145,9 +145,9 @@ export default function FeedbackPage() {
                 </a>
               )}
             </h1>
-          </TooltipTrigger>
-          <TooltipContent>View on LeetCode</TooltipContent>
-        </Tooltip>
+          </AdaptiveTooltipTrigger>
+          <AdaptiveTooltipContent>View on LeetCode</AdaptiveTooltipContent>
+        </AdaptiveTooltip>
         <div className="flex items-center gap-2">
           {problem && (
             <DifficultyBadge

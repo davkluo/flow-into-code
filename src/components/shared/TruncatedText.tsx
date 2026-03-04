@@ -2,10 +2,10 @@
 
 import { useRef, useState } from "react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 
 interface TruncatedTextProps {
   children: React.ReactNode;
@@ -50,9 +50,9 @@ export function TruncatedText({
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{element}</TooltipTrigger>
-      <TooltipContent>{tooltip ?? children}</TooltipContent>
-    </Tooltip>
+    <AdaptiveTooltip>
+      <AdaptiveTooltipTrigger asChild>{element}</AdaptiveTooltipTrigger>
+      <AdaptiveTooltipContent>{tooltip ?? children}</AdaptiveTooltipContent>
+    </AdaptiveTooltip>
   );
 }

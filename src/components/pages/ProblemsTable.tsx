@@ -15,10 +15,10 @@ import { TruncatedText } from "@/components/shared/TruncatedText";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { ITEMS_PER_PAGE_OPTIONS, ItemsPerPage } from "@/lib/pagination";
 import { Problem } from "@/types/problem";
 
@@ -271,8 +271,8 @@ export function ProblemsTable({
                   >
                     <TableCell />
                     <TableCell className="text-sm">
-                      <Tooltip>
-                        <TooltipTrigger asChild>
+                      <AdaptiveTooltip>
+                        <AdaptiveTooltipTrigger asChild>
                           <a
                             href={`https://leetcode.com/problems/${problem.titleSlug}/`}
                             target="_blank"
@@ -284,12 +284,12 @@ export function ProblemsTable({
                             </span>
                             <Lock className="h-3.5 w-3.5 shrink-0" />
                           </a>
-                        </TooltipTrigger>
-                        <TooltipContent>
+                        </AdaptiveTooltipTrigger>
+                        <AdaptiveTooltipContent>
                           &quot;{problem.title}&quot; is a premium problem.
                           Click to open on LeetCode in a new window.
-                        </TooltipContent>
-                      </Tooltip>
+                        </AdaptiveTooltipContent>
+                      </AdaptiveTooltip>
                     </TableCell>
                     <TableCell className="text-center align-middle">
                       <DifficultyBadge difficulty={problem.difficulty} />
@@ -300,20 +300,20 @@ export function ProblemsTable({
                           <TagBadge key={tag.id} tagName={tag.name} />
                         ))}
                         {problem.topicTags.length > 2 && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                          <AdaptiveTooltip>
+                            <AdaptiveTooltipTrigger asChild>
                               <span className="text-muted-foreground cursor-default text-xs">
                                 +{problem.topicTags.length - 2}
                               </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
+                            </AdaptiveTooltipTrigger>
+                            <AdaptiveTooltipContent>
                               <div className="flex flex-wrap gap-1">
                                 {problem.topicTags.slice(2).map((tag) => (
                                   <TagBadge key={tag.id} tagName={tag.name} />
                                 ))}
                               </div>
-                            </TooltipContent>
-                          </Tooltip>
+                            </AdaptiveTooltipContent>
+                          </AdaptiveTooltip>
                         )}
                       </div>
                     </TableCell>
@@ -344,20 +344,20 @@ export function ProblemsTable({
                           <TagBadge key={tag.id} tagName={tag.name} />
                         ))}
                         {problem.topicTags.length > 2 && (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                          <AdaptiveTooltip>
+                            <AdaptiveTooltipTrigger asChild>
                               <span className="text-muted-foreground cursor-default text-xs">
                                 +{problem.topicTags.length - 2}
                               </span>
-                            </TooltipTrigger>
-                            <TooltipContent>
+                            </AdaptiveTooltipTrigger>
+                            <AdaptiveTooltipContent>
                               <div className="flex flex-wrap gap-1">
                                 {problem.topicTags.slice(2).map((tag) => (
                                   <TagBadge key={tag.id} tagName={tag.name} />
                                 ))}
                               </div>
-                            </TooltipContent>
-                          </Tooltip>
+                            </AdaptiveTooltipContent>
+                          </AdaptiveTooltip>
                         )}
                       </div>
                     </TableCell>

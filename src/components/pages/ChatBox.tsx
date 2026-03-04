@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { cn } from "@/lib/utils";
 import { SessionMessage } from "@/types/chat";
 
@@ -147,19 +147,19 @@ export function ChatBox({
           <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
             <span className="text-sm font-medium">{title}</span>
             {titleTooltip && (
-              <Tooltip>
-                <TooltipTrigger asChild>
+              <AdaptiveTooltip>
+                <AdaptiveTooltipTrigger asChild>
                   <span className="inline-flex">
                     <InfoIcon className="text-muted-foreground size-3.5" />
                   </span>
-                </TooltipTrigger>
-                <TooltipContent
+                </AdaptiveTooltipTrigger>
+                <AdaptiveTooltipContent
                   side="bottom"
                   className="w-[22rem] [text-wrap:wrap]"
                 >
                   {titleTooltip}
-                </TooltipContent>
-              </Tooltip>
+                </AdaptiveTooltipContent>
+              </AdaptiveTooltip>
             )}
           </div>
         )}

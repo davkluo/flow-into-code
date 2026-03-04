@@ -4,10 +4,10 @@ import Image from "next/image";
 import { SquareCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { cn } from "@/lib/utils";
 import { GitHubLogo } from "./GitHubLogo";
 import { LinkedInLogo } from "./LinkedInLogo";
@@ -86,8 +86,8 @@ export function SocialsRow({
   return (
     <div className={cn("flex flex-wrap justify-center gap-2 pt-1", className)}>
       {links.map((social) => (
-        <Tooltip key={social.label}>
-          <TooltipTrigger asChild>
+        <AdaptiveTooltip key={social.label}>
+          <AdaptiveTooltipTrigger asChild>
             <Button
               asChild
               size="icon-sm"
@@ -102,9 +102,9 @@ export function SocialsRow({
                 <social.icon className="size-4" />
               </a>
             </Button>
-          </TooltipTrigger>
-          <TooltipContent sideOffset={6}>{social.tooltip}</TooltipContent>
-        </Tooltip>
+          </AdaptiveTooltipTrigger>
+          <AdaptiveTooltipContent sideOffset={6}>{social.tooltip}</AdaptiveTooltipContent>
+        </AdaptiveTooltip>
       ))}
     </div>
   );

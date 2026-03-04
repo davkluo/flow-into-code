@@ -7,10 +7,10 @@ import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import {
   Table,
   TableBody,
@@ -271,16 +271,16 @@ export default function HistoryPage() {
                           </span>
                         </TableCell>
                         <TableCell className="text-muted-foreground max-w-0 py-3">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
+                          <AdaptiveTooltip>
+                            <AdaptiveTooltipTrigger asChild>
                               <p className="truncate text-sm">
                                 {session.feedback.summary}
                               </p>
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-sm">
+                            </AdaptiveTooltipTrigger>
+                            <AdaptiveTooltipContent className="max-w-sm">
                               {session.feedback.summary}
-                            </TooltipContent>
-                          </Tooltip>
+                            </AdaptiveTooltipContent>
+                          </AdaptiveTooltip>
                         </TableCell>
                         <TableCell className="text-muted-foreground py-3">
                           {new Date(session.createdAt).toLocaleDateString(

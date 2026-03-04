@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { EXECUTE_API_PATH } from "@/constants/api";
 import { CODE_EXECUTION_COOLDOWN_MS } from "@/constants/execution";
 import { SUPPORTED_LANGS } from "@/constants/languages";
@@ -181,17 +181,17 @@ export function ImplementationSection({
           <div className="border-input flex h-full flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
               <span className="text-sm font-medium">{FIELD.label}</span>
-              <Tooltip>
-                <TooltipTrigger asChild>
+              <AdaptiveTooltip>
+                <AdaptiveTooltipTrigger asChild>
                   <span className="inline-flex">
                     <InfoIcon className="text-muted-foreground size-3.5" />
                   </span>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="w-[22rem]">
+                </AdaptiveTooltipTrigger>
+                <AdaptiveTooltipContent side="right" className="w-[22rem]">
                   <p>{FIELD.tooltip}</p>
                   {FIELD.formatHint}
-                </TooltipContent>
-              </Tooltip>
+                </AdaptiveTooltipContent>
+              </AdaptiveTooltip>
               {code.length - getSnippet(language).length >= FIELD.threshold && (
                 <CheckIcon className="text-brand-secondary ml-auto size-4" />
               )}
@@ -249,8 +249,8 @@ export function ImplementationSection({
                         : "Run"}
                   </Button>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  <AdaptiveTooltip>
+                    <AdaptiveTooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -259,14 +259,14 @@ export function ImplementationSection({
                       >
                         <CopyIcon className="size-3" />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="w-max">
+                    </AdaptiveTooltipTrigger>
+                    <AdaptiveTooltipContent side="bottom" className="w-max">
                       <p>Copy full code to clipboard</p>
-                    </TooltipContent>
-                  </Tooltip>
+                    </AdaptiveTooltipContent>
+                  </AdaptiveTooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  <AdaptiveTooltip>
+                    <AdaptiveTooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -275,17 +275,17 @@ export function ImplementationSection({
                       >
                         <ExternalLinkIcon className="size-3" />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="w-max">
+                    </AdaptiveTooltipTrigger>
+                    <AdaptiveTooltipContent side="bottom" className="w-max">
                       <p>
                         Copy solution (without local test cases) and open
                         LeetCode
                       </p>
-                    </TooltipContent>
-                  </Tooltip>
+                    </AdaptiveTooltipContent>
+                  </AdaptiveTooltip>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
+                  <AdaptiveTooltip>
+                    <AdaptiveTooltipTrigger asChild>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -294,11 +294,11 @@ export function ImplementationSection({
                       >
                         <RotateCcwIcon className="size-3" />
                       </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="w-max">
+                    </AdaptiveTooltipTrigger>
+                    <AdaptiveTooltipContent side="bottom" className="w-max">
                       <p>Reset code to default</p>
-                    </TooltipContent>
-                  </Tooltip>
+                    </AdaptiveTooltipContent>
+                  </AdaptiveTooltip>
                 </div>
               </div>
             </div>

@@ -4,10 +4,10 @@ import { CheckIcon, InfoIcon } from "lucide-react";
 import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { SessionMessage } from "@/types/chat";
 import { AlgorithmSnapshot, SectionField } from "@/types/practice";
 import { PseudocodeEditor } from "./PseudocodeEditor";
@@ -46,16 +46,16 @@ export function AlgorithmDesignSection({
           <div className="border-input flex h-full flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
               <span className="text-sm font-medium">{FIELD.label}</span>
-              <Tooltip>
-                <TooltipTrigger asChild>
+              <AdaptiveTooltip>
+                <AdaptiveTooltipTrigger asChild>
                   <span className="inline-flex">
                     <InfoIcon className="text-muted-foreground size-3.5" />
                   </span>
-                </TooltipTrigger>
-                <TooltipContent side="right" className="w-[22rem]">
+                </AdaptiveTooltipTrigger>
+                <AdaptiveTooltipContent side="right" className="w-[22rem]">
                   <p>{FIELD.tooltip}</p>
-                </TooltipContent>
-              </Tooltip>
+                </AdaptiveTooltipContent>
+              </AdaptiveTooltip>
               {pseudocode.length >= FIELD.threshold && (
                 <CheckIcon className="ml-auto size-4 text-brand-secondary" />
               )}

@@ -9,10 +9,10 @@ import {
 } from "@/components/ui/collapsible";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
@@ -51,16 +51,16 @@ export function CommunicationSection({
                 Interviewer Communication
               </span>
               {feedback.score === null ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                <AdaptiveTooltip>
+                  <AdaptiveTooltipTrigger asChild>
                     <span className="text-muted-foreground cursor-default text-sm font-semibold">
                       —
                     </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
+                  </AdaptiveTooltipTrigger>
+                  <AdaptiveTooltipContent>
                     Insufficient content to review
-                  </TooltipContent>
-                </Tooltip>
+                  </AdaptiveTooltipContent>
+                </AdaptiveTooltip>
               ) : (
                 <span
                   className={cn(

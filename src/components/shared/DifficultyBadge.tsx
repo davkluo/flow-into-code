@@ -1,9 +1,9 @@
 import { Flame, Leaf, Zap } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { cn } from "@/lib/utils";
 import { Problem } from "@/types/problem";
 
@@ -15,8 +15,8 @@ export function DifficultyBadge({
     difficulty === "Easy" ? Leaf : difficulty === "Medium" ? Zap : Flame;
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
+    <AdaptiveTooltip>
+      <AdaptiveTooltipTrigger asChild>
         <span
           className={cn(
             "inline-flex cursor-default items-center",
@@ -28,8 +28,8 @@ export function DifficultyBadge({
         >
           <Icon className="h-4 w-4 translate-y-0.5" />
         </span>
-      </TooltipTrigger>
-      <TooltipContent>{difficulty}</TooltipContent>
-    </Tooltip>
+      </AdaptiveTooltipTrigger>
+      <AdaptiveTooltipContent>{difficulty}</AdaptiveTooltipContent>
+    </AdaptiveTooltip>
   );
 }
