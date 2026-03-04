@@ -1,0 +1,28 @@
+services:
+  web:
+    image: ${APP_IMAGE}
+    restart: unless-stopped
+    env_file:
+      - path: .env.local
+        required: true
+    ports:
+      - "3000:3000"
+    environment:
+      - EXECUTOR_URL=http://executor:8080
+    depends_on:
+      - executor
+    networks:
+      - app-network
+
+  executor:
+    image: ${EXECUTOR_IMAGE}
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /tmp/code-runs:/tmp/code-runs
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

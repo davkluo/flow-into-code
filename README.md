@@ -8,6 +8,12 @@ Free, open source, and built by a fellow engineer trying to navigate the world o
 
 ---
 
+## Live App
+
+- Production: [https://flowintocode.com](https://flowintocode.com)
+
+---
+
 ## Features
 
 - **Structured 5-section practice sessions** — Understanding → Approach & Reasoning → Algorithm Design → Implementation → Complexity Analysis
@@ -49,13 +55,7 @@ git clone https://github.com/davkluo/flow-into-code.git
 cd flow-into-code
 ```
 
-### 2. Install dependencies
-
-```bash
-npm install
-```
-
-### 3. Configure Firebase client
+### 2. Configure Firebase client
 
 The Firebase client SDK config is baked into the browser bundle at build time and is safe to commit — Firebase security is enforced through Security Rules and Authentication, not by keeping this config secret.
 
@@ -89,7 +89,7 @@ This project assumes Firebase client config is public and secures access using l
 
 For local development before production cutover, `localhost` can be temporarily included in both API key referrers and Firebase Auth authorized domains. After deployment, remove `localhost` and rotate the web API key.
 
-### 4. Configure environment variables
+### 3. Configure environment variables
 
 Copy the example file and fill in your credentials:
 
@@ -122,6 +122,9 @@ This builds and starts:
 - **web** — the Next.js app server on [http://localhost:3000](http://localhost:3000)
 - **executor** — the Python code execution service (internal only, accessed via Docker DNS)
 
+This is the recommended local development path because Docker keeps the runtime
+consistent and avoids host-level dependency/version issues.
+
 ### 5. Open the app
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -151,6 +154,7 @@ src/
 │
 ├── services/
 │   ├── llm/                # OpenAI structured output + streaming, Zod schemas
+│   ├── sessionHistory.ts   # Session history transformation + response shaping
 │   └── leetcode/           # LeetCode problem syncing utilities
 │
 ├── repositories/
@@ -171,3 +175,65 @@ executor/                   # Standalone Docker code execution service (Python/F
 Contributions are welcome. If you find a bug or have a feature idea, feel free to open an issue or submit a pull request.
 
 If you'd like to self-host or fork this project to remove the daily session limits or add your own changes, you have my blessing!
+
+---
+
+## Testing
+
+If you run tests outside Docker, install Node dependencies first:
+
+```bash
+npm install
+```
+
+Run TypeScript tests (Vitest):
+
+```bash
+npm run test:js
+```
+
+Run FastAPI executor tests (pytest):
+
+```bash
+python3 -m pip install -r executor/requirements-dev.txt
+npm run test:py
+```
+
+Run Playwright E2E tests:
+
+```bash
+npm run test:e2e
+```
+
+Run unit + integration + executor suites:
+
+```bash
+npm test
+```
+
+Recent additions include service-level tests for `sessionHistory` and a Playwright
+E2E suite that runs in CI.
+
+## CI/CD
+
+The repository uses a single GitHub Actions pipeline:
+- `.github/workflows/deploy.yml` (named **CI/CD**)
+
+Behavior:
+- On PR to `main`: run `check` (lint, typecheck, test, build) and `e2e`
+- On push to `main`: run `check` and `e2e`, then build/push images to ECR, then
+  deploy on EC2 via SSH + Docker Compose pull/up
+
+Production deploys use:
+- `docker-compose.prod.yml` (image-based, pulls from ECR)
+
+Local dev uses:
+- `docker-compose.yml` (build-based for local iteration)
+
+## API Note
+
+- Session history is served by `GET /api/sessions` using
+  `src/services/sessionHistory.ts`.
+- The sessions-remaining indicator is client-side via Firestore snapshot
+  subscription (`useSessionsRemaining`) and does not require a separate
+  `/api/sessions/remaining` endpoint.
