@@ -8,16 +8,16 @@ function getGlobalStatsDoc() {
 
 export async function incrementUserCount(tx?: Transaction): Promise<void> {
   if (tx) {
-    tx.update(getGlobalStatsDoc(), { userCount: FieldValue.increment(1) });
+    tx.set(getGlobalStatsDoc(), { userCount: FieldValue.increment(1) }, { merge: true });
   } else {
-    await getGlobalStatsDoc().update({ userCount: FieldValue.increment(1) });
+    await getGlobalStatsDoc().set({ userCount: FieldValue.increment(1) }, { merge: true });
   }
 }
 
 export async function incrementSessionCount(tx?: Transaction): Promise<void> {
   if (tx) {
-    tx.update(getGlobalStatsDoc(), { sessionCount: FieldValue.increment(1) });
+    tx.set(getGlobalStatsDoc(), { sessionCount: FieldValue.increment(1) }, { merge: true });
   } else {
-    await getGlobalStatsDoc().update({ sessionCount: FieldValue.increment(1) });
+    await getGlobalStatsDoc().set({ sessionCount: FieldValue.increment(1) }, { merge: true });
   }
 }
