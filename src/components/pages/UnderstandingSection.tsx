@@ -5,10 +5,10 @@ import { ChatBox } from "@/components/pages/ChatBox";
 import { SectionHeader } from "@/components/pages/SectionHeader";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  AdaptiveTooltip,
+  AdaptiveTooltipContent,
+  AdaptiveTooltipTrigger,
+} from "@/components/ui/adaptive-tooltip";
 import { SessionMessage } from "@/types/chat";
 import { SectionField, UnderstandingSnapshot } from "@/types/practice";
 
@@ -128,17 +128,17 @@ export function UnderstandingSection({
             >
               <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
                 <label htmlFor={field.key} className="text-sm font-medium">{field.label}</label>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                <AdaptiveTooltip>
+                  <AdaptiveTooltipTrigger asChild>
                     <span className="inline-flex">
                       <InfoIcon className="text-muted-foreground size-3.5" />
                     </span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className="w-[22rem]">
+                  </AdaptiveTooltipTrigger>
+                  <AdaptiveTooltipContent side="right" className="w-[22rem]">
                     <p>{field.tooltip}</p>
                     {field.formatHint}
-                  </TooltipContent>
-                </Tooltip>
+                  </AdaptiveTooltipContent>
+                </AdaptiveTooltip>
                 {isFieldFilled(field.key) && (
                   <CheckIcon className="text-brand-secondary ml-auto size-4" />
                 )}
