@@ -50,9 +50,8 @@ export function ProblemSelectSection({
   const [isLoadingProblemDetails, setIsLoadingProblemDetails] = useState(false);
 
   const [cachedPages, setCachedPages] = useState<Record<number, Problem[]>>({});
-  const [pageCursors, setPageCursors] = useState<
-    Record<number, number | undefined>
-  >({});
+  const pageCursorsRef = useRef<Record<number, number | undefined>>({});
+  const fetchPromisesRef = useRef<Partial<Record<number, Promise<void>>>>({});
 
   const [currentUIPage, setCurrentUIPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPage>(10);
@@ -123,30 +122,46 @@ export function ProblemSelectSection({
     async (cachePage: number) => {
       if (cachedPages[cachePage]) return; // already cached
 
-      setIsLoadingProblemList(true);
-
-      try {
-        const cursor = pageCursors[cachePage - 1];
-
-        const res = await authFetch(
-          `${LC_PROBLEMS_API_PATH}?limit=${CACHE_PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch page");
-
-        const data: ProblemsPage = await res.json();
-
-        if (data.problems.length > 0) {
-          setCachedPages((prev) => ({ ...prev, [cachePage]: data.problems }));
-          setPageCursors((prev) => ({ ...prev, [cachePage]: data.nextCursor }));
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setIsLoadingProblemList(false);
+      // Return the existing in-flight promise to deduplicate concurrent calls
+      if (fetchPromisesRef.current[cachePage]) {
+        return fetchPromisesRef.current[cachePage];
       }
+
+      const doFetch = async () => {
+        // If the previous page's cursor isn't ready yet, wait for its fetch
+        if (cachePage > 1 && pageCursorsRef.current[cachePage - 1] === undefined) {
+          await fetchPromisesRef.current[cachePage - 1];
+        }
+
+        setIsLoadingProblemList(true);
+
+        try {
+          const cursor = pageCursorsRef.current[cachePage - 1];
+
+          const res = await authFetch(
+            `${LC_PROBLEMS_API_PATH}?limit=${CACHE_PAGE_SIZE}${cursor ? `&cursor=${cursor}` : ""}`,
+          );
+
+          if (!res.ok) throw new Error("Failed to fetch page");
+
+          const data: ProblemsPage = await res.json();
+
+          if (data.problems.length > 0) {
+            setCachedPages((prev) => ({ ...prev, [cachePage]: data.problems }));
+            pageCursorsRef.current[cachePage] = data.nextCursor;
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          delete fetchPromisesRef.current[cachePage];
+          setIsLoadingProblemList(false);
+        }
+      };
+
+      fetchPromisesRef.current[cachePage] = doFetch();
+      return fetchPromisesRef.current[cachePage];
     },
-    [cachedPages, pageCursors],
+    [cachedPages],
   );
 
   /**
