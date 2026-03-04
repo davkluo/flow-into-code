@@ -1,6 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { test as base, Page } from "@playwright/test";
+import { cert, getApps, initializeApp } from "firebase-admin/app";
+import { getFirestore } from "firebase-admin/firestore";
 import type { SectionKey } from "../../src/types/practice";
 import type { Problem, ProblemSolution } from "../../src/types/problem";
 import type { Session } from "../../src/types/session";
@@ -99,6 +101,142 @@ const SECTION_KEYS: SectionKey[] = [
 function loadAuthState(): AuthState {
   const authPath = path.join(process.cwd(), "playwright", ".auth", "user.json");
   return JSON.parse(fs.readFileSync(authPath, "utf8")) as AuthState;
+}
+
+function getE2EAdminDb() {
+  const app =
+    getApps().find((candidate) => candidate.name === "e2e-tests") ??
+    initializeApp(
+      {
+        credential: cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+        }),
+      },
+      "e2e-tests",
+    );
+  return getFirestore(app);
+}
+
+async function seedTwoSumProblemData() {
+  const db = getE2EAdminDb();
+  const now = Date.now();
+
+  await db.collection("meta").doc("problemIndex").set(
+    {
+      fullyPopulated: true,
+      lastFetchedAt: now,
+      totalProblems: 1,
+    },
+    { merge: true },
+  );
+
+  await db.collection("problems").doc("two-sum").set(
+    {
+      id: "1",
+      idNumber: 1,
+      title: "Two Sum",
+      titleSlug: "two-sum",
+      difficulty: "Easy",
+      isPaidOnly: false,
+      topicTags: [
+        { id: "array", name: "Array", slug: "array" },
+        { id: "hash-table", name: "Hash Table", slug: "hash-table" },
+      ],
+      searchTerms: ["1", "two", "sum", "two-sum", "easy", "array", "hash"],
+    },
+    { merge: true },
+  );
+
+  await db.collection("problemDetails").doc("two-sum").set(
+    {
+      titleSlug: "two-sum",
+      source: {
+        originalContent:
+          "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+        codeSnippets: {
+          python3:
+            "def twoSum(nums, target):\n    seen = {}\n    for i, n in enumerate(nums):\n        need = target - n\n        if need in seen:\n            return [seen[need], i]\n        seen[n] = i",
+        },
+        examples: [
+          {
+            input: "nums = [2,7,11,15], target = 9",
+            output: "[0,1]",
+            explanation: "nums[0] + nums[1] == 9",
+          },
+        ],
+      },
+      derived: {
+        framing: {
+          canonical:
+            "Find two distinct indices whose values sum to target and return them.",
+          backend:
+            "Treat the input as request payload and return index pairs deterministically.",
+          systems:
+            "Optimize for linear scan and predictable memory for large arrays.",
+        },
+        testCases: [
+          {
+            input: "nums = [2,7,11,15], target = 9",
+            expectedOutput: "[0,1]",
+            description: "basic positive integers",
+          },
+        ],
+        edgeCases: [
+          {
+            input: "nums = [3,3], target = 6",
+            expectedOutput: "[0,1]",
+            description: "duplicate values",
+          },
+        ],
+        hints: [
+          { level: 1, text: "Try tracking seen values as you iterate." },
+          { level: 2, text: "For each number, check if target - number was seen." },
+        ],
+        pitfalls: [
+          { level: 1, text: "Do not reuse the same element twice." },
+          { level: 2, text: "Insert current value after complement check." },
+        ],
+      },
+      processingMeta: {
+        schemaVersion: 1,
+        layers: {
+          framing: {
+            status: "complete",
+            updatedAt: now,
+            model: "e2e-seed",
+            promptVersion: 9999,
+          },
+          testCases: {
+            status: "complete",
+            updatedAt: now,
+            model: "e2e-seed",
+            promptVersion: 9999,
+          },
+          edgeCases: {
+            status: "complete",
+            updatedAt: now,
+            model: "e2e-seed",
+            promptVersion: 9999,
+          },
+          hints: {
+            status: "complete",
+            updatedAt: now,
+            model: "e2e-seed",
+            promptVersion: 9999,
+          },
+          pitfalls: {
+            status: "complete",
+            updatedAt: now,
+            model: "e2e-seed",
+            promptVersion: 9999,
+          },
+        },
+      },
+    },
+    { merge: true },
+  );
 }
 
 function buildDefaultMockSessionDocs(uid: string): MockSessionDoc[] {
@@ -257,6 +395,7 @@ type Fixtures = {
   authState: AuthState;
   signedInPage: Page;
   mockSessionDocs: (docs?: MockSessionDoc[]) => MockSessionDoc[];
+  seedTwoSumProblem: () => Promise<void>;
 };
 
 export const test = base.extend<Fixtures>({
@@ -322,6 +461,11 @@ export const test = base.extend<Fixtures>({
     await provide((nextDocs?: MockSessionDoc[]) => {
       docs = nextDocs ?? buildDefaultMockSessionDocs(authState.uid);
       return docs;
+    });
+  },
+  seedTwoSumProblem: async ({}, provide) => {
+    await provide(async () => {
+      await seedTwoSumProblemData();
     });
   },
 });
