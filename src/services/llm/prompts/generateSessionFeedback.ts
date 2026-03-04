@@ -5,7 +5,7 @@ import { SectionKey, SectionSnapshotData } from "@/types/practice";
 import { Framing, GradingCriterion } from "@/types/problem";
 import { CategoryFeedback } from "@/types/session";
 
-export const GENERATE_SESSION_FEEDBACK_PROMPT_VERSION = 2;
+export const GENERATE_SESSION_FEEDBACK_PROMPT_VERSION = 3;
 
 // ---------------------------------------------------------------------------
 // Tone — injected into both prompts
@@ -15,11 +15,12 @@ const TONE = `
 TONE:
 - Write like a technical interviewer filling out a post-interview debrief, not a chatbot writing a performance review.
 - No emojis.
-- No celebratory openers or closers ("Great job!", "Excellent work!", "You did well here!").
+- No generic celebratory openers or closers ("Great job!", "Excellent work!", "You did well here!"). Specific, earned praise within a field is fine.
 - No hedge phrases ("It's worth noting...", "It's important to remember...", "One thing to keep in mind...").
 - Short is better than padded. One honest sentence is better than two that say the same thing.
 - If there is nothing genuine to say for a field, write a single direct sentence rather than filling space with generic encouragement.
 - A low score with a clear explanation is more useful than a padded score with vague praise.
+- When describing weaknesses, frame them as areas to develop — not as failures or character conclusions. Prefer "X is an area to focus on" over "the candidate failed to / struggled with / was unable to X". Write toward what to improve, not what went wrong.
 `.trim();
 
 // ---------------------------------------------------------------------------
@@ -176,8 +177,8 @@ SCORING INSTRUCTIONS:
 - Treat the chat log as evidence of understanding. If the candidate verbally explained how their algorithm handles a specific case — even if it is not written in their snapshot — count that as demonstrating awareness. Do not penalize for an absence in the written fields if the point was made clearly in conversation.
 - Base your assessment only on what is present. Do not invent strengths or weaknesses.
 - comments: justify the score with specific evidence from their work (1–3 sentences).
-- compliments: only write something genuine. If there is nothing noteworthy, one honest sentence is enough — do not fabricate positives.
-- advice: name a specific gap or concrete improvement. If the score is 4 or 5 and there is nothing genuine to point to, set advice to an empty string. Do not write generic encouragement to fill the field.
+- compliments: if the candidate did something genuinely well, acknowledge it specifically — don't undersell real strengths. If there is nothing noteworthy, write a single honest sentence or leave it minimal. Do not fabricate positives.
+- advice: name a specific area to develop or concrete next step. Frame it as what to focus on going forward, not what the candidate failed at. If the score is 4 or 5 and there is nothing genuine to point to, set advice to an empty string. Do not write generic encouragement to fill the field.
 
 Return valid JSON with this exact shape:
 {
@@ -259,7 +260,7 @@ Your task is to produce two outputs:
    If the candidate did not use the chat at all, score is null. Write a single direct sentence in comments noting that. Leave compliments and advice as empty strings.
    If they used it minimally, score based on the quality of the interactions that did occur. Do not penalize the absence of unnecessary interaction.
 
-2. summary — 2–4 sentences on the candidate's overall performance. Name the strongest section, the biggest gap, and any consistent pattern. Be direct — do not restate the individual scores. When naming a gap, be specific and accurate: if a lower score stems from a narrow issue, name that issue precisely. Do not draw broad character conclusions (about confidence, thoroughness, etc.) from a single scoring deduction.
+2. summary — 2–4 sentences on the candidate's overall performance. Name the strongest section, the primary area to focus on for improvement, and any consistent pattern. Be direct — do not restate the individual scores. When naming an area to improve, be specific and accurate: if a lower score stems from a narrow issue, name that issue precisely and frame it as something to develop. Do not draw broad character conclusions (about confidence, thoroughness, etc.) from a single scoring deduction.
 
 Return valid JSON with this exact shape:
 {
