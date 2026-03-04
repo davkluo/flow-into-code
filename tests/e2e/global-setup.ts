@@ -66,7 +66,10 @@ async function globalSetup() {
   const data: CustomTokenExchangeResponse = await res.json();
 
   // The injected IndexedDB key must use the browser API key, not the server key.
-  const FIREBASE_BROWSER_API_KEY = "AIzaSyCQ11pbOVqHxoHoGzjE2u-mOEBxpnBP3fc";
+  // Keep a fallback for local compatibility.
+  const FIREBASE_BROWSER_API_KEY =
+    process.env.FIREBASE_BROWSER_API_KEY ??
+    "AIzaSyCQ11pbOVqHxoHoGzjE2u-mOEBxpnBP3fc";
 
   const authState: AuthState = {
     apiKey: FIREBASE_BROWSER_API_KEY,

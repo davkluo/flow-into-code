@@ -11,7 +11,9 @@ const breadcrumb = (page: Page) =>
 
 authTest(
   "user can navigate through all 5 sections of a Two Sum session",
-  async ({ signedInPage: page }) => {
+  async ({ signedInPage: page, seedTwoSumProblem }) => {
+    await seedTwoSumProblem();
+
     await page.route("**/api/chat", (route) =>
       route.fulfill({
         status: 200,
