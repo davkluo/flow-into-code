@@ -153,8 +153,7 @@ jobs:
               "set -euo pipefail",
               "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}",
               "cd /home/ec2-user/flow-into-code",
-              "git config --global --add safe.directory /home/ec2-user/flow-into-code",
-              "git pull --ff-only origin main",
+              "git -c safe.directory=/home/ec2-user/flow-into-code pull --ff-only origin main",
               "APP_IMAGE=${ECR_REGISTRY}/flow-into-code/app:${GITHUB_SHA} EXECUTOR_IMAGE=${ECR_REGISTRY}/flow-into-code/executor:${GITHUB_SHA} docker compose -f docker-compose.prod.yml pull",
               "APP_IMAGE=${ECR_REGISTRY}/flow-into-code/app:${GITHUB_SHA} EXECUTOR_IMAGE=${ECR_REGISTRY}/flow-into-code/executor:${GITHUB_SHA} docker compose -f docker-compose.prod.yml up -d",
               "docker image prune -f"
