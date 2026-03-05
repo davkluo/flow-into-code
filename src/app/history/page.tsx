@@ -4,13 +4,13 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   AdaptiveTooltip,
   AdaptiveTooltipContent,
   AdaptiveTooltipTrigger,
 } from "@/components/ui/adaptive-tooltip";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -22,6 +22,7 @@ import {
 import { SESSIONS_API_PATH } from "@/constants/api";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { authFetch } from "@/lib/firebase/authFetch";
 import { SectionKey } from "@/types/practice";
 
@@ -149,6 +150,8 @@ function ScoreChips({ session }: { session: SessionSummary }) {
  * Clicking a row navigates to that session's full feedback page.
  */
 export default function HistoryPage() {
+  const authStatus = useRequireAuth();
+
   const [sessions, setSessions] = useState<SessionSummary[] | null>(null);
   const [sortKey, setSortKey] = useState<SortKey | null>(null);
   const [sortDir, setSortDir] = useState<SortDir>("asc");
@@ -156,10 +159,14 @@ export default function HistoryPage() {
   const router = useRouter();
 
   useEffect(() => {
-    authFetch(SESSIONS_API_PATH)
-      .then((res) => res.json())
-      .then((json) => setSessions(json.sessions));
-  }, []);
+    if (authStatus !== "authenticated") return;
+    async function fetchSessions() {
+      const res = await authFetch(SESSIONS_API_PATH);
+      const json = await res.json();
+      setSessions(json.sessions);
+    }
+    fetchSessions();
+  }, [authStatus]);
 
   /** Toggles sort direction if already sorting by this column, otherwise sets it as the active sort. */
   function handleSort(col: SortKey) {

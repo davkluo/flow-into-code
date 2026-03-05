@@ -1,21 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { CommunicationSection } from "@/components/pages/CommunicationSection";
 import { SectionFeedbackCard } from "@/components/pages/SectionFeedbackCard";
 import { SolutionsTabs } from "@/components/pages/SolutionsTabs";
 import { DifficultyBadge } from "@/components/shared/DifficultyBadge";
 import { TagBadge } from "@/components/shared/TagBadge";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   AdaptiveTooltip,
   AdaptiveTooltipContent,
   AdaptiveTooltipTrigger,
 } from "@/components/ui/adaptive-tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getSessionApiPath } from "@/constants/api";
 import { CRITERION_MAX_SCORE } from "@/constants/grading";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
-import { getSessionApiPath } from "@/constants/api";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { authFetch } from "@/lib/firebase/authFetch";
 import { Problem, ProblemSolution } from "@/types/problem";
 import { Session } from "@/types/session";
@@ -53,7 +54,7 @@ function FeedbackSkeleton() {
       </div>
       <div className="grid grid-cols-2 gap-2">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="px-3 py-2 space-y-2">
+          <div key={i} className="space-y-2 px-3 py-2">
             <div className="flex justify-between">
               <Skeleton className="h-3 w-28" />
               <Skeleton className="h-3 w-8" />
@@ -101,21 +102,26 @@ function FeedbackSkeleton() {
  * Shows a skeleton UI while loading and calls `notFound()` for 404/401 responses.
  */
 export default function FeedbackPage() {
+  const authStatus = useRequireAuth();
+
   const params = useParams<{ "session-id": string }>();
   const sessionId = params["session-id"];
   const [data, setData] = useState<FeedbackPageData | null>(null);
   const [isNotFound, setIsNotFound] = useState(false);
 
   useEffect(() => {
-    authFetch(getSessionApiPath(sessionId)).then(async (res) => {
+    if (authStatus !== "authenticated") return;
+    async function fetchSession() {
+      const res = await authFetch(getSessionApiPath(sessionId));
       if (res.status === 404 || res.status === 401) {
         setIsNotFound(true);
         return;
       }
       const json = await res.json();
       setData(json);
-    });
-  }, [sessionId]);
+    }
+    fetchSession();
+  }, [authStatus, sessionId]);
 
   if (isNotFound) notFound();
   if (!data) return <FeedbackSkeleton />;
@@ -139,7 +145,7 @@ export default function FeedbackPage() {
                   className="hover:underline"
                 >
                   {problem.id && (
-                    <span className="font-normal">{problem.id}.{" "}</span>
+                    <span className="font-normal">{problem.id}. </span>
                   )}
                   {problem.title ?? session.problemTitleSlug}
                 </a>
@@ -188,7 +194,11 @@ export default function FeedbackPage() {
         return (
           <div className="grid grid-cols-2">
             {items.map((item) => (
-              <a key={item.href} href={item.href} className="group rounded-md px-3 py-2 transition-colors hover:bg-card dark:hover:bg-card">
+              <a
+                key={item.href}
+                href={item.href}
+                className="group hover:bg-card dark:hover:bg-card rounded-md px-3 py-2 transition-colors"
+              >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-baseline justify-between gap-2">
                     <span className="text-foreground text-xs">
@@ -229,7 +239,7 @@ export default function FeedbackPage() {
           <p className="text-muted-foreground text-xs font-medium tracking-wider uppercase">
             Session Summary
           </p>
-          <p className="border-l-2 border-muted-foreground/30 pl-4 text-base font-medium leading-relaxed tracking-wide">
+          <p className="border-muted-foreground/30 border-l-2 pl-4 text-base leading-relaxed font-medium tracking-wide">
             {feedback.summary}
           </p>
         </div>
