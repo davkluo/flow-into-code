@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { withAuth } from "@/lib/withAuth";
 import { initUser } from "@/services/initUser";
 
-export async function POST(req: Request) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const POST = withAuth(async (_req, uid) => {
   await initUser(uid);
-
   return NextResponse.json({ ok: true });
-}
+});

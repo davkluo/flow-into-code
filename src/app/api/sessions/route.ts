@@ -1,13 +1,8 @@
-import { NextRequest } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { NextResponse } from "next/server";
+import { withAuth } from "@/lib/withAuth";
 import { getSessionHistory } from "@/services/sessionHistory";
 
-export async function GET(req: NextRequest) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export const GET = withAuth(async (_req, uid) => {
   const sessions = await getSessionHistory(uid);
-  return Response.json({ sessions });
-}
+  return NextResponse.json({ sessions });
+});

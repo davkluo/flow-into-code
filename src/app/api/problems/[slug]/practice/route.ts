@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { withAuth } from "@/lib/withAuth";
 import { generatePracticeData, getPracticeData } from "@/services/practiceData";
 
-export async function GET(
-  req: Request,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { slug } = await params;
+export const GET = withAuth<{ slug: string }>(async (_req, _uid, ctx) => {
+  const { slug } = await ctx!.params;
 
   try {
     const result = await getPracticeData(slug);
@@ -41,17 +34,10 @@ export async function GET(
       { status: 500 },
     );
   }
-}
+});
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ slug: string }> },
-) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { slug } = await params;
+export const POST = withAuth<{ slug: string }>(async (_req, _uid, ctx) => {
+  const { slug } = await ctx!.params;
 
   try {
     const details = await generatePracticeData(slug);
@@ -73,4 +59,4 @@ export async function POST(
       { status: 500 },
     );
   }
-}
+});
