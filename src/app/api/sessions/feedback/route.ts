@@ -1,41 +1,28 @@
-import { NextRequest } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { NextResponse } from "next/server";
+import { withAuth } from "@/lib/withAuth";
 import { DailyLimitExceededError } from "@/lib/errors";
 import { generateSessionFeedback } from "@/services/sessionFeedback";
 import type { LLMState } from "@/hooks/useLLM";
 
-export async function POST(req: NextRequest) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-    });
-  }
-
+export const POST = withAuth(async (req, uid) => {
   const body: { problemSlug: string; llmState: LLMState } = await req.json();
   const { problemSlug, llmState } = body;
 
   if (!problemSlug || !llmState) {
-    return new Response(JSON.stringify({ error: "Bad Request" }), {
-      status: 400,
-    });
+    return NextResponse.json({ error: "Bad Request" }, { status: 400 });
   }
 
   try {
     const sessionId = await generateSessionFeedback(uid, problemSlug, llmState);
-    return new Response(JSON.stringify({ sessionId }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return NextResponse.json({ sessionId });
   } catch (err) {
     if (err instanceof DailyLimitExceededError) {
-      return new Response(JSON.stringify({ error: "Daily session limit reached" }), {
-        status: 429,
-      });
+      return NextResponse.json(
+        { error: "Daily session limit reached" },
+        { status: 429 },
+      );
     }
     console.error("Session feedback generation failed:", err);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
-      status: 500,
-    });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
-}
+});

@@ -1,18 +1,15 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { withAuth } from "@/lib/withAuth";
+import { CACHE_PAGE_SIZE } from "@/lib/pagination";
 import { getProblemPage } from "@/repositories/firestore/problemRepo";
 import { ensureLCProblemIndex } from "@/services/ensureLCProblemIndex";
 
-export async function GET(req: Request) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withAuth(async (req) => {
   await ensureLCProblemIndex();
 
   const { searchParams } = new URL(req.url);
 
-  const limit = Number(searchParams.get("limit") ?? 20);
+  const limit = Number(searchParams.get("limit") ?? CACHE_PAGE_SIZE);
 
   const cursorParam = searchParams.get("cursor");
   const cursor = cursorParam ? parseInt(cursorParam, 10) : undefined;
@@ -37,4 +34,4 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json(page, { headers });
-}
+});

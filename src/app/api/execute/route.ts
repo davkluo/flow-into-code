@@ -1,16 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { getExecuteRateLimit } from "@/lib/rateLimit";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { withAuth } from "@/lib/withAuth";
 
 // Default value references the docker-compose service name and port
 const EXECUTOR_URL = process.env.EXECUTOR_URL ?? "http://executor:8080";
 
-export async function POST(req: NextRequest) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const POST = withAuth(async (req, uid) => {
   const { success, reset } = await getExecuteRateLimit().limit(uid);
   if (!success) {
     const retryAfter = Math.ceil((reset - Date.now()) / 1000);
@@ -50,4 +46,4 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json(await res.json());
-}
+});

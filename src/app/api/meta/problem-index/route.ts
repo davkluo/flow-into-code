@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
-import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import { withAuth } from "@/lib/withAuth";
 import * as problemIndexMetaRepo from "@/repositories/firestore/problemIndexMetaRepo";
 
-export async function GET(req: Request) {
-  const uid = await verifyFirebaseToken(req);
-  if (!uid)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
+export const GET = withAuth(async () => {
   const meta = await problemIndexMetaRepo.get();
 
   if (!meta) {
@@ -20,4 +16,4 @@ export async function GET(req: Request) {
     totalProblems: meta.totalProblems,
     fullyPopulated: meta.fullyPopulated,
   });
-}
+});
