@@ -11,7 +11,7 @@ import { Firestore, getFirestore } from "firebase/firestore";
 // Security depends on Firebase Auth, Firestore rules, and API key restrictions.
 const prodFirebaseConfig = {
   apiKey: "AIzaSyCQ11pbOVqHxoHoGzjE2u-mOEBxpnBP3fc",
-  authDomain: "flow-into-code.firebaseapp.com",
+  authDomain: "flowintocode.com",
   projectId: "flow-into-code",
   storageBucket: "flow-into-code.firebasestorage.app",
   messagingSenderId: "684629568284",
