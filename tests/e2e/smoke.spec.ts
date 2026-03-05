@@ -11,6 +11,22 @@ baseTest(
   },
 );
 
+baseTest(
+  "redirects unauthenticated user from /history to /signin",
+  async ({ page }) => {
+    await page.goto("/history");
+    await expect(page).toHaveURL(/\/signin/);
+  },
+);
+
+baseTest(
+  "redirects unauthenticated user from /feedback/[id] to /signin",
+  async ({ page }) => {
+    await page.goto("/feedback/some-session-id");
+    await expect(page).toHaveURL(/\/signin/);
+  },
+);
+
 // ─── Authenticated ──────────────────────────────────────────────────────────
 
 authTest(
