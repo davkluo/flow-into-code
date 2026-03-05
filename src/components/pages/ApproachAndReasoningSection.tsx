@@ -57,7 +57,7 @@ export function ApproachAndReasoningSection({
     <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="approach_and_reasoning" />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:grid-rows-[37rem]">
         <div className="flex h-[37rem] flex-col gap-4">
           {FIELDS.map((field) => (
             <div

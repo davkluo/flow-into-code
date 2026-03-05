@@ -175,7 +175,7 @@ export function ImplementationSection({
 
       {/* On mobile: code editor → output → chatbox (DOM order).
           On desktop: [code editor | chatbox] row, output full-width below. */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:grid-rows-[37rem_auto]">
         {/* Code editor — col 1, row 1 on desktop */}
         <div className="flex h-[37rem] flex-col sm:col-start-1 sm:row-start-1">
           <div className="border-input flex h-full flex-col overflow-hidden rounded-md border">
