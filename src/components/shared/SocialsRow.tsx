@@ -71,9 +71,9 @@ function socialToneClass(label: string): string {
     case "GitHub":
       return "border-[#24292f]/25 bg-[#24292f]/10 text-[#24292f] hover:bg-[#24292f]/16 dark:border-[#f0f6fc]/30 dark:bg-[#f0f6fc]/12 dark:text-[#f0f6fc] dark:hover:bg-[#f0f6fc]/18";
     case "This Repo":
-      return "border-[#2EA043]/35 bg-[#2EA043]/12 text-[#2EA043] hover:bg-[#2EA043]/20 dark:border-[#2EA043]/45 dark:bg-[#2EA043]/20 dark:text-[#8fe09f] dark:hover:bg-[#2EA043]/26";
+      return "border-brand-secondary/35 bg-brand-secondary/12 text-brand-secondary hover:bg-brand-secondary/20 dark:border-brand-secondary/45 dark:bg-brand-secondary/22 dark:hover:bg-brand-secondary/28";
     case "Website":
-      return "border-[#FFA733]/40 bg-[#FFA733]/16 text-[#D97706] hover:bg-[#FFA733]/24 dark:border-[#FFA733]/50 dark:bg-[#FFA733]/25 dark:text-[#FFC670] dark:hover:bg-[#FFA733]/30";
+      return "border-[#22a84a]/35 bg-[#22a84a]/12 text-[#16a34a] hover:bg-[#22a84a]/20 dark:border-[#22a84a]/45 dark:bg-[#22a84a]/22 dark:text-[#86efac] dark:hover:bg-[#22a84a]/28";
     default:
       return "border-foreground/20 bg-foreground/10 text-foreground hover:bg-foreground/15 dark:bg-foreground/15 dark:hover:bg-foreground/20";
   }
