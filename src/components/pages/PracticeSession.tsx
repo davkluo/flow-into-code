@@ -12,10 +12,10 @@ import {
 import { DEFAULT_LANGUAGE } from "@/constants/languages";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { useTimerActions } from "@/context/TimerContext";
-import { useAuth } from "@/hooks/useAuth";
 import { useLLM } from "@/hooks/useLLM";
-import { authFetch } from "@/lib/firebase/authFetch";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 import { processCodeSnippet } from "@/lib/codeSnippet";
+import { authFetch } from "@/lib/firebase/authFetch";
 import {
   AlgorithmSnapshot,
   ApproachSnapshot,
@@ -61,6 +61,8 @@ import { UnderstandingSection } from "./UnderstandingSection";
  * setup, and the multi-section slider UI once a session is active.
  */
 export function PracticeSession() {
+  useRequireAuth();
+
   const [problem, setProblem] = useState<Problem | null>(null);
   const [problemDetails, setProblemDetails] = useState<ProblemDetails | null>(
     null,
@@ -106,7 +108,6 @@ export function PracticeSession() {
   const [isMobileChatOpen, setIsMobileChatOpen] = useState(false);
 
   const { start: startTimer, reset: resetTimer } = useTimerActions();
-  const { status } = useAuth();
   const {
     sendMessage: llmSendMessage,
     getMessages: llmGetMessages,
@@ -503,12 +504,6 @@ export function PracticeSession() {
   const isLastSection = currentSectionIndex >= SECTION_ORDER.length - 1;
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/signin");
-    }
-  }, [router, status]);
-
-  useEffect(() => {
     const mq = window.matchMedia("(min-width: 640px)");
     const handler = (e: MediaQueryListEvent) => {
       if (e.matches) setIsMobileChatOpen(false);
@@ -520,9 +515,7 @@ export function PracticeSession() {
   return (
     <div className="relative w-full">
       {!isPracticeStarted && !isPreparingSession && (
-        <ProblemSelectSection
-          onProblemSelect={handleStartSession}
-        />
+        <ProblemSelectSection onProblemSelect={handleStartSession} />
       )}
 
       {isPreparingSession && <SessionLoadingScreen />}
