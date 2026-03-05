@@ -41,7 +41,7 @@ export function AlgorithmDesignSection({
     <div className="flex flex-col gap-8">
       <SectionHeader sectionKey="algorithm_design" />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:grid-rows-[37rem]">
         <div className="flex h-[37rem] flex-col">
           <div className="border-input flex h-full flex-col overflow-hidden rounded-md border">
             <div className="border-input flex items-center gap-2 border-b px-3 py-2.5">
