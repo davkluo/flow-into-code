@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/users/init/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { initUser } from "@/services/initUser";
@@ -19,7 +20,7 @@ describe("POST /api/users/init", () => {
   it("returns 401 when token is invalid", async () => {
     vi.mocked(verifyFirebaseToken).mockResolvedValue(null);
     const response = await POST(
-      new Request("http://localhost/api/users/init", { method: "POST" }),
+      new NextRequest("http://localhost/api/users/init", { method: "POST" }),
     );
     expect(response.status).toBe(401);
     const body = await response.json();
@@ -30,7 +31,7 @@ describe("POST /api/users/init", () => {
     const mockUid = "test-uid";
     vi.mocked(verifyFirebaseToken).mockResolvedValue(mockUid);
     const response = await POST(
-      new Request("http://localhost/api/users/init", { method: "POST" }),
+      new NextRequest("http://localhost/api/users/init", { method: "POST" }),
     );
     expect(response.status).toBe(200);
     const body = await response.json();
