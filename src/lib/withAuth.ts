@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 
 type RouteContext<P> = { params: Promise<P> };
-
-type AuthHandler<P> = (
+type AnyCtxHandler = (
   req: NextRequest,
   uid: string,
-  ctx?: RouteContext<P>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ctx?: any,
 ) => Promise<NextResponse>;
 
 /**
@@ -20,11 +20,22 @@ type AuthHandler<P> = (
  *
  * // Dynamic route (with params)
  * export const GET = withAuth<{ slug: string }>(async (req, uid, ctx) => {
- *   const { slug } = await ctx!.params;
+ *   const { slug } = await ctx.params;
  * });
  */
-export function withAuth<P = never>(handler: AuthHandler<P>) {
-  return async (req: NextRequest, ctx?: RouteContext<P>) => {
+export function withAuth(
+  handler: (req: NextRequest, uid: string) => Promise<NextResponse>,
+): (req: NextRequest) => Promise<NextResponse>;
+export function withAuth<P>(
+  handler: (
+    req: NextRequest,
+    uid: string,
+    ctx: RouteContext<P>,
+  ) => Promise<NextResponse>,
+): (req: NextRequest, ctx: RouteContext<P>) => Promise<NextResponse>;
+export function withAuth(handler: AnyCtxHandler) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return async (req: NextRequest, ctx?: any) => {
     const uid = await verifyFirebaseToken(req);
     if (!uid) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
