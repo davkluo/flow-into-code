@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "@/app/api/problems/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import {
@@ -19,7 +20,7 @@ vi.mock("@/services/ensureLCProblemIndex", () => ({
 }));
 
 const makeRequest = (params = "") =>
-  new Request(`http://localhost/api/problems${params}`);
+  new NextRequest(`http://localhost/api/problems${params}`);
 
 beforeEach(() => {
   vi.clearAllMocks();

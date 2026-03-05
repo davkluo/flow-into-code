@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { GET } from "@/app/api/meta/problem-index/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import * as problemIndexMetaRepo from "@/repositories/firestore/problemIndexMetaRepo";
@@ -11,7 +12,7 @@ vi.mock("@/repositories/firestore/problemIndexMetaRepo", () => ({
 }));
 
 const makeRequest = () =>
-  new Request("http://localhost/api/meta/problem-index");
+  new NextRequest("http://localhost/api/meta/problem-index");
 
 beforeEach(() => {
   vi.clearAllMocks();

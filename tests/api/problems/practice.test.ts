@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 import { GET, POST } from "@/app/api/problems/[slug]/practice/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
 import { generatePracticeData, getPracticeData } from "@/services/practiceData";
@@ -13,7 +14,7 @@ vi.mock("@/services/practiceData", () => ({
 }));
 
 const makeRequest = (method = "GET") =>
-  new Request("http://localhost/api/problems/two-sum/practice", { method });
+  new NextRequest("http://localhost/api/problems/two-sum/practice", { method });
 const makeParams = (slug: string) => ({ params: Promise.resolve({ slug }) });
 
 beforeEach(() => {
