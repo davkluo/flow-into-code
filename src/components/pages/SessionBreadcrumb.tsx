@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, MousePointerClick } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SECTION_KEY_TO_DETAILS, SECTION_ORDER } from "@/constants/practice";
 import { cn } from "@/lib/utils";
@@ -63,13 +63,23 @@ function ProblemDropdownItem({
   onEndSession: () => void;
 }) {
   const [alertOpen, setAlertOpen] = useState(false);
+  const [showHint, setShowHint] = useState(true);
+
+  const handleOpenChange = (open: boolean) => {
+    if (open) setShowHint(false);
+  };
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu onOpenChange={handleOpenChange}>
         <DropdownMenuTrigger className={cn(linkTrigger, activeBase)}>
-          <span className="border-input hover:bg-card hover:text-card-foreground rounded-md border px-2.5 py-1 transition-colors">
+          <span className="border-input hover:bg-card hover:text-card-foreground relative rounded-md border px-2.5 py-1 transition-colors">
             {problemTitle}
+            {showHint && (
+              <span className="text-foreground pointer-events-none absolute -bottom-2 -left-2">
+                <MousePointerClick className="size-5 -scale-x-100" />
+              </span>
+            )}
           </span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -283,7 +293,7 @@ export function SessionBreadcrumb({
   return (
     <nav
       aria-label="breadcrumb"
-      className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-2 sm:pt-4 text-sm sm:px-10"
+      className="text-muted-foreground mx-auto flex w-full max-w-5xl items-center justify-center gap-1.5 pt-2 text-sm sm:px-10 sm:pt-4"
     >
       {/* Always-visible: problem title trigger */}
       <ProblemDropdownItem
