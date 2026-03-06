@@ -90,30 +90,33 @@ export function useLLM(
     // Capture current state before setState (avoids stale closure in async)
     const currentMessages = [...llmState.messages, userMsg];
 
-    // Persist user message + optional snapshot
-    setLlmState((prev) => {
-      const prevSnapshots = prev.sections[section]?.snapshots ?? [];
-      const incoming = snapshot
-        ? { data: snapshot, messageIndex: currentMessages.length - 1, timestamp: Date.now() }
-        : null;
-      return {
-        ...prev,
-        messages: [...prev.messages, userMsg],
-        sections: {
-          ...prev.sections,
-          [section]: {
-            snapshots: incoming ? pruneSnapshots(prevSnapshots, incoming) : prevSnapshots,
-          },
-        },
-      };
-    });
+    // Compute updated sections locally so both setState and the API payload
+    // see the same snapshot — reading llmState.sections after setState would
+    // return the stale pre-render value due to React's async batching.
+    const prevSnapshots = llmState.sections[section]?.snapshots ?? [];
+    const incoming = snapshot
+      ? { data: snapshot, messageIndex: currentMessages.length - 1, timestamp: Date.now() }
+      : null;
+    const updatedSections = {
+      ...llmState.sections,
+      [section]: {
+        snapshots: incoming ? pruneSnapshots(prevSnapshots, incoming) : prevSnapshots,
+      },
+    };
+
+    // Persist user message + updated snapshot
+    setLlmState((prev) => ({
+      ...prev,
+      messages: [...prev.messages, userMsg],
+      sections: updatedSections,
+    }));
 
     // Build payload — system messages + full session history
     const fullHistory = currentMessages.map(
       (m): Message => ({ role: m.role, content: m.content }),
     );
 
-    const snapshotContext = buildSnapshotContext(llmState.sections);
+    const snapshotContext = buildSnapshotContext(updatedSections);
 
     const payload: Message[] = [
       { role: "system", content: GLOBAL_PROMPT.trim() },
