@@ -6,6 +6,19 @@ const EXECUTE_LIMIT_PER_MIN = 10;
 const GENERATE_LIMIT_PER_MIN = 5;
 const GENERAL_LIMIT_PER_MIN = 30;
 
+// Returned when Upstash env vars are not configured (e.g. local dev, CI e2e).
+// Always reports success so route handlers can remain unchanged.
+const NOOP_LIMITER = {
+  limit: async () => ({ success: true, reset: Date.now() + 60_000 }),
+} as unknown as Ratelimit;
+
+function isUpstashConfigured(): boolean {
+  return (
+    !!process.env.UPSTASH_REDIS_REST_URL &&
+    !!process.env.UPSTASH_REDIS_REST_TOKEN
+  );
+}
+
 let _redis: Redis | null = null;
 
 function getRedis(): Redis {
@@ -31,6 +44,7 @@ let _generalRateLimit: Ratelimit | null = null;
  * for API-level abuse bypassing the UI entirely.
  */
 export function getChatRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_chatRateLimit) {
     _chatRateLimit = new Ratelimit({
       redis: getRedis(),
@@ -47,6 +61,7 @@ export function getChatRateLimit(): Ratelimit {
  * but this server-side limit gives headroom for retries and failed requests.
  */
 export function getExecuteRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_executeRateLimit) {
     _executeRateLimit = new Ratelimit({
       redis: getRedis(),
@@ -64,6 +79,7 @@ export function getExecuteRateLimit(): Ratelimit {
  * optimistic locking, but a user could trigger generation across many slugs.
  */
 export function getGeneratePreviewRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_generatePreviewRateLimit) {
     _generatePreviewRateLimit = new Ratelimit({
       redis: getRedis(),
@@ -75,6 +91,7 @@ export function getGeneratePreviewRateLimit(): Ratelimit {
 }
 
 export function getGeneratePracticeRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_generatePracticeRateLimit) {
     _generatePracticeRateLimit = new Ratelimit({
       redis: getRedis(),
@@ -86,6 +103,7 @@ export function getGeneratePracticeRateLimit(): Ratelimit {
 }
 
 export function getGenerateFeedbackRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_generateFeedbackRateLimit) {
     _generateFeedbackRateLimit = new Ratelimit({
       redis: getRedis(),
@@ -101,6 +119,7 @@ export function getGenerateFeedbackRateLimit(): Ratelimit {
  * Permissive enough to never affect normal use but blocks automated abuse.
  */
 export function getGeneralRateLimit(): Ratelimit {
+  if (!isUpstashConfigured()) return NOOP_LIMITER;
   if (!_generalRateLimit) {
     _generalRateLimit = new Ratelimit({
       redis: getRedis(),
