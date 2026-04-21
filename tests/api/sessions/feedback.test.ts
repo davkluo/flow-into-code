@@ -2,15 +2,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST } from "@/app/api/sessions/feedback/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import * as rateLimit from "@/lib/rateLimit";
 import { generateSessionFeedback } from "@/services/sessionFeedback";
 import { DailyLimitExceededError } from "@/lib/errors";
+import type { Ratelimit } from "@upstash/ratelimit";
 
 vi.mock("@/lib/firebase/verifyToken", () => ({
   verifyFirebaseToken: vi.fn(),
 }));
+vi.mock("@/lib/rateLimit", () => ({
+  getGeneralRateLimit: vi.fn(),
+}));
 vi.mock("@/services/sessionFeedback", () => ({
   generateSessionFeedback: vi.fn(),
 }));
+
+const mockLimit = vi.fn();
 
 const makeRequest = (body: object) =>
   new NextRequest("http://localhost/api/sessions/feedback", {
@@ -21,6 +28,10 @@ const makeRequest = (body: object) =>
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit.getGeneralRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  mockLimit.mockResolvedValue({ success: true, reset: Date.now() + 60000 });
 });
 
 describe("POST /api/sessions/feedback", () => {

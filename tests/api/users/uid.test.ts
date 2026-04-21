@@ -2,15 +2,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/users/[uid]/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import * as rateLimit from "@/lib/rateLimit";
 import * as userRepo from "@/repositories/firestore/userRepo";
 import { User } from "@/types/user";
+import type { Ratelimit } from "@upstash/ratelimit";
 
 vi.mock("@/lib/firebase/verifyToken", () => ({
   verifyFirebaseToken: vi.fn(),
 }));
+vi.mock("@/lib/rateLimit", () => ({
+  getGeneralRateLimit: vi.fn(),
+}));
 vi.mock("@/repositories/firestore/userRepo", () => ({
   getById: vi.fn(),
 }));
+
+const mockLimit = vi.fn();
 
 const makeRequest = () =>
   new NextRequest("http://localhost/api/users/target-uid");
@@ -19,6 +26,10 @@ const makeParams = (uid: string) => ({ params: Promise.resolve({ uid }) });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit.getGeneralRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  mockLimit.mockResolvedValue({ success: true, reset: Date.now() + 60000 });
 });
 
 describe("GET /api/users/[uid]", () => {
