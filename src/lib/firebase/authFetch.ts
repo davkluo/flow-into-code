@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import { getClientAuth } from "./client";
 
 /**
@@ -12,6 +13,9 @@ import { getClientAuth } from "./client";
  * the token directly without waiting for authStateReady. In general, callers
  * should not need to use this parameter and can rely on the automatic token
  * retrieval.
+ *
+ * Automatically shows a toast on 429 (rate limit) responses so callers don't
+ * need to handle this individually.
  */
 export async function authFetch(
   url: string,
@@ -22,11 +26,23 @@ export async function authFetch(
     await getClientAuth().authStateReady();
     token = await getClientAuth().currentUser?.getIdToken();
   }
-  return fetch(url, {
+  const response = await fetch(url, {
     ...options,
     headers: {
       ...options.headers,
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
   });
+
+  if (response.status === 429) {
+    const retryAfter = response.headers.get("Retry-After");
+    const seconds = retryAfter ? parseInt(retryAfter, 10) : null;
+    toast.error("Too many requests", {
+      description: seconds
+        ? `Please wait ${seconds}s before trying again.`
+        : "Please wait a moment before trying again.",
+    });
+  }
+
+  return response;
 }
