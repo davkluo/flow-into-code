@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/withAuth";
+import {
+  getGeneralRateLimit,
+  getGeneratePracticeRateLimit,
+} from "@/lib/rateLimit";
 import { generatePracticeData, getPracticeData } from "@/services/practiceData";
 
-export const GET = withAuth<{ slug: string }>(async (_req, _uid, ctx) => {
+export const GET = withAuth<{ slug: string }>(async (_req, uid, ctx) => {
+  const { success, reset } = await getGeneralRateLimit().limit(uid);
+  if (!success) {
+    const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
+
   const { slug } = await ctx!.params;
 
   try {
@@ -36,7 +49,16 @@ export const GET = withAuth<{ slug: string }>(async (_req, _uid, ctx) => {
   }
 });
 
-export const POST = withAuth<{ slug: string }>(async (_req, _uid, ctx) => {
+export const POST = withAuth<{ slug: string }>(async (_req, uid, ctx) => {
+  const { success, reset } = await getGeneratePracticeRateLimit().limit(uid);
+  if (!success) {
+    const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
+
   const { slug } = await ctx!.params;
 
   try {

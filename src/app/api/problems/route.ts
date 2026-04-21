@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/withAuth";
+import { getGeneralRateLimit } from "@/lib/rateLimit";
 import { CACHE_PAGE_SIZE } from "@/lib/pagination";
 import { getProblemPage } from "@/repositories/firestore/problemRepo";
 import { ensureLCProblemIndex } from "@/services/ensureLCProblemIndex";
 
-export const GET = withAuth(async (req) => {
+export const GET = withAuth(async (req, uid) => {
+  const { success, reset } = await getGeneralRateLimit().limit(uid);
+  if (!success) {
+    const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+    return NextResponse.json(
+      { error: "Too Many Requests" },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } },
+    );
+  }
+
   await ensureLCProblemIndex();
 
   const { searchParams } = new URL(req.url);
