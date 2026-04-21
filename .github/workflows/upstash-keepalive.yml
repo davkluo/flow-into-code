@@ -1,0 +1,15 @@
+name: Upstash Redis Keepalive
+
+on:
+  schedule:
+    - cron: "0 12 * * *"
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Upstash Redis
+        run: |
+          curl -sf "${{ secrets.UPSTASH_REDIS_REST_URL }}/SET/keepalive/$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            -H "Authorization: Bearer ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}"
