@@ -2,15 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/problems/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import * as rateLimit from "@/lib/rateLimit";
 import {
   getProblemPage,
   ProblemsPage,
 } from "@/repositories/firestore/problemRepo";
 import { ensureLCProblemIndex } from "@/services/ensureLCProblemIndex";
 import { Problem } from "@/types/problem";
+import type { Ratelimit } from "@upstash/ratelimit";
 
 vi.mock("@/lib/firebase/verifyToken", () => ({
   verifyFirebaseToken: vi.fn(),
+}));
+vi.mock("@/lib/rateLimit", () => ({
+  getGeneralRateLimit: vi.fn(),
 }));
 vi.mock("@/repositories/firestore/problemRepo", () => ({
   getProblemPage: vi.fn(),
@@ -19,11 +24,17 @@ vi.mock("@/services/ensureLCProblemIndex", () => ({
   ensureLCProblemIndex: vi.fn(),
 }));
 
+const mockLimit = vi.fn();
+
 const makeRequest = (params = "") =>
   new NextRequest(`http://localhost/api/problems${params}`);
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit.getGeneralRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  mockLimit.mockResolvedValue({ success: true, reset: Date.now() + 60000 });
   vi.mocked(ensureLCProblemIndex).mockResolvedValue(undefined);
   vi.mocked(getProblemPage).mockResolvedValue({
     problems: [],

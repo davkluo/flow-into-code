@@ -2,19 +2,27 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET, POST } from "@/app/api/problems/[slug]/feedback/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import * as rateLimit from "@/lib/rateLimit";
 import {
   generateFeedbackDataForProblem,
   getFeedbackData,
 } from "@/services/feedbackData";
 import { ProblemDetails } from "@/types/problem";
+import type { Ratelimit } from "@upstash/ratelimit";
 
 vi.mock("@/lib/firebase/verifyToken", () => ({
   verifyFirebaseToken: vi.fn(),
+}));
+vi.mock("@/lib/rateLimit", () => ({
+  getGeneralRateLimit: vi.fn(),
+  getGenerateFeedbackRateLimit: vi.fn(),
 }));
 vi.mock("@/services/feedbackData", () => ({
   getFeedbackData: vi.fn(),
   generateFeedbackDataForProblem: vi.fn(),
 }));
+
+const mockLimit = vi.fn();
 
 const makeRequest = (method = "GET") =>
   new NextRequest("http://localhost/api/problems/two-sum/feedback", { method });
@@ -22,6 +30,13 @@ const makeParams = (slug: string) => ({ params: Promise.resolve({ slug }) });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit.getGeneralRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  vi.mocked(rateLimit.getGenerateFeedbackRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  mockLimit.mockResolvedValue({ success: true, reset: Date.now() + 60000 });
 });
 
 describe("GET /api/problems/[slug]/feedback", () => {

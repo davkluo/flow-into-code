@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/sessions/[session-id]/route";
 import { verifyFirebaseToken } from "@/lib/firebase/verifyToken";
+import * as rateLimit from "@/lib/rateLimit";
 import * as problemDetailsRepo from "@/repositories/firestore/problemDetailsRepo";
 import * as problemRepo from "@/repositories/firestore/problemRepo";
 import * as sessionRepo from "@/repositories/firestore/sessionRepo";
@@ -9,9 +10,13 @@ import * as userRepo from "@/repositories/firestore/userRepo";
 import { ProblemDetails } from "@/types/problem";
 import { Session } from "@/types/session";
 import { User } from "@/types/user";
+import type { Ratelimit } from "@upstash/ratelimit";
 
 vi.mock("@/lib/firebase/verifyToken", () => ({
   verifyFirebaseToken: vi.fn(),
+}));
+vi.mock("@/lib/rateLimit", () => ({
+  getGeneralRateLimit: vi.fn(),
 }));
 vi.mock("@/repositories/firestore/sessionRepo", () => ({
   getById: vi.fn(),
@@ -25,6 +30,8 @@ vi.mock("@/repositories/firestore/problemRepo", () => ({
 vi.mock("@/repositories/firestore/problemDetailsRepo", () => ({
   getBySlug: vi.fn(),
 }));
+
+const mockLimit = vi.fn();
 
 const makeRequest = () =>
   new NextRequest("http://localhost/api/sessions/session-123");
@@ -54,6 +61,10 @@ const mockSession = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.mocked(rateLimit.getGeneralRateLimit).mockReturnValue({
+    limit: mockLimit,
+  } as unknown as Ratelimit);
+  mockLimit.mockResolvedValue({ success: true, reset: Date.now() + 60000 });
   vi.mocked(problemRepo.getBySlug).mockResolvedValue(null);
   vi.mocked(problemDetailsRepo.getBySlug).mockResolvedValue(null);
 });
